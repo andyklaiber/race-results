@@ -27,17 +27,19 @@ export default {
 </script>
 
 <template>
-<div class="container-fluid text-center">
+<div class="text-center">
     <h2>2022 Prairie City Race Series</h2>
-    <h2>Race Results</h2>
+    <h2>Preliminary Race Results - Wednesday March 23</h2>
 </div>
-<div>
+<div class="container text-center">
     <template  v-for="(cat, key) in categories" :key="cat.id">
     <a :href="'#'+key">{{cat.catdispname}}</a>&nbsp
     </template>
 </div>
-<div v-for="(cat, key) in categories" :key="cat.id">
-    <h3 :id="key" >{{cat.catdispname}}</h3>
+<div class="container-fluid">
+<div v-for="(cat, key) in categories" :key="cat.id" class="mt-5">
+  
+  <h3 :id="key" >{{cat.catdispname}}</h3>
   <table class="table table-striped table-hover">
     <thead>
     <tr>
@@ -50,6 +52,7 @@ export default {
     </tr>
   </tbody>
 </table>
+</div>
 </div>
 </template>
 
