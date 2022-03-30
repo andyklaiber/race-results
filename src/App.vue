@@ -1,69 +1,49 @@
 <script>
 import _ from 'lodash';
-import ResultRow from './components/ResultRow.vue';
+import NavBar from './components/NavBar.vue'
+import { RouterView } from 'vue-router'
 
-let dataUrl = '/public/data/pcrs-race-1.json'
+let dataUrl = '/api/races/'
 if(import.meta.env.DEV){
     dataUrl = "http://localhost:3000"+dataUrl;
 }
 
 export default {
   components: {
-    ResultRow
+    RouterView,
+    NavBar
   },
   data() {
     return {
-  	categories: {}
+  	races: [],
     }
   },
   mounted: function(){
-  	let $this = this
     fetch(dataUrl)
         .then(response => response.json())
         .then(data => {
-        $this.categories = data.categories
+            console.log(data);
+            this.races = data;
+            let defaultRace = this.races.find((obj)=>obj.defaultRace === true)
+            if(defaultRace){
+                this.$router.push(`/race/${defaultRace.raceid}`)
+            }
         })
 	},
   computed : {
-      sortedCats() {
-          return _.orderBy(this.categories,'disporder');
+      raceMeta() {
+          return this.races.find((obj)=>obj.raceid === this.$route.params.raceid);
       }
   }
 }
 </script>
 
 <template>
-<div class="text-center" id="top">
-    <h2>2022 Prairie City Race Series</h2>
-    <h2>Preliminary Race Results - Wednesday March 23</h2>
-</div>
-<div class="container text-center">
-    <ul class="list-inline">
-  
-    <template  v-for="(cat, key) in sortedCats" :key="cat.id">
-    <li class="list-inline-item"><a :href="'#'+key">{{cat.catdispname}}</a></li>
-    </template>
-    </ul>
-</div>
-<div class="container-fluid">
-<div v-for="(cat, key) in sortedCats" :key="cat.id" class="mt-5">
-  
-  <h3 :id="key" >{{cat.catdispname}}</h3>
-  <table class="table table-striped table-hover">
-    <thead>
-    <tr>
-      <th v-for="(columnName, index) in cat.columns" scope="col" :key="index">{{columnName}}</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr v-for="(racer, idx) in cat.results" :key="idx" >
-        <ResultRow :totLaps="cat.laps" :Pos="idx" :data="racer" />
-    </tr>
-  </tbody>
-</table>
-<a href="#top">Back to Top</a>
-</div>
-</div>
+    <NavBar :races="races"  id="top"/>
+    <div v-if="raceMeta" class="text-center">
+        <h2 class="mt-5">Race Results - {{raceMeta?.formattedStartDate}}</h2>
+    </div>
+    <RouterView />
 </template>
 
 <style>
