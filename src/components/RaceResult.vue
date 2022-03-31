@@ -25,6 +25,10 @@ export default {
     );
   },
   methods: {
+    scrollMeTo(refName) {
+        var element = document.querySelector(`#${refName}`)
+        element.scrollIntoView({ behavior: 'smooth' })
+    },
     fetchData() {
       this.error = null;
       this.loading = true;
@@ -69,14 +73,14 @@ export default {
         <ul class="list-inline">
           <template v-for="(cat, key) in sortedCats" :key="cat.id">
             <li class="list-inline-item">
-              <a :href="'#' + key">{{ cat.catdispname }}</a>
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
           </template>
         </ul>
       </div>
       <div class="container-fluid">
         <div v-for="(cat, key) in sortedCats" :key="cat.id" class="mt-5">
-          <h3 :id="key">{{ cat.catdispname }}</h3>
+          <h3 :id="cat.id">{{ cat.catdispname }}</h3>
           <table class="table table-striped table-hover">
             <thead>
               <tr>
@@ -95,7 +99,7 @@ export default {
               </tr>
             </tbody>
           </table>
-          <a href="#top">Back to Top</a>
+          <a role="button" @click="scrollMeTo('top')" class="link-primary">Back to Top</a>
         </div>
       </div>
     </div>

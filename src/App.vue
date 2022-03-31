@@ -22,10 +22,9 @@ export default {
     fetch(dataUrl)
         .then(response => response.json())
         .then(data => {
-            console.log(data);
             this.races = data;
             let defaultRace = this.races.find((obj)=>obj.defaultRace === true)
-            if(defaultRace){
+            if(defaultRace && window.location.hash.indexOf('race/') == -1){
                 this.$router.push(`/race/${defaultRace.raceid}`)
             }
         })
