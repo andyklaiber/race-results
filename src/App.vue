@@ -23,9 +23,8 @@ export default {
         .then(response => response.json())
         .then(data => {
             this.races = data;
-            let defaultRace = this.races.find((obj)=>obj.defaultRace === true)
-            if(defaultRace && window.location.hash.indexOf('race/') == -1){
-                this.$router.push(`/race/${defaultRace.raceid}`)
+            if(window.location.hash.indexOf('race/') == -1){
+                this.$router.push(`/series/pcrs_2022`)
             }
         })
 	},

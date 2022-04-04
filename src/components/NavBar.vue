@@ -17,14 +17,14 @@ export default {
 </script>
 
 <template>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
   <div class="container-fluid">
-    <div class="navbar-brand" href="#">2022 Prairie City Race Series</div>
+    <div class="navbar-brand" href="#">2022 PCRS</div>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Races
+            Race Results
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
             <li v-for="race in races" :key="race.raceid" >
@@ -34,8 +34,10 @@ export default {
 
           </ul>
         </li>
-       
       </ul>
+    </div>
+    <div class="nav-item">
+         <RouterLink  class="nav-link" :to="`/series/pcrs_2022`">Series Standings</RouterLink>
     </div>
      <div class="nav-item">
           <a class="nav-link active" aria-current="page" href="https://racemtb.com/">RaceMtb Home</a>

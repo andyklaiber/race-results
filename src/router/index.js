@@ -1,5 +1,6 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import RaceResult from '../components/RaceResult.vue'
+import { createRouter, createWebHashHistory } from 'vue-router';
+import RaceResult from '../components/RaceResult.vue';
+import SeriesRaceResult from '../components/SeriesResult.vue';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -7,6 +8,10 @@ const router = createRouter({
     { 
         path: '/race/:raceid', 
         component: RaceResult
+    },
+    { 
+        path: '/series/:seriesid', 
+        component: SeriesRaceResult
     },
   ]
 })
