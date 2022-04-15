@@ -37,7 +37,7 @@ export default {
 </script>
 
 <template>
-    <NavBar :races="races"  id="top"/>
+    <NavBar :races="races" />
     <div v-if="raceMeta" class="text-center">
         <h2 class="mt-5">Race Results - {{raceMeta?.formattedStartDate}}</h2>
     </div>

@@ -13,6 +13,10 @@ const router = createRouter({
         path: '/series/:seriesid', 
         component: SeriesRaceResult
     },
+    { 
+        path: '/series/grom/:seriesid', 
+        component: SeriesRaceResult
+    },
   ]
 })
 

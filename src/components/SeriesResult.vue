@@ -51,7 +51,28 @@ export default {
   },
   computed: {
     sortedCats() {
-      return _.orderBy(this.categories, "disporder");
+      let cats;
+      if(this.$route.path.indexOf('grom') > -1){
+          cats = _.filter(this.categories, (cat)=>cat.id.indexOf('grom')>-1);
+      }else{
+          cats = _.filter(this.categories, (cat)=>cat.id.indexOf('grom') == -1);
+      }
+      return _.orderBy(cats, "disporder");
+    },
+    expertCats(){
+        return _.filter(this.sortedCats, {laps:4});
+    },
+    sportCats(){
+        return _.filter(this.sortedCats, {laps:3});
+    },
+    beginnerCats(){
+        return _.filter(this.sortedCats, {laps:2});
+    },
+    gromCats(){
+        if(this.$route.path.indexOf('grom') > -1){
+          return _.filter(this.categories, (cat)=>cat.id.indexOf('grom')>-1);
+        }
+        return [];
     },
     haveResults() {
       if (!this.categories) {
@@ -67,16 +88,37 @@ export default {
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
-     <div class="container text-center mt-5">
+     <div class="container-fluid text-center mt-5">
     <h2>2022 Prairie City Race Series</h2>
     <h3>Series Standings</h3>
     <p>Glossary of terms below:<br>
 1/50 = 1st Place/50 Points     -/- = Did not race</p></div>
     <div v-if="haveResults">
-      <div class="container text-center mt-5">
+      <div class="container-fluid text-center mt-5">
+          <ul class="list-inline">
+          <template v-for="(cat, key) in expertCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
         <ul class="list-inline">
-          <template v-for="(cat, key) in sortedCats" :key="cat.id">
-            <li class="list-inline-item">
+          <template v-for="(cat, key) in sportCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
+        <ul class="list-inline">
+          <template v-for="(cat, key) in beginnerCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
+        <ul class="list-inline">
+          <template v-for="(cat, key) in gromCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
               <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
           </template>
@@ -116,4 +158,9 @@ export default {
 </template>
 
 <style>
+
+table.table {
+--bs-table-hover-bg: #76c8ff;
+}
+
 </style>

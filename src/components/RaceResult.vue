@@ -26,32 +26,46 @@ export default {
   },
   methods: {
     scrollMeTo(refName) {
-        var element = document.querySelector(`#${refName}`)
-        element.scrollIntoView({ behavior: 'smooth' })
+      var element = document.querySelector(`#${refName}`);
+      element.scrollIntoView({ behavior: "smooth" });
     },
     fetchData() {
       this.error = null;
       this.loading = true;
-      let dataUrl = `/api/races/results/${this.$route.params.raceid}`;
-      if (import.meta.env.DEV) {
-        dataUrl = "http://localhost:3000" + dataUrl;
+      if (this.$route.params.raceid) {
+        let dataUrl = `/api/races/results/${this.$route.params.raceid}`;
+        if (import.meta.env.DEV) {
+          dataUrl = "http://localhost:3000" + dataUrl;
+        }
+        fetch(dataUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            this.loading = false;
+            this.categories = data.categories;
+          })
+          .catch((err) => {
+            console.error(err);
+            this.categories = {};
+            this.error = err.toString();
+          });
       }
-      fetch(dataUrl)
-        .then((response) => response.json())
-        .then((data) => {
-          this.loading = false;
-          this.categories = data.categories;
-        })
-        .catch((err) => {
-          console.error(err);
-          this.categories = {};
-          this.error = err.toString();
-        });
     },
   },
   computed: {
     sortedCats() {
       return _.orderBy(this.categories, "disporder");
+    },
+    expertCats(){
+        return _.filter(this.sortedCats, {laps:4});
+    },
+    sportCats(){
+        return _.filter(this.sortedCats, {laps:3});
+    },
+    beginnerCats(){
+        return _.filter(this.sortedCats, {laps:2});
+    },
+    gromCats(){
+          return _.filter(this.categories, (cat)=>cat.id.indexOf('grom')>-1);
     },
     haveResults() {
       if (!this.categories) {
@@ -70,9 +84,30 @@ export default {
 
     <div v-if="haveResults">
       <div class="container text-center mt-5">
+       <ul class="list-inline">
+          <template v-for="(cat, key) in expertCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
         <ul class="list-inline">
-          <template v-for="(cat, key) in sortedCats" :key="cat.id">
-            <li class="list-inline-item">
+          <template v-for="(cat, key) in sportCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
+        <ul class="list-inline">
+          <template v-for="(cat, key) in beginnerCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
+        <ul class="list-inline">
+          <template v-for="(cat, key) in gromCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
               <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
           </template>
@@ -99,7 +134,9 @@ export default {
               </tr>
             </tbody>
           </table>
-          <a role="button" @click="scrollMeTo('top')" class="link-primary">Back to Top</a>
+          <a role="button" @click="scrollMeTo('top')" class="link-primary"
+            >Back to Top</a
+          >
         </div>
       </div>
     </div>
@@ -112,4 +149,8 @@ export default {
 </template>
 
 <style>
+
+table.table {
+--bs-table-hover-bg: #76c8ff;
+}
 </style>
