@@ -1,5 +1,18 @@
 <script>
 
+let msToTimeString = (ms)=>{
+    const d = new Date(Date.UTC(0,0,0,0,0,0,ms)),
+    parts = [
+        d.getUTCMinutes(),
+        d.getUTCSeconds()
+    ]
+    let minSecMillis=parts.map(s => String(s).padStart(2,'0')).join(':');//.concat(`.${d.getUTCMilliseconds()}`)
+    if(d.getUTCHours()){
+        minSecMillis = d.getUTCHours() + ":" +minSecMillis;
+    }
+    return minSecMillis;
+}
+
 export default {
   props: ["data","Pos","totLaps"],
   data() {
@@ -11,6 +24,9 @@ export default {
       incompleteLaps(){
           let filler = new Array(this.totLaps - this.data.laps.length);
           return filler.fill('-') 
+      },
+      formattedTime(){
+          return msToTimeString(this.data.duration);
       }
   }
 }
@@ -26,7 +42,7 @@ export default {
   <template v-if="totLaps-data.laps.length > 0">
       <td v-for="fill in incompleteLaps">{{fill}}</td>
   </template>
-  <td>{{data.Time}}</td>
+  <td>{{formattedTime}}</td>
   <td>{{data.back || "-"}}</td>
 
 </template>
