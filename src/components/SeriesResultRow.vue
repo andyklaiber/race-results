@@ -18,7 +18,14 @@ export default {
   <td>{{data.Name}}</td>
   <td>{{data.Age}}</td>
   <td>{{data.Sponsor}}</td>
-  <td v-for="(race, idx) in data.results" :key="idx">{{race.resultString}}</td>
+  <td :class='{"text-danger":race.dropped}' v-for="(race, idx) in data.results" :key="idx">{{race.resultString}}</td>
   <td>{{data.seriesPoints}}</td>
 
 </template>
+
+<style>
+
+.dropped {
+color: #ff7676;
+}
+</style>

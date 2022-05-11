@@ -54,5 +54,13 @@ export default {
         >Grom Series Standings</RouterLink
       >
     </li>
+    <li class="nav-item">
+      <RouterLink
+        class="nav-link"
+        :class="{ active: $route.path == '/teamcomp/pcrs_2022' }"
+        :to="`/teamcomp/pcrs_2022`"
+        >Team Competition</RouterLink
+      >
+    </li>
   </ul>
 </template>
