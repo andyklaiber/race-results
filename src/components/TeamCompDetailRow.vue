@@ -16,6 +16,6 @@ export default {
 <template>
   <td>{{data.Name}}</td>
   <td>{{data.Cat}}</td>
-  <td v-for="(race, idx) in dates" :key="idx">{{data[race]}}</td>
+  <td v-for="(race, idx) in dates" :key="idx">{{data[race] || '-'}}</td>
 
 </template>

@@ -69,7 +69,7 @@ export default {
               <tr>
                   <th>Position</th>
                 <th>Team</th>
-                <th>Total Points</th>
+                <th>Total Score</th>
               </tr>
             </thead>
             <tbody>
@@ -77,7 +77,7 @@ export default {
               <tr v-for="(team, key) in teamResults.result" :key="key">
             <td>{{key+1}}</td>
             <td>{{team.teamName}}</td>
-            <td>{{team.totalPoints}}</td>
+            <td>{{team.totalScore}}</td>
               </tr>
             </tbody>
           </table>
@@ -92,10 +92,10 @@ export default {
               <tr>
                 <th style="width: 25%">Racer Name</th>
                 <th style="width: 25%">Class</th>
-                <th>5/4</th>
-                <th>5/11</th>
-                <th>5/18</th>
-                <th>5/25</th>
+                <th style="width: 12.5%">5/4</th>
+                <th style="width: 12.5%">5/11</th>
+                <th style="width: 12.5%">5/18</th>
+                <th style="width: 12.5%">5/25</th>
               </tr>
             </thead>
             <tbody>
@@ -109,10 +109,10 @@ export default {
             <thead>
               <tr>
                 <th style="width: 50%; text-align:right">Score (Avg of individual results):</th>
-                <th>{{team.results['5/4'].avg}}</th>
-            <th>{{team.results['5/11'] ? team.results['5/11'].avg : ''}}</th>
-            <th>{{team.results['5/18'] ? team.results['5/18'].avg : ''}}</th>
-            <th>{{team.results['5/25'] ? team.results['5/25'].avg : ""}}</th>
+                <th style="width: 12.5%">{{team.results['5/4'] ? team.results['5/4'].avg : '-'}}</th>
+            <th style="width: 12.5%">{{team.results['5/11'] ? team.results['5/11'].avg : '-'}}</th>
+            <th style="width: 12.5%">{{team.results['5/18'] ? team.results['5/18'].avg : '-'}}</th>
+            <th style="width: 12.5%">{{team.results['5/25'] ? team.results['5/25'].avg : "-"}}</th>
               </tr>
             </thead>
         </table>
