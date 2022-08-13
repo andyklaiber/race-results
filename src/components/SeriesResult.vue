@@ -1,16 +1,20 @@
 <script>
 import _ from "lodash";
 import SeriesResultRow from "./SeriesResultRow.vue";
+import SeriesNavBar from "./SeriesNavBar.vue";
 
 export default {
   components: {
     SeriesResultRow,
+    SeriesNavBar,
   },
   data() {
     return {
       categories: {},
       loading: false,
       error: null,
+      displayName: "",
+      series: null
     };
   },
   created() {
@@ -18,6 +22,7 @@ export default {
       () => this.$route.params,
       () => {
         this.fetchData();
+        
       },
       // fetch the data when the view is created and the data is
       // already being observed
@@ -30,6 +35,9 @@ export default {
         element.scrollIntoView({ behavior: 'smooth' })
     },
     fetchData() {
+      if(!this.$route.params.seriesid){
+        return;
+      }
       this.error = null;
       this.loading = true;
       let dataUrl = `/api/series/results/${this.$route.params.seriesid}`;
@@ -41,6 +49,8 @@ export default {
         .then((data) => {
           this.loading = false;
           this.categories = data.categories;
+          this.displayName = data.displayName;
+          this.series = this.$route.params.seriesid;
         })
         .catch((err) => {
           console.error(err);
@@ -85,11 +95,12 @@ export default {
 </script>
 
 <template>
+<SeriesNavBar :series="series" />
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
      <div class="container-fluid text-center mt-5">
-    <h2>2022 Prairie City Race Series</h2>
+    <h2>{{ displayName }}</h2>
     <h3>Series Standings</h3>
     <p>Glossary of terms below:<br>
 1/50 = 1st Place/50 Points     -/- = Did not race</p></div>

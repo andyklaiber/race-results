@@ -19,14 +19,16 @@ export default {
     }
   },
   mounted: function(){
-    fetch(dataUrl)
-        .then(response => response.json())
-        .then(data => {
-            this.races = data;
-            if(window.location.hash.indexOf('race/') == -1){
-                this.$router.push(`/series/pcrs_2022`)
-            }
-        })
+    if(window.location.hash == '#/'){
+      this.$router.push(`/series/pcrs_2022`)
+    }
+// fetch(dataUrl)
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         this.races = data;
+    //         console.log('hash:', window.location.hash)
+            
+    //     })
 	},
   computed : {
       raceMeta() {
@@ -37,10 +39,6 @@ export default {
 </script>
 
 <template>
-    <NavBar :races="races" />
-    <div v-if="raceMeta" class="text-center">
-        <h2 class="mt-5">Race Results - {{raceMeta?.formattedStartDate}}</h2>
-    </div>
     <RouterView />
 </template>
 

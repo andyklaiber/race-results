@@ -1,16 +1,20 @@
 <script>
 import _ from "lodash";
 import ResultRow from "./ResultRow.vue";
+import SeriesNavBar from "./SeriesNavBar.vue";
 
 export default {
   components: {
     ResultRow,
+    SeriesNavBar,
   },
   data() {
     return {
       categories: {},
       loading: false,
       error: null,
+      formattedStartDate:"",
+      series:null,
     };
   },
   created() {
@@ -40,6 +44,8 @@ export default {
         fetch(dataUrl)
           .then((response) => response.json())
           .then((data) => {
+            this.formattedStartDate = data.raceMeta.formattedStartDate;
+            this.series = data.series;
             this.loading = false;
             this.categories = data.categories;
           })
@@ -78,6 +84,10 @@ export default {
 </script>
 
 <template>
+<SeriesNavBar :series="series" />
+    <div v-if="formattedStartDate" class="text-center">
+        <h2 class="mt-5">Race Results - {{formattedStartDate}}</h2>
+    </div>
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>

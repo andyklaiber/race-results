@@ -1,16 +1,19 @@
 <script>
 import _ from "lodash";
 import ResultRow from "./TeamCompDetailRow.vue";
+import SeriesNavBar from "./SeriesNavBar.vue";
 
 export default {
   components: {
     ResultRow,
+    SeriesNavBar,
   },
   data() {
     return {
       teamResults: {},
       loading: false,
       error: null,
+      series: null,
     };
   },
   created() {
@@ -30,9 +33,11 @@ export default {
       element.scrollIntoView({ behavior: "smooth" });
     },
     fetchData() {
+      if (!this.$route.params.seriesid) {
+        return;
+      }
       this.error = null;
       this.loading = true;
-      if (this.$route.params.seriesid) {
         let dataUrl = `/api/team-comp?series=${this.$route.params.seriesid}`;
         if (import.meta.env.DEV) {
           dataUrl = "http://localhost:3000" + dataUrl;
@@ -41,15 +46,16 @@ export default {
           .then((response) => response.json())
           .then((data) => {
             this.loading = false;
-
+            this.series = this.$route.params.seriesid;
             this.teamResults = data;
+
           })
           .catch((err) => {
             console.error(err);
             this.teamResults = {};
             this.error = err.toString();
           });
-      }
+      
     },
   },
   computed: {
@@ -59,6 +65,7 @@ export default {
 </script>
 
 <template>
+<SeriesNavBar :series="series" />
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
