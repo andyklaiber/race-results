@@ -1,6 +1,20 @@
 <script>
 import _ from "lodash";
+import axios from "axios";
 
+let request;
+if (import.meta.env.DEV) {
+        request = axios.create({baseURL:"http://localhost:3000"}); 
+}else{
+  request = axios
+}
+
+const getRegFee = (amt) => 100 + amt * 100 * 0.04;
+const dollas = (amt) =>
+  amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const formatCents = (cents) => {
+  return dollas(cents / 100);
+};
 export default {
   components: {},
   data() {
@@ -8,6 +22,10 @@ export default {
       categories: {},
       loading: false,
       error: null,
+      formError: [],
+      inputData: {},
+      payment: "",
+      submitted: false,
     };
   },
   created() {
@@ -27,14 +45,11 @@ export default {
       this.loading = true;
       if (this.$route.params.seriesid) {
         let dataUrl = `/api/series/${this.$route.params.seriesid}`;
-        if (import.meta.env.DEV) {
-          dataUrl = "http://localhost:3000" + dataUrl;
-        }
-        fetch(dataUrl)
-          .then((response) => response.json())
-          .then((data) => {
-            this.seriesData = data;
+        request(dataUrl)
+          .then((response) => {
+            this.seriesData = response.data;
             this.loading = false;
+            this.payment = this.seriesData.paymentOptions[0].type;
           })
           .catch((err) => {
             console.error(err);
@@ -43,16 +58,70 @@ export default {
           });
       }
     },
+    async submit(data) {
+      console.log(data);
+      await request
+        .post(
+          `/api/payments/create-checkout-session?series=${this.seriesData.series}`,
+          data
+        )
+        .then((response)=>{
+          if(response.data){
+            this.submitted = true;
+            console.log(response.data);
+            return new Promise(resolve => setTimeout(()=>{
+              window.location.href = response.data;
+              resolve()
+              }, 4000))
+          }
+        })
+        .catch((error) => {
+          this.formError = ['Error submitting request'];
+          console.log(error);
+        });
+    },
   },
   computed: {
     sortedCats() {
-      return _.orderBy(this.seriesData.regCategories, "disporder");
+      let cats = {};
+      _.forEach(
+        _.orderBy(this.seriesData.regCategories, "disporder"),
+        (element) => {
+          cats[element.id] = element.catdispname;
+        }
+      );
+
+      return cats;
     },
     loaded() {
       if (!this.seriesData) {
         return false;
       }
       return true;
+    },
+    paymentOptions() {
+      let options = {};
+      _.forEach(this.seriesData.paymentOptions, (element) => {
+        options[element.type] = element.name;
+      });
+      return options;
+    },
+    paymentCostDets() {
+      const payOpt = _.find(
+        this.seriesData?.paymentOptions,
+        (el) => el.type === this.payment
+      );
+      if (!payOpt) return null;
+      const amt = parseFloat(payOpt.amount);
+      let dets = {
+        name: payOpt.name,
+        cost: dollas(amt),
+        regFee: formatCents(getRegFee(payOpt.amount)),
+        tot: dollas(
+          parseFloat(payOpt.amount) + parseFloat(getRegFee(payOpt.amount) / 100)
+        ),
+      };
+      return dets;
     },
   },
 };
@@ -64,77 +133,108 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-        <div class="row">
-          <div class="col">
-            <label for="firstName">First Name</label>
-            <input
+      <div class='row'>
+<div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
+          <h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Payment Detail</span>
+            <span class="badge badge-secondary badge-pill">3</span>
+          </h4>
+          <ul class="list-group mb-3">
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <h6 class="my-0">Race Entry:</h6>
+                <small class="text-muted">{{ paymentCostDets.name }}</small>
+              </div>
+              <span class="text-muted">{{ paymentCostDets.cost }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+              <div>
+                <h6 class="my-0">Online Registration Fee:</h6>
+                <small class="text-muted">Online Registration and Live results</small>
+              </div>
+              <span class="text-muted">{{ paymentCostDets.regFee }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span>Total (USD)</span>
+              <strong>{{ paymentCostDets.tot }}</strong>
+            </li>
+          </ul>
+        </div>
+
+<div class="col-md-6 order-md-1">
+     <h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Registration Info</span>
+            <span class="badge badge-secondary badge-pill">3</span>
+          </h4>
+      <FormKit
+        type="form"
+        id="race-registration"
+        :form-class="submitted ? 'hide' : 'show'"
+        submit-label="Go to payment"
+        @submit="submit"
+        :errors="formError"
+      >
+        <div class="col">
+          <div class="row">
+            <FormKit
               type="text"
-              class="form-control"
-              id="firstName"
-              placeholder="First name"
+              name="first_name"
+              label="First name"
+              help="What is your first name"
+              validation="required"
             />
-          </div>
-          <div class="col">
-            <label for="lastName">Last Name</label>
-            <input
+            <FormKit
               type="text"
-              class="form-control"
-              id="lastName"
-              placeholder="Last name"
+              name="last_name"
+              label="Last name"
+              help="What is your last name"
+              validation="required"
             />
           </div>
         </div>
         <div class="form-group pt-3">
-          <label for="inputEmail">Email</label>
-          <div>
-            <input
-              type="email"
-              class="form-control"
-              id="inputEmail"
-              placeholder="Email"
-            />
-          </div>
+          <FormKit
+            type="email"
+            name="email"
+            label="Your email"
+            help="Enter an email address"
+            validation="required|email"
+          />
+        </div>
+
+        <div class="form-group pt-3">
+          <FormKit
+            type="select"
+            label="Select your Race Category:"
+            placeholder="Select a category"
+            name="category"
+            :options="sortedCats"
+            validation="required"
+            validation-visibility="dirty"
+            :validation-messages="{
+              is: 'You must select a race category',
+            }"
+          />
         </div>
         <fieldset class="form-group pt-3">
           <div class="row">
-            <legend>What would you like to purchase?</legend>
             <div>
-              <template
-                v-for="(paymentOpt, key) in seriesData.paymentOptions"
-                :key="key"
-              >
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    name="payment"
-                    id="payment"
-                    :value="paymentOpt.type"
-                  />
-                  <label class="form-check-label" for="gridRadios1">
-                    {{ paymentOpt.name }}
-                  </label>
-                </div>
-              </template>
+              <FormKit
+                type="radio"
+                name="paytype"
+                label="Payment option"
+                help="How many races would you like to pay for"
+                :options="paymentOptions"
+                validation="required"
+                v-model="payment"
+              />
             </div>
           </div>
         </fieldset>
-        <div class="form-group  pt-3">
-          <label for="select">Select your Race Category:</label>
-          <div>
-            <select id="category" name="select" class="form-control">
-                <option v-for="(cat, key) in sortedCats" :value="cat.id" :key='key'>{{ cat.catdispname }}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="col-sm-10  pt-3">
-            <button name="submit" type="submit" class="btn btn-primary" @click='checkout()'>
-              Submit
-            </button>
-          </div>
-        </div>
+      </FormKit></div></div>
+      <div v-if="submitted">
+        <h2>Submission successful, redirecting to payment</h2>
+      </div>
     </div>
     <div v-else>
       <div class="text-center">

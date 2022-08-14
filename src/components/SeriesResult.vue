@@ -107,28 +107,28 @@ export default {
     <div v-if="haveResults">
       <div class="container-fluid text-center mt-5">
           <ul class="list-inline">
-          <template v-for="(cat, key) in expertCats" :key="cat.id">
+          <template v-for="(cat) in expertCats" :key="cat.id">
             <li class="list-inline-item  mx-2">
               <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
           </template>
         </ul>
         <ul class="list-inline">
-          <template v-for="(cat, key) in sportCats" :key="cat.id">
+          <template v-for="(cat) in sportCats" :key="cat.id">
             <li class="list-inline-item  mx-2">
               <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
           </template>
         </ul>
         <ul class="list-inline">
-          <template v-for="(cat, key) in beginnerCats" :key="cat.id">
+          <template v-for="(cat) in beginnerCats" :key="cat.id">
             <li class="list-inline-item  mx-2">
               <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
           </template>
         </ul>
         <ul class="list-inline">
-          <template v-for="(cat, key) in gromCats" :key="cat.id">
+          <template v-for="(cat) in gromCats" :key="cat.id">
             <li class="list-inline-item  mx-2">
               <a role="button" @click="scrollMeTo(cat.id)" class="link-primary">{{ cat.catdispname }}</a>
             </li>
@@ -136,7 +136,7 @@ export default {
         </ul>
       </div>
       <div class="container-fluid">
-        <div v-for="(cat, key) in sortedCats" :key="cat.id" class="mt-5">
+        <div v-for="(cat) in sortedCats" :key="cat.id" class="mt-5">
           <h3 :id="cat.id">{{ cat.catdispname }}</h3>
           <table class="table table-striped table-hover">
             <thead>
