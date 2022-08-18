@@ -62,6 +62,10 @@ export default {
           });
       }
     },
+    submitForm(clickEvent){
+      clickEvent.preventDefault();
+      this.$formkit.submit('race-registration');
+    },
     async submit(data) {
       console.log(data);
       await request
@@ -129,6 +133,7 @@ export default {
       };
       return dets;
     },
+    
   },
 };
 </script>
@@ -146,6 +151,7 @@ export default {
             :form-class="submitted ? 'hide' : 'show'"
             :errors="formError"
             :actions="false"
+           @submit="submit"
           >
       <div class="row">
         <div class="col-md-6 order-md-1">
@@ -241,7 +247,7 @@ export default {
           <FormKit
       type="submit"
       label="Go To Payment"
-        @submit="submit"
+        @click="submitForm"
     />
         </div>
       </div>

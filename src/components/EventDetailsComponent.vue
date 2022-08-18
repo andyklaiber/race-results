@@ -21,7 +21,7 @@ export default {
         <h3 class="display-5 fw-bold lh-3">{{details.name}}</h3>
         <p class="lead">{{details.tagline}}</p>
         <div v-if="details.homepageUrl" class="d-grid gap-2 d-md-flex justify-content-md-start mb-4 mb-lg-3">
-          <a :href="details.homepageUrl" >Homepage</a>
+          <a :href="details.homepageUrl" >Event Homepage</a>
         </div>
       </div>
       

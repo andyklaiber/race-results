@@ -60,6 +60,7 @@ export default {
           .then((response) => {
             this.loading = false;
             this.payStatus = response.data.stripePayment.payment_status;
+            this.paymentUrl = response.data.stripePayment.url;
             this.regData = response.data.regData;
             this.payment = response.data.regData.paytype;
             const node = this.$formkit.get('race-registration')
@@ -113,6 +114,12 @@ export default {
       };
       return dets;
     },
+    pendingPayment(){
+      if(this.payStatus && this.payStatus != 'paid'){
+        return true;
+      }
+      return false;
+    }
   },
 };
 </script>
@@ -133,11 +140,16 @@ export default {
       <div class="row">
         
         <div class="col-md-6 order-md-1">
-          <h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Registration Confirmation - {{payStatus}}</span>
-            <span class="badge badge-secondary badge-pill">3</span>
-          </h4>
+          <div v-if="!pendingPayment">
+          <h4  class="d-flex justify-content-between align-items-center mb-3">
+            <span  class="text-muted">Your Registration is Confirmed</span>
+            
+          </h4></div>
           
+          <div v-if="pendingPayment" class="mb-5"><h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span  class="text-muted">Your Payment is Incomplete</span>
+            </h4>
+            <a :href="paymentUrl">Complete your payment</a></div>
             <div class="col">
               <div class="row">
                 <FormKit
