@@ -1,7 +1,7 @@
 <script>
 import _ from "lodash";
 import axios from "axios";
-import EventDetailsComponent from './EventDetailsComponent.vue';
+import EventDetailsComponent from "./EventDetailsComponent.vue";
 
 let request;
 if (import.meta.env.DEV) {
@@ -17,18 +17,16 @@ const formatCents = (cents) => {
   return dollas(cents / 100);
 };
 export default {
-  components: {
-    EventDetailsComponent
-  },
+  components: { EventDetailsComponent },
   data() {
     return {
       categories: {},
       loading: false,
       error: null,
-      formError: [],
-      inputData: {},
+      seriesData: {},
+      regData: {},
       payment: "",
-      submitted: false,
+      payStatus: false,
     };
   },
   created() {
@@ -46,45 +44,31 @@ export default {
     fetchData() {
       this.error = null;
       this.loading = true;
-      if (this.$route.params.seriesid) {
-        let dataUrl = `/api/series/${this.$route.params.seriesid}`;
-        request(dataUrl)
+      if (this.$route.params.seriesid && this.$route.params.payment_id) {
+        request(`/api/series/${this.$route.params.seriesid}`)
           .then((response) => {
             this.seriesData = response.data;
             this.loading = false;
-            this.payment = this.seriesData.paymentOptions[0].type;
           })
           .catch((err) => {
-            this.loading = false;
-            this.error = err.toString();
+            this.error = "Failed to load series " + this.$route.params.seriesid;
             console.error(err);
-
+          });
+        request(
+          `/api/payments/status?payment_id=${this.$route.params.payment_id}`
+        )
+          .then((response) => {
+            this.loading = false;
+            this.payStatus = response.data.stripePayment.payment_status;
+            this.regData = response.data.regData;
+            this.payment = response.data.regData.paytype;
+            const node = this.$formkit.get('race-registration')
+            node.input(this.regData);
+          })
+          .catch((err) => {
+            console.error(err);
           });
       }
-    },
-    async submit(data) {
-      console.log(data);
-      await request
-        .post(
-          `/api/payments/create-checkout-session?series=${this.seriesData.series}`,
-          data
-        )
-        .then((response) => {
-          if (response.data) {
-            this.submitted = true;
-            console.log(response.data);
-            return new Promise((resolve) =>
-              setTimeout(() => {
-                window.location.href = response.data;
-                resolve();
-              }, 4000)
-            );
-          }
-        })
-        .catch((error) => {
-          this.formError = ["Error submitting request"];
-          console.log(error);
-        });
     },
   },
   computed: {
@@ -140,17 +124,17 @@ export default {
 
     <div v-if="loaded">
       <EventDetailsComponent :details="seriesData.eventDetails" />
-        <FormKit
+              <FormKit
             type="form"
             id="race-registration"
-            :form-class="submitted ? 'hide' : 'show'"
-            :errors="formError"
+            disabled
             :actions="false"
           >
       <div class="row">
+        
         <div class="col-md-6 order-md-1">
           <h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Registration Info</span>
+            <span class="text-muted">Registration Confirmation - {{payStatus}}</span>
             <span class="badge badge-secondary badge-pill">3</span>
           </h4>
           
@@ -160,15 +144,12 @@ export default {
                   type="text"
                   name="first_name"
                   label="First name"
-                  help="What is your first name"
-                  validation="required"
                 />
                 <FormKit
                   type="text"
                   name="last_name"
                   label="Last name"
-                  help="What is your last name"
-                  validation="required"
+
                 />
               </div>
             </div>
@@ -176,24 +157,17 @@ export default {
               <FormKit
                 type="email"
                 name="email"
-                label="Your email"
-                help="Enter an email address"
-                validation="required|email"
+                label="Email"
               />
             </div>
 
             <div class="form-group pt-3">
               <FormKit
                 type="select"
-                label="Select your Race Category:"
-                placeholder="Select a category"
+                label="Race Category:"
                 name="category"
                 :options="sortedCats"
-                validation="required"
-                validation-visibility="dirty"
-                :validation-messages="{
-                  is: 'You must select a race category',
-                }"
+                
               />
             </div>
           
@@ -238,21 +212,13 @@ export default {
               <strong>{{ paymentCostDets.tot }}</strong>
             </li>
           </ul>
-          <FormKit
-      type="submit"
-      label="Go To Payment"
-        @submit="submit"
-    />
         </div>
       </div>
         </FormKit>
-      <div v-if="submitted">
-        <h2>Submission successful, redirecting to payment</h2>
-      </div>
-    </div>
+        </div>
     <div v-else>
       <div class="text-center">
-        <h2 class="mt-5">Series not available for registration...</h2>
+        <h2 class="mt-5">Unable to load requested information {{ $route.params.seriesid }} payment: {{ $route.params.payment_id}}</h2>
       </div>
     </div>
   </div>
