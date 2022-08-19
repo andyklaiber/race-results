@@ -81,7 +81,7 @@ export default {
               setTimeout(() => {
                 window.location.href = response.data;
                 resolve();
-              }, 4000)
+              }, 2500)
             );
           }
         })
