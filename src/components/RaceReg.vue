@@ -10,7 +10,7 @@ if (import.meta.env.DEV) {
   request = axios;
 }
 
-const getRegFee = (amt) => 100 + amt * 100 * 0.04;
+const getRegFee = (amt) => 100; //+ amt * 100 * 0.04;
 const dollas = (amt) =>
   amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
 const formatCents = (cents) => {
