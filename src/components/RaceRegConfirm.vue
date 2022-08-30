@@ -23,7 +23,7 @@ export default {
       categories: {},
       loading: false,
       error: null,
-      seriesData: {},
+      raceData: {},
       regData: {},
       payment: "",
       payStatus: false,
@@ -44,14 +44,14 @@ export default {
     fetchData() {
       this.error = null;
       this.loading = true;
-      if (this.$route.params.seriesid && this.$route.params.payment_id) {
-        request(`/api/series/${this.$route.params.seriesid}`)
+      if (this.$route.params.raceid && this.$route.params.payment_id) {
+        request(`/api/races/${this.$route.params.raceid}`)
           .then((response) => {
-            this.seriesData = response.data;
+            this.raceData = response.data;
             this.loading = false;
           })
           .catch((err) => {
-            this.error = "Failed to load series " + this.$route.params.seriesid;
+            this.error = "Failed to load race " + this.$route.params.raceid;
             console.error(err);
           });
         request(
@@ -59,8 +59,8 @@ export default {
         )
           .then((response) => {
             this.loading = false;
-            this.payStatus = response.data.stripePayment.payment_status;
-            this.paymentUrl = response.data.stripePayment.url;
+            this.payStatus = response.data.status;
+            this.paymentUrl = response.data.stripePayment?.url;
             this.regData = response.data.regData;
             this.payment = response.data.regData.paytype;
             const node = this.$formkit.get('race-registration')
@@ -76,7 +76,7 @@ export default {
     sortedCats() {
       let cats = {};
       _.forEach(
-        _.orderBy(this.seriesData.regCategories, "disporder"),
+        _.orderBy(this.raceData.regCategories, "disporder"),
         (element) => {
           cats[element.id] = element.catdispname;
         }
@@ -85,31 +85,32 @@ export default {
       return cats;
     },
     loaded() {
-      if (!this.seriesData) {
+      if (!this.raceData) {
         return false;
       }
       return true;
     },
     paymentOptions() {
       let options = {};
-      _.forEach(this.seriesData.paymentOptions, (element) => {
+      _.forEach(this.raceData.paymentOptions, (element) => {
         options[element.type] = element.name;
       });
       return options;
     },
     paymentCostDets() {
       const payOpt = _.find(
-        this.seriesData?.paymentOptions,
+        this.raceData?.paymentOptions,
         (el) => el.type === this.payment
       );
       if (!payOpt) return null;
       const amt = parseFloat(payOpt.amount);
+      const fees = (payOpt.regFee + payOpt.stripeFee)/ 100;
       let dets = {
         name: payOpt.name,
         cost: dollas(amt),
-        regFee: formatCents(getRegFee(payOpt.amount)),
+        regFee: dollas(fees),
         tot: dollas(
-          parseFloat(payOpt.amount) + parseFloat(getRegFee(payOpt.amount) / 100)
+          parseFloat(payOpt.amount) + parseFloat(fees)
         ),
       };
       return dets;
@@ -119,7 +120,14 @@ export default {
         return true;
       }
       return false;
-    }
+    },
+    sponsoredCategorySelected(){
+      let cat = _.find(this.raceData.regCategories, {"id": this.regData.category});
+      if(cat?.sponsored){
+        return true;
+      }
+      return false;
+    },
   },
 };
 </script>
@@ -130,7 +138,7 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <EventDetailsComponent :details="seriesData.eventDetails" />
+      <EventDetailsComponent :details="raceData.eventDetails" />
               <FormKit
             type="form"
             id="race-registration"
@@ -141,14 +149,14 @@ export default {
         
         <div class="col-md-6 order-md-1">
           <div v-if="!pendingPayment">
-          <h4  class="d-flex justify-content-between align-items-center mb-3">
-            <span  class="text-muted">Your Registration is Confirmed</span>
+          <div  class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Your Registration is Confirmed</h4>
             
-          </h4></div>
+          </div></div>
           
-          <div v-if="pendingPayment" class="mb-5"><h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span  class="text-muted">Your Payment is Incomplete</span>
-            </h4>
+          <div v-if="pendingPayment" class="mb-5"><div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Your Payment is Incomplete</h4>
+            </div>
             <a :href="paymentUrl">Complete your payment</a></div>
             <div class="col">
               <div class="row">
@@ -175,6 +183,11 @@ export default {
 
             <div class="form-group pt-3">
               <FormKit
+              type="text"
+              name="sponsor"
+              label="Your Team or Sponsor"
+            />
+              <FormKit
                 type="select"
                 label="Race Category:"
                 name="category"
@@ -186,7 +199,7 @@ export default {
         </div>
         <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
           <h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Payment Detail</span>
+            <h5>Payment Detail</h5>
             <span class="badge badge-secondary badge-pill">3</span>
           </h4>
           <fieldset class="list-group mb-3">
@@ -214,8 +227,10 @@ export default {
             </li>
             <li class="list-group-item d-flex justify-content-between lh-condensed">
               <div>
-                <h6 class="my-0">Online Registration Fee:</h6>
-                <small class="text-muted">Online Registration and Live results</small>
+                 <h6 class="my-0">Online Processing Fee:</h6>
+                  <small class="text-muted"
+                    >Credit Card and Online Registration</small
+                  >
               </div>
               <span class="text-muted">{{ paymentCostDets.regFee }}</span>
             </li>
@@ -230,7 +245,7 @@ export default {
         </div>
     <div v-else>
       <div class="text-center">
-        <h2 class="mt-5">Unable to load requested information {{ $route.params.seriesid }} payment: {{ $route.params.payment_id}}</h2>
+        <h2 class="mt-5">Unable to load requested information {{ $route.params.raceid }} payment: {{ $route.params.payment_id}}</h2>
       </div>
     </div>
   </div>

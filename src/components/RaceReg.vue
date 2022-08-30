@@ -1,7 +1,12 @@
 <script>
 import _ from "lodash";
 import axios from "axios";
-import EventDetailsComponent from './EventDetailsComponent.vue';
+import EventDetailsComponent from "./EventDetailsComponent.vue";
+import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
+import * as dayjs from "dayjs";
+import * as duration from 'dayjs/plugin/duration';
+dayjs.extend(duration)
+
 
 let request;
 if (import.meta.env.DEV) {
@@ -18,7 +23,8 @@ const formatCents = (cents) => {
 };
 export default {
   components: {
-    EventDetailsComponent
+    EventDetailsComponent,
+    EventCategoryScheduleComponent,
   },
   data() {
     return {
@@ -26,8 +32,10 @@ export default {
       loading: false,
       error: null,
       formError: [],
-      inputData: {},
+      formInputData: {},
+      raceData:{},
       payment: "",
+      birthdate: "2006-01-01",
       submitted: false,
     };
   },
@@ -46,31 +54,32 @@ export default {
     fetchData() {
       this.error = null;
       this.loading = true;
-      if (this.$route.params.seriesid) {
-        let dataUrl = `/api/series/${this.$route.params.seriesid}`;
+      if (this.$route.params.raceid) {
+        let dataUrl = `/api/races/${this.$route.params.raceid}`;
         request(dataUrl)
           .then((response) => {
-            this.seriesData = response.data;
+            this.raceData = response.data;
             this.loading = false;
-            this.payment = this.seriesData.paymentOptions[0].type;
+            this.payment = this.raceData.paymentOptions[0].type;
           })
           .catch((err) => {
             this.loading = false;
             this.error = err.toString();
             console.error(err);
-
           });
       }
     },
-    submitForm(clickEvent){
+    submitForm(clickEvent) {
       clickEvent.preventDefault();
-      this.$formkit.submit('race-registration');
+      this.$formkit.submit("race-registration");
     },
     async submit(data) {
       console.log(data);
+      data.birthdate = undefined;
+      data.racerAge = this.racerAge;
       await request
         .post(
-          `/api/payments/create-checkout-session?series=${this.seriesData.series}`,
+          `/api/payments/start-registration?race=${this.raceData.raceid}`,
           data
         )
         .then((response) => {
@@ -93,47 +102,79 @@ export default {
   },
   computed: {
     sortedCats() {
+      const filtered = _.filter(this.raceData.regCategories,(cat)=>{
+        if(cat.minAge && this.racerAge < cat.minAge){
+          return false
+        }
+        if(cat.maxAge && this.racerAge > cat.maxAge){
+          return false
+        }
+        return true;
+      })
       let cats = {};
       _.forEach(
-        _.orderBy(this.seriesData.regCategories, "disporder"),
+        _.orderBy(filtered, "disporder"),
         (element) => {
           cats[element.id] = element.catdispname;
         }
       );
-
       return cats;
     },
     loaded() {
-      if (!this.seriesData) {
+      if (!this.raceData) {
         return false;
       }
       return true;
     },
     paymentOptions() {
       let options = {};
-      _.forEach(this.seriesData.paymentOptions, (element) => {
+      _.forEach(this.raceData.paymentOptions, (element) => {
         options[element.type] = element.name;
       });
       return options;
     },
     paymentCostDets() {
+      if(this.sponsoredCategorySelected){
+        return {
+          cost:dollas(0),
+          regFee:dollas(0),
+          tot: dollas(0)
+          }
+      }
       const payOpt = _.find(
-        this.seriesData?.paymentOptions,
+        this.raceData?.paymentOptions,
         (el) => el.type === this.payment
       );
       if (!payOpt) return null;
       const amt = parseFloat(payOpt.amount);
+      const fees = (payOpt.regFee + payOpt.stripeFee)/ 100;
       let dets = {
         name: payOpt.name,
         cost: dollas(amt),
-        regFee: formatCents(getRegFee(payOpt.amount)),
+        regFee: dollas(fees),
         tot: dollas(
-          parseFloat(payOpt.amount) + parseFloat(getRegFee(payOpt.amount) / 100)
+          parseFloat(payOpt.amount) + parseFloat(fees)
         ),
       };
       return dets;
     },
-    
+    sponsoredCategorySelected(){
+      let cat = _.find(this.raceData.regCategories, {"id": this.formInputData.category});
+      if(cat?.sponsored){
+        return true;
+      }
+      return false;
+    },
+    racerAge(){
+      if(this.birthdate){
+        //calculate racer age on dec 31
+        const dec31 = dayjs();
+        const bday = dayjs(this. birthdate);
+
+        return dec31.year()-bday.year();
+        
+      }
+    }
   },
 };
 </script>
@@ -144,40 +185,41 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <EventDetailsComponent :details="seriesData.eventDetails" />
-        <FormKit
-            type="form"
-            id="race-registration"
-            :form-class="submitted ? 'hide' : 'show'"
-            :errors="formError"
-            :actions="false"
-           @submit="submit"
-          >
-      <div class="row">
-        <div class="col-md-6 order-md-1">
-          <h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Registration Info</span>
-            <span class="badge badge-secondary badge-pill">3</span>
-          </h4>
-          
+      <EventDetailsComponent :details="raceData.eventDetails" />
+      
+      <FormKit
+        type="form"
+        id="race-registration"
+        v-model="formInputData"
+        :form-class="submitted ? 'hide' : 'show'"
+        :errors="formError"
+        :actions="false"
+        @submit="submit"
+      >
+        <div class="row">
+          <div class="col-md-6 order-md-1 mb-3">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+              <h5>Registration Info</h5>
+              <span class="badge badge-secondary badge-pill">3</span>
+            </h4>
+
             <div class="col">
-              <div class="row">
-                <FormKit
-                  type="text"
-                  name="first_name"
-                  label="First name"
-                  help="What is your first name"
-                  validation="required"
-                />
-                <FormKit
-                  type="text"
-                  name="last_name"
-                  label="Last name"
-                  help="What is your last name"
-                  validation="required"
-                />
-              </div>
+              <FormKit
+                type="text"
+                name="first_name"
+                label="First name"
+                help="What is your first name"
+                validation="required"
+              />
+              <FormKit
+                type="text"
+                name="last_name"
+                label="Last name"
+                help="What is your last name"
+                validation="required"
+              />
             </div>
+
             <div class="form-group pt-3">
               <FormKit
                 type="email"
@@ -187,7 +229,23 @@ export default {
                 validation="required|email"
               />
             </div>
-
+            <FormKit
+              type="text"
+              name="sponsor"
+              label="Your Team or Sponsor"
+              help="Enter an optional Team or Sponsor name"
+            />
+            <FormKit
+              type="date"
+              value="2001-01-01"
+              name="birthdate"
+              label="Birthday"
+              v-model="birthdate"
+              help="Enter your birth date (we won't store it)"
+              validation="required|before:2020-01-01"
+              validation-visibility="live"
+            />
+            <!-- <div>Racer Age: {{racerAge}}</div> -->
             <div class="form-group pt-3">
               <FormKit
                 type="select"
@@ -202,63 +260,75 @@ export default {
                 }"
               />
             </div>
-          
-        </div>
-        <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
-          <h4 class="d-flex justify-content-between align-items-center mb-3">
-            <span class="text-muted">Payment Detail</span>
-            <span class="badge badge-secondary badge-pill">3</span>
-          </h4>
-          <fieldset class="list-group mb-3">
-          
-            <div>
-              <FormKit
-                type="radio"
-                name="paytype"
-                label="Payment option"
-                help="How many races would you like to pay for"
-                :options="paymentOptions"
-                validation="required"
-                v-model="payment"
-              />
-            
           </div>
-        </fieldset>
-          <ul class="list-group mb-3 formkit-fieldset">
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
+          <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+              <h5>Payment Detail</h5>
+              <span class="badge badge-secondary badge-pill">3</span>
+            </h4>
+            <fieldset class="list-group mb-3">
               <div>
-                <h6 class="my-0">Race Entry:</h6>
-                <small class="text-muted">{{ paymentCostDets.name }}</small>
+                <FormKit
+                  type="radio"
+                  name="paytype"
+                  label="Payment option"
+                  help="How many races would you like to sign up for"
+                  :options="paymentOptions"
+                  validation="required"
+                  v-model="payment"
+                />
               </div>
-              <span class="text-muted">{{ paymentCostDets.cost }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-              <div>
-                <h6 class="my-0">Online Registration Fee:</h6>
-                <small class="text-muted">Online Registration and Live results</small>
-              </div>
-              <span class="text-muted">{{ paymentCostDets.regFee }}</span>
-            </li>
-            <li class="list-group-item d-flex justify-content-between">
-              <span>Total (USD)</span>
-              <strong>{{ paymentCostDets.tot }}</strong>
-            </li>
-          </ul>
-          <FormKit
-      type="submit"
-      label="Go To Payment"
-        @click="submitForm"
-    />
+            </fieldset>
+            {{sponsoredCategorySelected}}
+            <ul class="list-group mb-3 formkit-fieldset">
+              <li
+                class="
+                  list-group-item
+                  d-flex
+                  justify-content-between
+                  lh-condensed
+                "
+              >
+                <div>
+                  <h6 class="my-0">Race Entry:</h6>
+                  <small class="text-muted">{{ paymentCostDets.name }}</small>
+                </div>
+                <span class="text-muted">{{ paymentCostDets.cost }}</span>
+              </li>
+              <li
+                class="
+                  list-group-item
+                  d-flex
+                  justify-content-between
+                  lh-condensed
+                "
+              >
+                <div>
+                  <h6 class="my-0">Online Processing Fee:</h6>
+                  <small class="text-muted"
+                    >Credit Card and Online Registration</small
+                  >
+                </div>
+                <span class="text-muted">{{ paymentCostDets.regFee }}</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between">
+                <span>Total (USD)</span>
+                <strong>{{ paymentCostDets.tot }}</strong>
+              </li>
+            </ul>
+            <FormKit type="submit" label="Go To Payment" @click="submitForm" />
+          </div>
         </div>
-      </div>
-        </FormKit>
+      </FormKit>
       <div v-if="submitted">
         <h2>Submission successful, redirecting to payment</h2>
       </div>
+      <EventCategoryScheduleComponent :categories="raceData.regCategories" :raceDate="raceData.eventDate"/>
     </div>
+    
     <div v-else>
       <div class="text-center">
-        <h2 class="mt-5">Series not available for registration...</h2>
+        <h2 class="mt-5">Race not available for registration...</h2>
       </div>
     </div>
   </div>

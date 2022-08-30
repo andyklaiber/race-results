@@ -13,11 +13,11 @@ const router = createRouter({
         component: RaceResult
     },
     { 
-      path: '/racereg/:seriesid', 
+      path: '/racereg/:raceid', 
       component: RaceReg
     },
     { 
-      path: '/regconfirmation/:seriesid/:payment_id', 
+      path: '/regconfirmation/:raceid/:payment_id', 
       component: RaceRegConfirm
     },
     { 
