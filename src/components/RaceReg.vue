@@ -77,6 +77,7 @@ export default {
       console.log(data);
       data.birthdate = undefined;
       data.racerAge = this.racerAge;
+      data.paytype = this.payment;
       await request
         .post(
           `/api/payments/start-registration?race=${this.raceData.raceid}`,
@@ -135,6 +136,7 @@ export default {
     },
     paymentCostDets() {
       if(this.sponsoredCategorySelected){
+        this.payment = "season";
         return {
           cost:dollas(0),
           regFee:dollas(0),
@@ -159,11 +161,16 @@ export default {
       return dets;
     },
     sponsoredCategorySelected(){
-      let cat = _.find(this.raceData.regCategories, {"id": this.formInputData.category});
-      if(cat?.sponsored){
+      if(this.selectedCategory?.sponsored){
         return true;
       }
       return false;
+    },
+    selectedCategory(){
+      if(this.formInputData && this.formInputData.category){
+        return _.find(this.raceData?.regCategories, {"id": this.formInputData?.category});
+      }
+      return null;
     },
     racerAge(){
       if(this.birthdate){
@@ -276,10 +283,10 @@ export default {
                   :options="paymentOptions"
                   validation="required"
                   v-model="payment"
+                  v-if="!sponsoredCategorySelected"
                 />
               </div>
             </fieldset>
-            {{sponsoredCategorySelected}}
             <ul class="list-group mb-3 formkit-fieldset">
               <li
                 class="
@@ -316,7 +323,11 @@ export default {
                 <strong>{{ paymentCostDets.tot }}</strong>
               </li>
             </ul>
-            <FormKit type="submit" label="Go To Payment" @click="submitForm" />
+            <div v-if="sponsoredCategorySelected">
+              <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
+            <FormKit type="submit" label="Sign Up!" @click="submitForm" />
+            </div>
+            <FormKit v-if="!sponsoredCategorySelected" type="submit" label="Go To Payment" @click="submitForm" />
           </div>
         </div>
       </FormKit>

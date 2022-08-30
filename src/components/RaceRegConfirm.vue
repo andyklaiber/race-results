@@ -98,6 +98,13 @@ export default {
       return options;
     },
     paymentCostDets() {
+      if(this.sponsoredCategorySelected){
+        return {
+          cost:dollas(0),
+          regFee:dollas(0),
+          tot: dollas(0)
+          }
+      }
       const payOpt = _.find(
         this.raceData?.paymentOptions,
         (el) => el.type === this.payment
@@ -122,12 +129,14 @@ export default {
       return false;
     },
     sponsoredCategorySelected(){
-      let cat = _.find(this.raceData.regCategories, {"id": this.regData.category});
-      if(cat?.sponsored){
+      if(this.selectedCategory?.sponsored){
         return true;
       }
       return false;
     },
+    selectedCategory(){
+      return _.find(this.raceData.regCategories, {"id": this.regData.category});
+    }
   },
 };
 </script>
@@ -239,6 +248,9 @@ export default {
               <strong>{{ paymentCostDets.tot }}</strong>
             </li>
           </ul>
+          <div v-if="sponsoredCategorySelected">
+              <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
+            </div>
         </div>
       </div>
         </FormKit>

@@ -4,6 +4,7 @@ import RaceReg from '../components/RaceReg.vue';
 import RaceRegConfirm from '../components/RaceRegConfirm.vue';
 import SeriesRaceResult from '../components/SeriesResult.vue';
 import TeamComp from '../components/TeamComp.vue'
+import Roster from '../components/Roster.vue';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,10 @@ const router = createRouter({
     { 
       path: '/regconfirmation/:raceid/:payment_id', 
       component: RaceRegConfirm
+    },
+    { 
+        path: '/roster/:raceid', 
+        component: Roster
     },
     { 
         path: '/series/:seriesid', 

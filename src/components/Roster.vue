@@ -1,20 +1,25 @@
 <script>
 import _ from "lodash";
-import ResultRow from "./ResultRow.vue";
-import SeriesNavBar from "./SeriesNavBar.vue";
+import axios from "axios";
+import EventDetailsComponent from "./EventDetailsComponent.vue";
+
+let request;
+if (import.meta.env.DEV) {
+  request = axios.create({ baseURL: "http://localhost:3000" });
+} else {
+  request = axios;
+}
 
 export default {
-  components: {
-    ResultRow,
-    SeriesNavBar,
-  },
+  components: {EventDetailsComponent,},
   data() {
     return {
       categories: {},
       loading: false,
       error: null,
-      formattedStartDate:"",
-      series:null,
+      formattedStartDate: "",
+      series: null,
+      racers:[]
     };
   },
   created() {
@@ -37,17 +42,13 @@ export default {
       this.error = null;
       this.loading = true;
       if (this.$route.params.raceid) {
-        let dataUrl = `/api/races/roster/${this.$route.params.raceid}`;
-        if (import.meta.env.DEV) {
-          dataUrl = "http://localhost:3000" + dataUrl;
-        }
-        fetch(dataUrl)
-          .then((response) => response.json())
-          .then((data) => {
-            this.formattedStartDate = data.raceMeta.formattedStartDate;
+        request(`/api/races/roster/${this.$route.params.raceid}`)
+          .then(({data}) => {
+            this.raceData = data;
             this.series = data.series;
             this.loading = false;
-            this.categories = data.categories;
+            this.categories = data.regCategories;
+            this.racers = data.registeredRacers;
           })
           .catch((err) => {
             console.error(err);
@@ -59,22 +60,22 @@ export default {
   },
   computed: {
     sortedCats() {
-      return _.orderBy(this.categories, "disporder");
+      return _.filter(_.orderBy(this.categories, "disporder"),
+      (cat)=>_.includes(Object.keys(this.racers),cat.id));
     },
   },
 };
 </script>
 
 <template>
-<SeriesNavBar :series="series" />
-    <div v-if="formattedStartDate" class="text-center">
-        <h2 class="mt-5">Race Results - {{formattedStartDate}}</h2>
-    </div>
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
+    <EventDetailsComponent :details="raceData.eventDetails" />
+    <div v-if="Object.keys(racers).length">
+      <h4>Registered Racers for {{this.raceData.racename}} on {{this.raceData.eventDate}}</h4>
       <div class="container-fluid">
-        <div v-for="(cat, key) in sortedCats" :key="cat.id" class="mt-5">
+        <div v-for="(cat) in sortedCats" :key="cat.id" class="mt-5">
           <h3 :id="cat.id">{{ cat.catdispname }}</h3>
           <table class="table table-striped table-hover">
             <thead>
@@ -88,14 +89,13 @@ export default {
                  <th>
                   Team/Sponsor
                 </th>
-                 <th>
-                  Category
-                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(racer, idx) in cat.results" :key="idx">
-                
+              <tr v-for="(racer, idx) in racers[cat.id]" :key="idx">
+                <td>{{racer.first_name}}</td>
+                <td>{{racer.last_name}}</td>
+                <td>{{racer.sponsor}}</td>
               </tr>
             </tbody>
           </table>
@@ -114,8 +114,7 @@ export default {
 </template>
 
 <style>
-
 table.table {
---bs-table-hover-bg: #76c8ff;
+  --bs-table-hover-bg: #76c8ff;
 }
 </style>
