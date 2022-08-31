@@ -3,9 +3,7 @@ import _ from "lodash";
 import axios from "axios";
 import EventDetailsComponent from "./EventDetailsComponent.vue";
 import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
-import * as dayjs from "dayjs";
-import * as duration from 'dayjs/plugin/duration';
-dayjs.extend(duration)
+import dayjs from 'dayjs/esm/index.js';
 
 
 let request;

@@ -2,7 +2,7 @@
 import _ from "lodash";
 import axios from "axios";
 import EventDetailsComponent from "./EventDetailsComponent.vue";
-import * as dayjs from "dayjs";
+import dayjs from 'dayjs/esm/index.js'
 
 let request;
 if (import.meta.env.DEV) {

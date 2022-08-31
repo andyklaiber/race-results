@@ -1,6 +1,6 @@
 <script>
 import _ from "lodash";
-import * as dayjs from "dayjs";
+import dayjs from 'dayjs/esm/index.js'
 
 export default {
   props: ["categories", "raceDate"],
