@@ -1,5 +1,5 @@
 <script>
-
+import { RouterLink } from "vue-router";
 
 export default {
   props: ["details"],
@@ -7,7 +7,11 @@ export default {
     return {
     };
   },
-  computed: {},
+  computed: {
+    isRosterPage(){
+      return this.$route.path.includes('/roster/')
+    }
+  },
 };
 </script>
 
@@ -22,7 +26,12 @@ export default {
         <p class="lead">{{details.tagline}}</p>
         <div v-if="details.homepageUrl" class="d-grid gap-2 d-md-flex justify-content-md-start mb-4 mb-lg-3">
           <a :href="details.homepageUrl" >Event Homepage</a>
+          
         </div>
+        <RouterLink
+        v-if="!isRosterPage"
+        :to="`/roster/${$route.params.raceid}`"
+        >See who is signed up</RouterLink>
       </div>
       
     </div>

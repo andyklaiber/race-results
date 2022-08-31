@@ -9,7 +9,7 @@ export default {
   },
   methods: {
     formatStartTime(startTime) {
-      return dayjs(`${this.raceDate} ${startTime}`).format("ddd, MMM D, h:mm A");
+      return dayjs(`${dayjs(this.raceDate).format("YYYY-MM-DD")} ${startTime}`).format("ddd, MMM D, h:mm A");
     },
   },
   computed: {

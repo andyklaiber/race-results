@@ -2,6 +2,7 @@
 import _ from "lodash";
 import axios from "axios";
 import EventDetailsComponent from "./EventDetailsComponent.vue";
+import * as dayjs from "dayjs";
 
 let request;
 if (import.meta.env.DEV) {
@@ -51,6 +52,11 @@ export default {
             this.racers = data.registeredRacers;
           })
           .catch((err) => {
+            this.loading=false;
+            if(err.response?.status === 404){
+              this.error = "Race not found"
+              return;
+            }
             console.error(err);
             this.categories = {};
             this.error = err.toString();
@@ -63,6 +69,9 @@ export default {
       return _.filter(_.orderBy(this.categories, "disporder"),
       (cat)=>_.includes(Object.keys(this.racers),cat.id));
     },
+    raceDate(){
+      return dayjs(this.raceData.eventDate).format("ddd, MMM D");
+    }
   },
 };
 </script>
@@ -71,9 +80,10 @@ export default {
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
+    <div v-else>
     <EventDetailsComponent :details="raceData.eventDetails" />
     <div v-if="Object.keys(racers).length">
-      <h4>Registered Racers for {{this.raceData.racename}} on {{this.raceData.eventDate}}</h4>
+      <h4>Registered Racers for {{this.raceData.displayName}} on {{raceDate}}</h4>
       <div class="container-fluid">
         <div v-for="(cat) in sortedCats" :key="cat.id" class="mt-5">
           <h3 :id="cat.id">{{ cat.catdispname }}</h3>
@@ -109,6 +119,7 @@ export default {
       <div class="text-center">
         <h2 class="mt-5">No registrations yet...</h2>
       </div>
+    </div>
     </div>
   </div>
 </template>
