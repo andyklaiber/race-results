@@ -30,7 +30,7 @@ export default {
 
     <div v-for="(timeGroup, time) in groupByStartTimes" :key="time" class="col">
         <h6 class="">{{formatStartTime(time)}}:</h6>
-        <div class="row g-2 px-4 gx-4">
+        <div class="row g-2 px-4 gx-4 border bg-light">
           <div v-for="category in groupByStartTimes[time]" :key="category.id" class="col-auto">{{category.catdispname}}</div>
         </div>
   </div>
