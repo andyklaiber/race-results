@@ -254,7 +254,7 @@ export default {
             <div class="form-group pt-3">
               <FormKit
                 type="select"
-                label="Select your Race Category:"
+                label="Race Category:"
                 placeholder="Select a category"
                 name="category"
                 :options="sortedCats"
@@ -321,13 +321,13 @@ export default {
                 <strong>{{ paymentCostDets.tot }}</strong>
               </li>
             </ul>
+          </div>
+        </div>
             <div v-if="sponsoredCategorySelected">
               <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
             <FormKit type="submit" label="Sign Up!" @click="submitForm" />
             </div>
             <FormKit v-if="!sponsoredCategorySelected" type="submit" label="Go To Payment" @click="submitForm" />
-          </div>
-        </div>
       </FormKit>
       <div v-if="submitted">
         <h2>Submission successful, redirecting to payment</h2>
