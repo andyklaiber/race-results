@@ -48,27 +48,22 @@ export default {
         request(`/api/races/${this.$route.params.raceid}`)
           .then((response) => {
             this.raceData = response.data;
-            this.loading = false;
+            return request(
+                `/api/payments/status?payment_id=${this.$route.params.payment_id}`
+              )
+                .then((response) => {
+                  this.loading = false;
+                  this.payStatus = response.data.status;
+                  this.paymentUrl = response.data.stripePayment?.url;
+                  this.regData = response.data.regData;
+                  this.payment = response.data.regData.paytype; 
+                })
           })
           .catch((err) => {
             this.error = "Failed to load race " + this.$route.params.raceid;
             console.error(err);
           });
-        request(
-          `/api/payments/status?payment_id=${this.$route.params.payment_id}`
-        )
-          .then((response) => {
-            this.loading = false;
-            this.payStatus = response.data.status;
-            this.paymentUrl = response.data.stripePayment?.url;
-            this.regData = response.data.regData;
-            this.payment = response.data.regData.paytype;
-            const node = this.$formkit.get('race-registration')
-            node.input(this.regData);
-          })
-          .catch((err) => {
-            console.error(err);
-          });
+        
       }
     },
   },
@@ -153,6 +148,7 @@ export default {
             id="race-registration"
             disabled
             :actions="false"
+            v-model='regData'
           >
       <div class="row">
         
