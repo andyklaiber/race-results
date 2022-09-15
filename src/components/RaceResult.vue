@@ -2,6 +2,7 @@
 import _ from "lodash";
 import ResultRow from "./ResultRow.vue";
 import SeriesNavBar from "./SeriesNavBar.vue";
+import request from "../lib/ApiClient";
 
 export default {
   components: {
@@ -38,12 +39,8 @@ export default {
       this.loading = true;
       if (this.$route.params.raceid) {
         let dataUrl = `/api/races/results/${this.$route.params.raceid}`;
-        if (import.meta.env.DEV) {
-          dataUrl = "http://localhost:3000" + dataUrl;
-        }
-        fetch(dataUrl)
-          .then((response) => response.json())
-          .then((data) => {
+        request(dataUrl)
+          .then(({data}) => {
             this.formattedStartDate = data.raceMeta.formattedStartDate;
             this.series = data.series;
             this.loading = false;

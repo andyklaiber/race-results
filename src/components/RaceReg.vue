@@ -1,24 +1,10 @@
 <script>
 import _ from "lodash";
-import axios from "axios";
+import request from "../lib/ApiClient";
 import EventDetailsComponent from "./EventDetailsComponent.vue";
 import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
 import dayjs from 'dayjs/esm/index.js';
 
-
-let request;
-if (import.meta.env.DEV) {
-  request = axios.create({ baseURL: "http://localhost:3000" });
-} else {
-  request = axios;
-}
-
-const getRegFee = (amt) => 100; //+ amt * 100 * 0.04;
-const dollas = (amt) =>
-  amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
-const formatCents = (cents) => {
-  return dollas(cents / 100);
-};
 export default {
   components: {
     EventDetailsComponent,
@@ -35,6 +21,7 @@ export default {
       payment: "",
       birthdate: "2006-01-01",
       submitted: false,
+      couponError: [],
     };
   },
   created() {
@@ -49,12 +36,14 @@ export default {
     );
   },
   methods: {
+    dollas(amt) {
+      return amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
+    },
     fetchData() {
       this.error = null;
       this.loading = true;
       if (this.$route.params.raceid) {
-        let dataUrl = `/api/races/${this.$route.params.raceid}`;
-        request(dataUrl)
+        request(`/api/races/${this.$route.params.raceid}`)
           .then((response) => {
             this.raceData = response.data;
             this.loading = false;
@@ -65,6 +54,29 @@ export default {
             this.error = err.toString();
             console.error(err);
           });
+      }
+    },
+    getCouponPricing(couponCode){
+        request.post(`/api/payments/pricing`,{
+          raceid: `${this.$route.params.raceid}`,
+          couponCode
+        })
+          .then(({data}) => {
+            this.raceData.paymentOptions = data.paymentOptions;
+            
+            if(!data.validCoupon){
+                this.couponError = ["Invalid Coupon Code"];
+              }else{
+                this.couponError = [];
+              }
+            })
+        
+    },
+    onCouponChange(data){
+      if(data){
+        this.getCouponPricing(data);
+      }else{
+        this.couponError = [];
       }
     },
     submitForm(clickEvent) {
@@ -89,7 +101,7 @@ export default {
               setTimeout(() => {
                 window.location.href = response.data;
                 resolve();
-              }, 2500)
+              }, 2000)
             );
           }
         })
@@ -136,9 +148,9 @@ export default {
       if(this.sponsoredCategorySelected){
         this.payment = "season";
         return {
-          cost:dollas(0),
-          regFee:dollas(0),
-          tot: dollas(0)
+          cost:this.dollas(0),
+          regFee:this.dollas(0),
+          tot: this.dollas(0)
           }
       }
       const payOpt = _.find(
@@ -147,15 +159,20 @@ export default {
       );
       if (!payOpt) return null;
       const amt = parseFloat(payOpt.amount);
-      const fees = (payOpt.regFee + payOpt.stripeFee)/ 100;
-      let dets = {
+      let fees = 0;
+      if(amt > 0){
+        fees = (payOpt.regFee + payOpt.stripeFee)/ 100;
+      }
+      const dets = {}
+      _.assign(dets, payOpt,{
         name: payOpt.name,
-        cost: dollas(amt),
-        regFee: dollas(fees),
-        tot: dollas(
+        cost: this.dollas(amt),
+        regFee: this.dollas(fees),
+        tot: this.dollas(
           parseFloat(payOpt.amount) + parseFloat(fees)
         ),
-      };
+
+      });
       return dets;
     },
     sponsoredCategorySelected(){
@@ -274,10 +291,23 @@ export default {
             <fieldset class="list-group mb-3">
               <div>
                 <FormKit
+                  type="text"
+                  name="coupon"
+                  label="Coupon Code"
+                  help=""
+                  :delay="1500"
+                  @input="onCouponChange"
+                  v-if="raceData.couponsEnabled"
+                  :errors="couponError"
+                />
+              </div>
+            </fieldset>
+            <fieldset class="list-group mb-3">
+              <div>
+                <FormKit
                   type="radio"
                   name="paytype"
                   label="Payment option"
-                  help="How many races would you like to sign up for"
                   :options="paymentOptions"
                   validation="required"
                   v-model="payment"
@@ -298,7 +328,10 @@ export default {
                   <h6 class="my-0">Race Entry:</h6>
                   <small class="text-muted">{{ paymentCostDets.name }}</small>
                 </div>
-                <span class="text-muted">{{ paymentCostDets.cost }}</span>
+                <div>
+                <span v-if="paymentCostDets.discounted" class="mx-3 text-decoration-line-through text-danger">{{ dollas(paymentCostDets.orig) }}</span>
+                <span :class="{'text-success':paymentCostDets.discounted}">{{ paymentCostDets.cost }}</span>
+                </div>
               </li>
               <li
                 class="

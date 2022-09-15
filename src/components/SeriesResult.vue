@@ -1,5 +1,6 @@
 <script>
 import _ from "lodash";
+import request from "../lib/ApiClient";
 import SeriesResultRow from "./SeriesResultRow.vue";
 import SeriesNavBar from "./SeriesNavBar.vue";
 
@@ -41,12 +42,8 @@ export default {
       this.error = null;
       this.loading = true;
       let dataUrl = `/api/series/results/${this.$route.params.seriesid}`;
-      if (import.meta.env.DEV) {
-        dataUrl = "http://localhost:3000" + dataUrl;
-      }
-      fetch(dataUrl)
-        .then((response) => response.json())
-        .then((data) => {
+      request(dataUrl)
+        .then(({data}) => {
           this.loading = false;
           this.categories = data.categories;
           this.displayName = data.displayName;

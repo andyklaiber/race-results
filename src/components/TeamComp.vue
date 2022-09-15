@@ -1,5 +1,6 @@
 <script>
 import _ from "lodash";
+import request from "../lib/ApiClient";
 import ResultRow from "./TeamCompDetailRow.vue";
 import SeriesNavBar from "./SeriesNavBar.vue";
 
@@ -39,12 +40,8 @@ export default {
       this.error = null;
       this.loading = true;
         let dataUrl = `/api/team-comp?series=${this.$route.params.seriesid}`;
-        if (import.meta.env.DEV) {
-          dataUrl = "http://localhost:3000" + dataUrl;
-        }
-        fetch(dataUrl)
-          .then((response) => response.json())
-          .then((data) => {
+        request(dataUrl)
+          .then(({data}) => {
             this.loading = false;
             this.series = this.$route.params.seriesid;
             this.teamResults = data;

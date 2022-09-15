@@ -1,15 +1,8 @@
 <script>
 import _ from "lodash";
-import axios from "axios";
+import request from "../lib/ApiClient";
 import EventDetailsComponent from "./EventDetailsComponent.vue";
 import dayjs from 'dayjs/esm/index.js'
-
-let request;
-if (import.meta.env.DEV) {
-  request = axios.create({ baseURL: "http://localhost:3000" });
-} else {
-  request = axios;
-}
 
 export default {
   components: {EventDetailsComponent,},
@@ -63,6 +56,9 @@ export default {
           });
       }
     },
+    replacePlusSymbol(text){
+      return text.replace('+', 'Plus');
+    }
   },
   computed: {
     sortedCats() {
@@ -80,13 +76,22 @@ export default {
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
-    <div v-else>
+    <div v-else id="top">
     <EventDetailsComponent :details="raceData.eventDetails" />
     <div v-if="Object.keys(racers).length">
-      <h4>Registered Racers for {{this.raceData.displayName}} on {{raceDate}}</h4>
+      <h4>{{raceData.count}} Registered Racers for {{raceData.displayName}} on {{raceDate}}</h4>
+      <div class="container text-center mt-5">
+       <ul class="list-inline">
+          <template v-for="(cat) in sortedCats" :key="cat.id">
+            <li class="list-inline-item  mx-2">
+              <a role="button" @click="scrollMeTo(replacePlusSymbol(cat.id))" class="link-primary">{{ cat.catdispname }}</a>
+            </li>
+          </template>
+        </ul>
+        </div>
       <div class="container-fluid">
         <div v-for="(cat) in sortedCats" :key="cat.id" class="mt-5">
-          <h3 :id="cat.id">{{ cat.catdispname }}</h3>
+          <h3 :id="replacePlusSymbol(cat.id)">{{ cat.catdispname }}</h3>
           <table class="table table-striped table-hover">
             <thead>
               <tr>

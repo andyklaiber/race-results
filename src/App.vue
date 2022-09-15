@@ -1,6 +1,5 @@
 <script>
 import _ from 'lodash';
-import NavBar from './components/NavBar.vue'
 import { RouterView } from 'vue-router'
 
 let dataUrl = '/api/races/'
@@ -11,7 +10,7 @@ if(import.meta.env.DEV){
 export default {
   components: {
     RouterView,
-    NavBar
+    
   },
   data() {
     return {
@@ -31,9 +30,9 @@ export default {
     //     })
 	},
   computed : {
-      raceMeta() {
-          return this.races.find((obj)=>obj.raceid === this.$route.params.raceid);
-      }
+      // raceMeta() {
+      //     return this.races.find((obj)=>obj.raceid === this.$route.params.raceid);
+      // }
   }
 }
 </script>

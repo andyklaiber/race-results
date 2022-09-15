@@ -19,12 +19,15 @@ export default {
         "startTime"
       );
     },
+    hasStartTimes(){
+      return !!_.some(this.categories, 'startTime')
+    }
   },
 };
 </script>
 
 <template>
-  <div v-if="this.categories.length">
+  <div v-if="categories.length && hasStartTimes">
     <h5>Race Start Times:</h5>
   <div class="row gap-5 mb-3">
 

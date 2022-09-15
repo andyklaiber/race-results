@@ -1,7 +1,7 @@
 <script>
 import dropdown from "bootstrap/js/dist/dropdown";
 import { RouterLink } from "vue-router";
-
+import request from "../lib/ApiClient";
 
 
 export default {
@@ -18,12 +18,8 @@ export default {
         return;
       }
     let dataUrl = `/api/series/${this.series}/races`
-if(import.meta.env.DEV){
-    dataUrl = "http://localhost:3000"+dataUrl;
-}
-    fetch(dataUrl)
-      .then((response) => response.json())
-      .then((data) => {
+    request(dataUrl)
+      .then(({data}) => {
         this.seriesData = data;
       });
   })
