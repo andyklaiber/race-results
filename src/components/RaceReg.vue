@@ -19,7 +19,7 @@ export default {
       formInputData: {},
       raceData:{},
       payment: "",
-      birthdate: "2006-01-01",
+      birthdate: "",
       submitted: false,
       couponError: [],
     };
@@ -113,6 +113,9 @@ export default {
   },
   computed: {
     sortedCats() {
+      if(!this.racerAge && this.formInputData.category == undefined){
+        return [];
+      }
       const filtered = _.filter(this.raceData.regCategories,(cat)=>{
         if(cat.minAge && this.racerAge < cat.minAge){
           return false
@@ -263,7 +266,7 @@ export default {
               name="birthdate"
               label="Birthday"
               v-model="birthdate"
-              help="Enter your birth date (we won't store it)"
+              help="Enter your birthday to see Race Categories"
               validation="required|before:2020-01-01"
               validation-visibility="live"
             />
@@ -271,6 +274,7 @@ export default {
             <div class="form-group pt-3">
               <FormKit
                 type="select"
+                id="category"
                 label="Race Category:"
                 placeholder="Select a category"
                 name="category"

@@ -13,7 +13,9 @@ export default {
       error: null,
       formattedStartDate: "",
       series: null,
-      racers:[]
+      stageFilter: 'all',
+      racers:[],
+      raceData:{},
     };
   },
   created() {
@@ -58,12 +60,42 @@ export default {
     },
     replacePlusSymbol(text){
       return text.replace('+', 'Plus');
-    }
+    },
+    payTypeToStage(paytype){
+      const payOpt = _.find(this.raceData.paymentOptions, {type: paytype});
+      if(payOpt){
+        return payOpt.name;
+      }
+      return '';
+    },
   },
   computed: {
+    showPaytype() {
+      return !!this.raceData?.showPaytypeOnRoster
+    },
+    filterOptions(){
+      let options = { "all":"All Stages"};
+      _.forEach(this.raceData.paymentOptions,
+        (element) => {
+          options[element.type] = element.name;
+        }
+      );
+
+      return options;
+    },
+    filteredRacers(){
+      if(this.showPaytype && this.stageFilter !== 'all'){
+        return _.filter(this.racers, {paytype:this.stageFilter} )
+      }else{
+        return this.racers
+      }
+    },
+    groupedRacers(){
+      return _.groupBy(this.filteredRacers, "category");
+    },
     sortedCats() {
       return _.filter(_.orderBy(this.categories, "disporder"),
-      (cat)=>_.includes(Object.keys(this.racers),cat.id));
+      (cat)=>_.includes(Object.keys(this.groupedRacers),cat.id));
     },
     raceDate(){
       return dayjs(this.raceData.eventDate).format("ddd, MMM D");
@@ -79,7 +111,21 @@ export default {
     <div v-else id="top">
     <EventDetailsComponent :details="raceData.eventDetails" />
     <div v-if="Object.keys(racers).length">
-      <h4>{{raceData.count}} Registered Racers for {{raceData.displayName}} on {{raceDate}}</h4>
+      <div class="row">
+      <div class="col-md-6">
+        <h4>{{raceData.count}} Registered for {{raceData.displayName}} on {{raceDate}}</h4>
+      </div>
+      <div v-if="showPaytype" class="col-md-6">
+        <FormKit
+                type="select"
+                label="Show registrations for:"
+                name="stageFilter"
+                v-model="stageFilter"
+                default="all"
+                :options="filterOptions"
+              />
+      </div>
+    </div>
       <div class="container text-center mt-5">
        <ul class="list-inline">
           <template v-for="(cat) in sortedCats" :key="cat.id">
@@ -104,13 +150,17 @@ export default {
                  <th>
                   Team/Sponsor
                 </th>
+                <th v-if="showPaytype">
+                  Stages
+                </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(racer, idx) in racers[cat.id]" :key="idx">
+              <tr v-for="(racer, idx) in groupedRacers[cat.id]" :key="idx">
                 <td>{{racer.first_name}}</td>
                 <td>{{racer.last_name}}</td>
                 <td>{{racer.sponsor}}</td>
+                <td  v-if="showPaytype">{{payTypeToStage(racer.paytype)}}</td>
               </tr>
             </tbody>
           </table>

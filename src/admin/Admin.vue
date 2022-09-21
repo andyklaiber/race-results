@@ -1,11 +1,12 @@
 <script>
 import _ from 'lodash';
 import { RouterView } from 'vue-router'
+import Manage from '../Manage.vue';
 
 export default {
   components: {
     RouterView,
-    
+    Manage,
   },
   data() {
     return {
@@ -22,6 +23,7 @@ export default {
 </script>
 
 <template>
+    <Manage></Manage>
     <RouterView />
 </template>
 
