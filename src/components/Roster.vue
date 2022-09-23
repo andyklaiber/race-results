@@ -112,7 +112,7 @@ export default {
     <EventDetailsComponent :details="raceData.eventDetails" />
     <div v-if="Object.keys(racers).length">
       <div class="row">
-      <div class="col-md-6">
+      <div :class="{'col-md-6':showPaytype}">
         <h4>{{raceData.count}} Registered for {{raceData.displayName}} on {{raceDate}}</h4>
       </div>
       <div v-if="showPaytype" class="col-md-6">

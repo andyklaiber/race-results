@@ -9,7 +9,7 @@ export default {
   },
   methods: {
     formatStartTime(startTime) {
-      return dayjs(`${dayjs(this.raceDate).format("YYYY-MM-DD")} ${startTime}`).format("ddd, MMM D, h:mm A");
+      return dayjs(`${dayjs(this.raceDate).format("YYYY-MM-DD")} ${startTime}`).format("h:mm A");
     },
   },
   computed: {
@@ -31,10 +31,10 @@ export default {
     <h5>Race Start Times:</h5>
   <div class="row gap-5 mb-3">
 
-    <div v-for="(timeGroup, time) in groupByStartTimes" :key="time" class="col">
+    <div v-for="(timeGroup, time) in groupByStartTimes" :key="time" class="col-md-5">
         <h6 class="">{{formatStartTime(time)}}:</h6>
         <div class="row g-2 px-4 gx-4 border bg-light">
-          <div v-for="category in groupByStartTimes[time]" :key="category.id" class="col-auto">{{category.catdispname}}</div>
+          <div v-for="category in groupByStartTimes[time]" :key="category.id" class="col-lg text-nowrap my-1">{{category.catdispname}}</div>
         </div>
   </div>
   </div>

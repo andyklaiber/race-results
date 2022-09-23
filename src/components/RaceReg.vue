@@ -178,6 +178,15 @@ export default {
       });
       return dets;
     },
+    showPaymentOption(){
+      if(this.sponsoredCategorySelected){
+        return false;
+      }
+      if(this.raceData.paymentOptions && this.raceData.paymentOptions.length<2){
+        return false;
+      }
+      return true;      
+    },
     sponsoredCategorySelected(){
       if(this.selectedCategory?.sponsored){
         return true;
@@ -315,7 +324,7 @@ export default {
                   :options="paymentOptions"
                   validation="required"
                   v-model="payment"
-                  v-if="!sponsoredCategorySelected"
+                  v-if="showPaymentOption"
                 />
               </div>
             </fieldset>
