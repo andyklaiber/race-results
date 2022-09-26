@@ -9,7 +9,7 @@ import '@/scss/styles.scss'
 import * as bootstrap from 'bootstrap'
 import '@formkit/themes/genesis'
 
-const app = createApp(App)
+const app = createApp(App);
 app.use(plugin,defaultConfig);
 app.use(router);
 app.mount('#app');

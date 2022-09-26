@@ -2,7 +2,10 @@ import axios from 'axios';
 
 let request;
 if (import.meta.env.DEV) {
-  request = axios.create({ baseURL: "http://localhost:3000" });
+  request = axios.create({ 
+    withCredentials: true,
+    baseURL: "http://localhost:3000" 
+  });
 } else {
   request = axios;
 }
