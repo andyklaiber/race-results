@@ -3,6 +3,7 @@ import _ from 'lodash';
 import request from "@/lib/ApiClient";
 
 export default {
+    props:['message'],
     data() {
         return {
             errorMsg: [''],
@@ -12,7 +13,7 @@ export default {
     methods: {
         login(event) {
             const { email, password } = event;
-            console.log(event);
+            //console.log(event);
             return request.post(`/api/auth/login`, { email, password })
                 .then((response) => {
                     console.log(response);
@@ -33,8 +34,8 @@ export default {
     
 <template>
     <main class="form-signin w-100 m-auto">
-
-        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <h3 v-if="message">{{message}}</h3>
+        <h1 class="h3 mb-3 fw-normal">Sign in:</h1>
         <FormKit type="form" @submit="login" :errors="errorMsg">
             <FormKit type="email" name="email" label="Email address" validation="" validation-visibility="live" />
             <FormKit type="password" name="password" label="Password" validation="required" />

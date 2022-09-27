@@ -43,6 +43,9 @@ export default {
           });
       }
     },
+    downloadCsv(raceid){
+
+    }
   },
   computed: {
 
@@ -76,7 +79,7 @@ export default {
           "
         >
           
-          <div class="btn-toolbar mb-2 mb-md-0">
+          <!-- <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group me-2">
               <button type="button" class="btn btn-sm btn-outline-secondary">
                 Share
@@ -92,7 +95,7 @@ export default {
               <span data-feather="calendar" class="align-text-bottom"></span>
               This week
             </button>
-          </div>
+          </div> -->
         </div>
 
         <h2>Section title</h2>
@@ -106,9 +109,10 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(race, idx) in raceData" :key="idx">
-                <td><RouterLink :to="{ name: 'view-race', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
+                <td><RouterLink :to="{ name: 'edit-race', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
                 <td>{{race.series}}</td>
                 <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
+                <td><div class="btn btn-sm btn-secondary" @click="downloadCsv(race.raceid)">export</div></td>
               </tr>
 
             </tbody>

@@ -3,6 +3,7 @@ import dropdown from "bootstrap/js/dist/dropdown";
 import { RouterLink, RouterView } from "vue-router";
 
 export default {
+  emits: ['logout'],
   components: {
     RouterView
   },
@@ -12,13 +13,14 @@ export default {
     };
   },
   computed: {},
+  
 };
 </script>
 
 <template>
   <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">Signup.bike</a>
+      <a class="navbar-brand" href="/">Signup.bike Admin</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample04"
         aria-controls="navbarsExample04" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -48,9 +50,7 @@ export default {
             </ul>
           </li> -->
         </ul>
-        <form role="search">
-          <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-        </form>
+        <button type="button" class="btn btn-secondary" @click="$emit('logout')">Logout</button>
       </div>
     </div>
   </nav>

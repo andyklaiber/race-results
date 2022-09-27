@@ -12,6 +12,7 @@ export default {
   data() {
     return {
       showLogin: false,
+      loginText: '',
     }
   },
   created() {
@@ -44,8 +45,16 @@ export default {
             console.error(err);
           });
       }
-    }
-  }
+    },
+    logout(){
+      return request.get(`/api/auth/logout`)
+          .then((response) => {
+            console.log(response);
+            this.showLogin = true;
+            this.loginText = 'You are logged out.'
+          });
+    }  
+}
 }
 </script>
 
@@ -53,11 +62,11 @@ export default {
   <div v-if="showLogin">
     <div class="container">
 
-      <LoginComponent @login="hideLogin"></LoginComponent>
+      <LoginComponent @login="hideLogin" :message="loginText"></LoginComponent>
     </div>
   </div>
   <div v-else>
-    <Manage></Manage>
+    <Manage @logout="logout"></Manage>
 
   </div>
 

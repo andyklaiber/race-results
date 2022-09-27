@@ -1,7 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import PaymentsComponent from '@/admin/components/PaymentsComponent.vue';
+import EditRacersComponent from '@/admin/components/EditRacersComponent.vue';
 import EditRaceComponent from '@/admin/components/EditRaceComponent.vue';
-import RaceComponent from '@/admin/components/RaceComponent.vue';
+import RaceLayoutComponent from '@/admin/components/RaceLayoutComponent.vue';
 import RacesComponent from '@/admin/components/RacesComponent.vue';
 
 const router = createRouter({
@@ -25,10 +26,11 @@ const router = createRouter({
       // UserPosts will be rendered inside User's <router-view>
       // when /user/:id/posts is matched
       path: '/race/:raceid',
-      component: RaceComponent,
+      component: RaceLayoutComponent,
       name: "view-race",
       children:[
-        { path: 'edit', component: EditRaceComponent, name: 'edit-race' },
+        { path: '', component: EditRaceComponent, name: 'edit-race' },
+        { path: 'racers', component: EditRacersComponent, name: 'edit-racers' },
         // when /race/:raceid/roster is matched
         // { path: 'roster', component: RaceRoster },
         // // when /race/:raceid/pending is matched

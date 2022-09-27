@@ -220,7 +220,6 @@ export default {
 
     <div v-if="loaded">
       <EventDetailsComponent :details="raceData.eventDetails" />
-      
       <FormKit
         type="form"
         id="race-registration"
