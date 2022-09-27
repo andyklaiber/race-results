@@ -44,7 +44,15 @@ export default {
       }
     },
     downloadCsv(raceid){
-
+      return request(`/api/racers/race/${raceid}/export`)
+          .then((response) => {
+            console.log(response.data);
+            
+            
+          })
+          .catch((err) => {
+            console.error(err);
+          });
     }
   },
   computed: {
@@ -112,7 +120,7 @@ export default {
                 <td><RouterLink :to="{ name: 'edit-race', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
                 <td>{{race.series}}</td>
                 <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
-                <td><div class="btn btn-sm btn-secondary" @click="downloadCsv(race.raceid)">export</div></td>
+                <td><a class="btn btn-sm btn-secondary" :href="`/api/racers/race/${race.raceid}/export`">export</a></td>
               </tr>
 
             </tbody>
