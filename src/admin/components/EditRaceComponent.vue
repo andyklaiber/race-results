@@ -41,7 +41,7 @@ export default {
       this.error = null;
       this.loading = true;
       if (this.$route.params.raceid) {
-        request(`/api/races/${this.$route.params.raceid}`)
+        return request(`/api/races/${this.$route.params.raceid}`)
           .then((response) => {
             this.raceData = response.data;
             this.loading = false;
@@ -58,6 +58,22 @@ export default {
     },
     editPaytypes() {
 
+    },
+    async saveRaceData(formData) {
+      await request.patch(
+        `/api/races/${this.$route.params.raceid}`,
+        this.formInputData
+      ).then((response) => {
+        if (response.data) {
+          
+          console.log(response.data);
+          return this.fetchData()
+        }
+      })
+        .catch((error) => {
+          this.formError = ["Error submitting request"];
+          console.log(error);
+        });
     }
   },
   computed: {
@@ -99,8 +115,15 @@ export default {
 
 
       <div v-if="true">
-        <div class="col-md">
-          <FormKit type="form" id="race-settings" :actions="false" v-model="formInputData">
+        <div class="my-3">
+            <a :href="`/#/register/${raceData.raceid}`">View Reg Form</a>
+          </div>
+          <div class="my-3">
+            <a :href="`/#/roster/${raceData.raceid}`">View Roster</a>
+          </div>
+          <div class="row">
+        <div class="col-md-6">
+          <FormKit type="form" :errors="formError" id="race-settings" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
             <FormKit :value="raceData?.displayName" type="text" name="displayName" label="Event Name" />
             <FormKit :value="eventDate" type="datetime-local" name="eventDate" label="Date" />
             <FormKit :value="raceData?.series" type="text" name="series" label="Event Series Name" />
@@ -119,10 +142,15 @@ export default {
             <FormKit :value="raceData?.showPaytypeOnRoster" type="checkbox"
               label="Show Payment Type as stages on roster" name="showPaytypeOnRoster" />
             <FormKit :value="raceData.isTestData" type="checkbox" label="Use Test payment integrations"
-              name="testData" />
+              name="isTestData" />
             <FormKit :value="raceData.couponsEnabled" type="checkbox" label="Enable Coupons" name="couponsEnabled" />
-            <FormKit :value="raceData?.stripeMeta?.accountid" type="text" name="displayName" label="Stripe Integration Account ID" />
-            <div class="col-md-6 mb-3">
+            <FormKit type="group" name="stripeMeta">
+              <FormKit :value="raceData?.stripeMeta?.accountId" type="text" name="accountId" label="Stripe Integration Account ID" />
+            </FormKit>
+          </FormKit>
+        </div>
+        <div class="col-md-6">
+            <div class="col-md mb-3">
               <h5>Categories</h5>
               <div class="row g-2 px-4 gx-4 border bg-light">
                 <div v-for="cat in sortedCats" class="my-1">
@@ -133,7 +161,7 @@ export default {
             <FormKit type="button" @click="editCategories">
               Edit Categories
             </FormKit>
-            <div class="col-md-6 mb-3">
+            <div class="col-md mb-3">
               <h5>Payment Options</h5>
               <div class="row g-2 px-4 gx-4 border bg-light">
                 <div v-for="payOpt in raceData.paymentOptions" class="my-1">
@@ -145,16 +173,12 @@ export default {
             <FormKit type="button" @click="editPaytypes">
                 Edit Paytypes
               </FormKit>
-          </FormKit>
-          <div class="my-3">
-            <a :href="`/#/register/${raceData.raceid}`">View Reg Form</a>
-          </div>
-          <div class="my-3">
-            <a :href="`/#/roster/${raceData.raceid}`">View Roster</a>
-          </div>
+          
+          
         </div>
-        <pre>{{raceData}}
-      </pre>
+      </div>
+        <!-- <pre>{{raceData}}
+      </pre> -->
       </div>
       <div v-else>
         <div class="text-center">

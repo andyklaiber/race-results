@@ -9,16 +9,15 @@ export default {
         "categories",
         "payments",
     ],
-    emits:['saved'],
+    emits: ['saved'],
     data() {
         return {
             birthdate: "",
             formError: [],
             submitted: false,
-
         }
     },
-    updated(){
+    updated() {
         let bibNode = document.querySelector('#bibNumber');
         bibNode.focus();
     },
@@ -50,33 +49,63 @@ export default {
                 return dec31.year() - bday.year();
 
             }
+        },
+        unpaidReg() {
+            return this.racerData.status == 'unpaid';
+        },
+        paymentAmount() {
+            if (this.racerData.paytype === 'cash') {
+                let payOpt = _.find(this.payments, { type: 'single' })
+                return payOpt.amount;
+            }
         }
-
     },
     methods: {
-        async submitHandler() {
-            await request
-                .patch(
-                    `/api/racers/race/${this.$route.params.raceid}`,
-                    this.racerData,
-                    {
-                        params: {
-                            paymentId: this.racerData.paymentId
+        dollas(amt) {
+            if (typeof amt === 'string') {
+                amt = parseInt(amt);
+            }
+            return amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
+        },
+        async submitHandler(formData) {
+            console.log(formData);
+            let requestPromise;
+            if (this.unpaidReg) {
+                requestPromise = request
+                    .post(
+                        `/api/payments/register`,
+                        {...formData, paymentAmount: this.paymentAmount},
+                        {
+                            params: {
+                                paymentId: this.racerData.paymentId,
+                                raceId: this.$route.params.raceid
+                            }
                         }
-                    }
-                )
-                .then((response) => {
-                    if (response.data) {
-                        this.submitted = true;
-                        console.log(response.data);
-                        return new Promise((resolve) =>
-                            setTimeout(() => {
-                                this.$emit('saved');
-                                resolve();
-                            }, 1000)
-                        );
-                    }
-                })
+                    )
+            } else {
+                requestPromise = request
+                    .patch(
+                        `/api/racers/race/${this.$route.params.raceid}`,
+                        formData,
+                        {
+                            params: {
+                                paymentId: this.racerData.paymentId
+                            }
+                        }
+                    )
+            }
+            return await requestPromise.then((response) => {
+                if (response.data) {
+                    this.submitted = true;
+                    console.log(response.data);
+                    return new Promise((resolve) =>
+                        setTimeout(() => {
+                            this.$emit('saved');
+                            resolve();
+                        }, 100)
+                    );
+                }
+            })
                 .catch((error) => {
                     this.formError = ["Error submitting request"];
                     console.log(error);
@@ -87,7 +116,13 @@ export default {
 </script>
     
 <template>
-    <FormKit type="form" id="race-registration" v-model="racerData" :form-class="submitted ? 'hide' : 'show'"
+    <div class="modal-header">
+        <h3>
+            {{racerData.status === 'unpaid'? 'Register Racer': 'Edit Racer Data'}}
+        </h3>
+    </div>
+
+    <FormKit type="form" id="race-registration" :value="racerData" :form-class="submitted ? 'hide' : 'show'"
         :errors="formError" submit-label="Save" @submit="submitHandler">
 
         <FormKit type="text" name="first_name" label="First name" help="What is your first name"
@@ -107,6 +142,11 @@ export default {
             }" />
 
         <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" />
+        <div v-if="unpaidReg">
+            <p class="text-danger h4">Cash Payment Required</p>
+            <FormKit type="checkbox" :label="`I Collected ${dollas(paymentAmount)} from the racer`"
+                name="paymentReceived" validation="required" />
+        </div>
 
     </FormKit>
 </template>

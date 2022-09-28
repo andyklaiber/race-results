@@ -3,10 +3,12 @@ import _ from "lodash";
 import request from "@/lib/ApiClient";
 import dayjs from 'dayjs/esm/index.js';
 import { RouterLink } from 'vue-router';
+import { Check } from 'lucide-vue-next';
 
 export default {
   components: {
-    RouterLink
+    RouterLink,
+    Check
   },
   data() {
     return {
@@ -42,21 +44,10 @@ export default {
             console.error(err);
           });
       }
-    },
-    downloadCsv(raceid){
-      return request(`/api/racers/race/${raceid}/export`)
-          .then((response) => {
-            console.log(response.data);
-            
-            
-          })
-          .catch((err) => {
-            console.error(err);
-          });
     }
   },
   computed: {
-
+    
     loaded() {
       if (!this.raceData) {
         return false;
@@ -74,7 +65,7 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <div
+      <!-- <div
           class="
             d-flex
             justify-content-between
@@ -85,7 +76,7 @@ export default {
             mb-3
             border-bottom
           "
-        >
+        > -->
           
           <!-- <div class="btn-toolbar mb-2 mb-md-0">
             <div class="btn-group me-2">
@@ -104,30 +95,32 @@ export default {
               This week
             </button>
           </div> -->
-        </div>
+        <!-- </div> -->
 
-        <h2>Section title</h2>
+        <h2>Active Races</h2>
         <div class="table-responsive">
           <table class="table table-striped table-hover table-sm">
             <thead>
               <tr>
                 <th scope="col">Name</th>
                 <th scope="col">series ID</th>
+                <th>Test Payments</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(race, idx) in raceData" :key="idx">
-                <td><RouterLink :to="{ name: 'edit-race', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
+                <td><RouterLink :to="{ name: 'edit-racers', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
                 <td>{{race.series}}</td>
+                <td><Check v-if="race.isTestData" color="orange" ></Check></td>
                 <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
                 <td><a class="btn btn-sm btn-secondary" :href="`/api/racers/race/${race.raceid}/export`">export</a></td>
               </tr>
 
             </tbody>
           </table>
-          <pre>
+          <!-- <pre>
             {{raceData}}
-          </pre>
+          </pre> -->
         </div>
     </div>
     <div v-else>

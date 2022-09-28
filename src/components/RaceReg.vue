@@ -1,9 +1,9 @@
 <script>
 import _ from "lodash";
-import request from "../lib/ApiClient";
+import request from "@/lib/ApiClient";
 import EventDetailsComponent from "./EventDetailsComponent.vue";
 import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
-import dayjs from 'dayjs/esm/index.js';
+import dayjs from '@/lib/dayjs';
 
 export default {
   components: {
@@ -17,9 +17,9 @@ export default {
       error: null,
       formError: [],
       formInputData: {},
-      raceData:{},
+      raceData: {},
       payment: "",
-      birthdate: "",
+      birthdate: "1990-03-05",
       submitted: false,
       couponError: [],
     };
@@ -46,6 +46,7 @@ export default {
         request(`/api/races/${this.$route.params.raceid}`)
           .then((response) => {
             this.raceData = response.data;
+            
             this.loading = false;
             this.payment = this.raceData.paymentOptions[0].type;
           })
@@ -56,26 +57,26 @@ export default {
           });
       }
     },
-    getCouponPricing(couponCode){
-        request.post(`/api/payments/pricing`,{
-          raceid: `${this.$route.params.raceid}`,
-          couponCode
+    getCouponPricing(couponCode) {
+      request.post(`/api/payments/pricing`, {
+        raceid: `${this.$route.params.raceid}`,
+        couponCode
+      })
+        .then(({ data }) => {
+          this.raceData.paymentOptions = data.paymentOptions;
+
+          if (!data.validCoupon) {
+            this.couponError = ["Invalid Coupon Code"];
+          } else {
+            this.couponError = [];
+          }
         })
-          .then(({data}) => {
-            this.raceData.paymentOptions = data.paymentOptions;
-            
-            if(!data.validCoupon){
-                this.couponError = ["Invalid Coupon Code"];
-              }else{
-                this.couponError = [];
-              }
-            })
-        
+
     },
-    onCouponChange(data){
-      if(data){
+    onCouponChange(data) {
+      if (data) {
         this.getCouponPricing(data);
-      }else{
+      } else {
         this.couponError = [];
       }
     },
@@ -110,17 +111,46 @@ export default {
           console.log(error);
         });
     },
+    getEventTimeObj(startTime) {
+      return dayjs(`${dayjs(this.raceData.eventDate).format("YYYY-MM-DD")} ${startTime}`)
+    }
   },
   computed: {
+    startTimes() {
+      if (this.hasStartTimes) {
+        return _.map(_.uniqBy(this.raceData.regCategories, 'startTime'), 'startTime');
+      }
+      return null;
+    },
+    hasStartTimes() {
+      return !!_.some(this.raceData.regCategories, 'startTime')
+    },
+    currentTime() {
+      return dayjs().local().format();
+    },
+    firstRaceTime() {
+      if (this.hasStartTimes) {
+        return dayjs.min(_.map(this.startTimes, (time) => dayjs(`${this.eventDateFormatted} ${time}`)));
+      }
+    },
+    lastRaceTime() {
+      if (this.hasStartTimes) {
+        return dayjs.max(_.map(this.startTimes, (time) => dayjs(`${this.eventDateFormatted} ${time}`)));
+      }
+    },
     sortedCats() {
-      if(!this.racerAge && this.formInputData.category == undefined){
+      if (!this.racerAge && this.formInputData.category == undefined) {
         return [];
       }
-      const filtered = _.filter(this.raceData.regCategories,(cat)=>{
-        if(cat.minAge && this.racerAge < cat.minAge){
+      const filtered = _.filter(this.raceData.regCategories, (cat) => {
+        if (cat.startTime && dayjs().isAfter(this.getEventTimeObj(cat.startTime).subtract(20, 'minute'))) {
+          return false;
+        }
+
+        if (cat.minAge && this.racerAge < cat.minAge) {
           return false
         }
-        if(cat.maxAge && this.racerAge > cat.maxAge){
+        if (cat.maxAge && this.racerAge > cat.maxAge) {
           return false
         }
         return true;
@@ -140,34 +170,57 @@ export default {
       }
       return true;
     },
+    submitLabel() {
+      if (this.payment == 'cash') {
+        return "Sign Up!"
+      }
+      return "Go to Payment"
+    },
+    cashEnabled() {
+      return dayjs().isAfter(this.lastRaceTime.subtract(3, 'hour'))
+    },
+    eventDateFormatted() {
+      return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
+    },
+    regDisabled() {
+      return dayjs().isAfter(this.lastRaceTime.subtract(20, 'minute'))
+    },
     paymentOptions() {
       let options = {};
       _.forEach(this.raceData.paymentOptions, (element) => {
         options[element.type] = element.name;
       });
+      if (this.cashEnabled) {
+        options['cash'] = 'Cash Payment (Today\'s Race)';
+      }
       return options;
     },
     paymentCostDets() {
-      if(this.sponsoredCategorySelected){
+      if (this.sponsoredCategorySelected) {
         this.payment = "season";
         return {
-          cost:this.dollas(0),
-          regFee:this.dollas(0),
+          cost: this.dollas(0),
+          regFee: this.dollas(0),
           tot: this.dollas(0)
-          }
+        }
       }
-      const payOpt = _.find(
-        this.raceData?.paymentOptions,
-        (el) => el.type === this.payment
+      let altPaytype;
+      if (this.payment === 'cash') {
+        altPaytype = 'single';
+      } else {
+        altPaytype = this.payment;
+      }
+      const payOpt = _.find(this.raceData?.paymentOptions,
+        (el) => el.type === altPaytype
       );
       if (!payOpt) return null;
       const amt = parseFloat(payOpt.amount);
       let fees = 0;
-      if(amt > 0){
-        fees = (payOpt.regFee + payOpt.stripeFee)/ 100;
+      if (amt > 0 && this.payment !== 'cash') {
+        fees = (payOpt.regFee + payOpt.stripeFee) / 100;
       }
       const dets = {}
-      _.assign(dets, payOpt,{
+      _.assign(dets, payOpt, {
         name: payOpt.name,
         cost: this.dollas(amt),
         regFee: this.dollas(fees),
@@ -178,35 +231,35 @@ export default {
       });
       return dets;
     },
-    showPaymentOption(){
-      if(this.sponsoredCategorySelected){
+    showPaymentOption() {
+      if (this.sponsoredCategorySelected) {
         return false;
       }
-      if(this.raceData.paymentOptions && this.raceData.paymentOptions.length<2){
+      if (this.raceData.paymentOptions && this.raceData.paymentOptions.length < 2) {
         return false;
       }
-      return true;      
+      return true;
     },
-    sponsoredCategorySelected(){
-      if(this.selectedCategory?.sponsored){
+    sponsoredCategorySelected() {
+      if (this.selectedCategory?.sponsored) {
         return true;
       }
       return false;
     },
-    selectedCategory(){
-      if(this.formInputData && this.formInputData.category){
-        return _.find(this.raceData?.regCategories, {"id": this.formInputData?.category});
+    selectedCategory() {
+      if (this.formInputData && this.formInputData.category) {
+        return _.find(this.raceData?.regCategories, { "id": this.formInputData?.category });
       }
       return null;
     },
-    racerAge(){
-      if(this.birthdate){
+    racerAge() {
+      if (this.birthdate) {
         //calculate racer age on dec 31
         const dec31 = dayjs();
-        const bday = dayjs(this. birthdate);
+        const bday = dayjs(this.birthdate);
 
-        return dec31.year()-bday.year();
-        
+        return dec31.year() - bday.year();
+
       }
     }
   },
@@ -220,166 +273,112 @@ export default {
 
     <div v-if="loaded">
       <EventDetailsComponent :details="raceData.eventDetails" />
-      <FormKit
-        type="form"
-        id="race-registration"
-        v-model="formInputData"
-        :form-class="submitted ? 'hide' : 'show'"
-        :errors="formError"
-        :actions="false"
-        @submit="submit"
-      >
-        <div class="row">
-          <div class="col-md-6 order-md-1 mb-3">
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-              <h5>Registration Info</h5>
-              <span class="badge badge-secondary badge-pill">3</span>
-            </h4>
-
-            <div class="col">
-              <FormKit
-                type="text"
-                name="first_name"
-                label="First name"
-                help="What is your first name"
-                validation="required"
-              />
-              <FormKit
-                type="text"
-                name="last_name"
-                label="Last name"
-                help="What is your last name"
-                validation="required"
-              />
-            </div>
-
-            <div class="form-group pt-3">
-              <FormKit
-                type="email"
-                name="email"
-                label="Your email"
-                help="Enter an email address"
-                validation="required|email"
-              />
-            </div>
-            <FormKit
-              type="text"
-              name="sponsor"
-              label="Your Team or Sponsor"
-              help="Enter an optional Team or Sponsor name"
-            />
-            <FormKit
-              type="date"
-              value="2001-01-01"
-              name="birthdate"
-              label="Birthday"
-              v-model="birthdate"
-              help="Enter your birthday to see Race Categories"
-              validation="required|before:2020-01-01"
-              validation-visibility="live"
-            />
-            <!-- <div>Racer Age: {{racerAge}}</div> -->
-            <div class="form-group pt-3">
-              <FormKit
-                type="select"
-                id="category"
-                label="Race Category:"
-                placeholder="Select a category"
-                name="category"
-                :options="sortedCats"
-                validation="required"
-                validation-visibility="dirty"
-                :validation-messages="{
-                  is: 'You must select a race category',
-                }"
-              />
-            </div>
-          </div>
-          <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
-            <h4 class="d-flex justify-content-between align-items-center mb-3">
-              <h5>Payment Detail</h5>
-              <span class="badge badge-secondary badge-pill">3</span>
-            </h4>
-            <fieldset class="list-group mb-3">
-              <div>
-                <FormKit
-                  type="text"
-                  name="coupon"
-                  label="Coupon Code"
-                  help=""
-                  :delay="1500"
-                  @input="onCouponChange"
-                  v-if="raceData.couponsEnabled"
-                  :errors="couponError"
-                />
-              </div>
-            </fieldset>
-            <fieldset class="list-group mb-3">
-              <div>
-                <FormKit
-                  type="radio"
-                  name="paytype"
-                  label="Payment option"
-                  :options="paymentOptions"
-                  validation="required"
-                  v-model="payment"
-                  v-if="showPaymentOption"
-                />
-              </div>
-            </fieldset>
-            <ul class="list-group mb-3 formkit-fieldset">
-              <li
-                class="
-                  list-group-item
-                  d-flex
-                  justify-content-between
-                  lh-condensed
-                "
-              >
-                <div>
-                  <h6 class="my-0">Race Entry:</h6>
-                  <small class="text-muted">{{ paymentCostDets.name }}</small>
-                </div>
-                <div>
-                <span v-if="paymentCostDets.discounted" class="mx-3 text-decoration-line-through text-danger">{{ dollas(paymentCostDets.orig) }}</span>
-                <span :class="{'text-success':paymentCostDets.discounted}">{{ paymentCostDets.cost }}</span>
-                </div>
-              </li>
-              <li
-                class="
-                  list-group-item
-                  d-flex
-                  justify-content-between
-                  lh-condensed
-                "
-              >
-                <div>
-                  <h6 class="my-0">Online Processing Fee:</h6>
-                  <small class="text-muted"
-                    >Credit Card and Online Registration</small
-                  >
-                </div>
-                <span class="text-muted">{{ paymentCostDets.regFee }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span>Total (USD)</span>
-                <strong>{{ paymentCostDets.tot }}</strong>
-              </li>
-            </ul>
-          </div>
-        </div>
-            <div v-if="sponsoredCategorySelected">
-              <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
-            <FormKit type="submit" label="Sign Up!" @click="submitForm" />
-            </div>
-            <FormKit v-if="!sponsoredCategorySelected" type="submit" label="Go To Payment" @click="submitForm" />
-      </FormKit>
-      <div v-if="submitted">
-        <h2>Submission successful, redirecting to payment</h2>
+      <div v-if="regDisabled">
+        <h3>Registration is closed</h3>
       </div>
-      <EventCategoryScheduleComponent :categories="raceData.regCategories" :raceDate="raceData.eventDate"/>
+      <div v-else>
+        <FormKit type="form" id="race-registration" v-model="formInputData" :form-class="submitted ? 'hide' : 'show'"
+          :errors="formError" :actions="false" @submit="submit">
+          <div class="row">
+            <div class="col-md-6 order-md-1 mb-3">
+              <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Registration Info</h5>
+                <span class="badge badge-secondary badge-pill">3</span>
+              </h4>
+
+              <div class="col">
+                <FormKit type="text" name="first_name" label="First name" help="What is your first name"
+                  validation="required" />
+                <FormKit type="text" name="last_name" label="Last name" help="What is your last name"
+                  validation="required" />
+              </div>
+
+              <div class="form-group pt-3">
+                <FormKit type="email" name="email" label="Your email" help="Enter an email address"
+                  validation="required|email" />
+              </div>
+              <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
+                help="Enter an optional Team or Sponsor name" />
+              <FormKit type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
+                help="Enter your birthday to see Race Categories" validation="required|before:2020-01-01"
+                validation-visibility="live" />
+              <!-- <div>Racer Age: {{racerAge}}</div> -->
+              <div class="form-group pt-3">
+                <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category"
+                  name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
+                  :validation-messages="{
+                    is: 'You must select a race category',
+                  }" />
+              </div>
+            </div>
+            <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
+              <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <h5>Payment Detail</h5>
+                <span class="badge badge-secondary badge-pill">3</span>
+              </h4>
+              <fieldset class="list-group mb-3">
+                <div>
+                  <FormKit type="text" name="coupon" label="Coupon Code" help="" :delay="1500" @input="onCouponChange"
+                    v-if="raceData.couponsEnabled" :errors="couponError" />
+                </div>
+              </fieldset>
+              <fieldset class="list-group mb-3">
+                <div>
+                  <FormKit type="radio" name="paytype" label="Payment option" :options="paymentOptions"
+                    validation="required" v-model="payment" v-if="showPaymentOption" />
+                </div>
+              </fieldset>
+              <ul class="list-group mb-3 formkit-fieldset">
+                <li class="
+                  list-group-item
+                  d-flex
+                  justify-content-between
+                  lh-condensed
+                ">
+                  <div>
+                    <h6 class="my-0">Race Entry:</h6>
+                    <small class="text-muted">{{ paymentCostDets.name }}</small>
+                  </div>
+                  <div>
+                    <span v-if="paymentCostDets.discounted" class="mx-3 text-decoration-line-through text-danger">{{
+                    dollas(paymentCostDets.orig) }}</span>
+                    <span :class="{'text-success':paymentCostDets.discounted}">{{ paymentCostDets.cost }}</span>
+                  </div>
+                </li>
+                <li class="
+                  list-group-item
+                  d-flex
+                  justify-content-between
+                  lh-condensed
+                ">
+                  <div>
+                    <h6 class="my-0">Online Processing Fee:</h6>
+                    <small class="text-muted">Credit Card and Online Registration</small>
+                  </div>
+                  <span class="text-muted">{{ paymentCostDets.regFee }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Total (USD)</span>
+                  <strong>{{ paymentCostDets.tot }}</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div v-if="payment ==='cash'">
+            <h2 class="text-danger">Your registration will not be active until payment is received at the event</h2>
+          </div>
+          <div v-if="sponsoredCategorySelected">
+            <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
+            <FormKit type="submit" label="Sign Up!" @click="submitForm" />
+          </div>
+          <FormKit v-if="!sponsoredCategorySelected" type="submit" :label="submitLabel" @click="submitForm" />
+        </FormKit>
+        <div v-if="submitted">
+          <h2>Submission successful, redirecting</h2>
+        </div>
+        <EventCategoryScheduleComponent :categories="raceData.regCategories" :raceDate="raceData.eventDate" />
+      </div>
     </div>
-    
     <div v-else>
       <div class="text-center">
         <h2 class="mt-5">Race not available for registration...</h2>

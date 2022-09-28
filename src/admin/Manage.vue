@@ -56,7 +56,7 @@ export default {
   </nav>
 <body>
   <div class="container-fluid">
-    <RouterView />
+    <RouterView/>
   </div>
 </body>
 </template>

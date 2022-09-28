@@ -82,6 +82,9 @@ export default {
       return options;
     },
     pendingPayment() {
+      if(this.regData.raceid != this.$route.params.raceid){
+        return true;
+      }
       if (this.payStatus && this.payStatus != "paid") {
         return true;
       }
@@ -128,9 +131,15 @@ export default {
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-                <h4>Your Payment is Incomplete</h4>
+                <h4>Your Registration is Incomplete</h4>
               </div>
-              <a :href="paymentUrl">Complete your payment</a>
+              <div v-if="payment === 'cash'" >
+                <p class="text-danger h5">Please make your cash payment at the event to complete your registration.</p>
+                <p>Your name will not show up on the "Who is signed up" list until payment is completed.</p>
+              </div>
+              <div v-else>
+                <a :href="paymentUrl">Complete your payment</a>
+              </div>
             </div>
             <div class="col">
               <div class="row">

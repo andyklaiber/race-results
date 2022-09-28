@@ -95,6 +95,14 @@ export default {
       }
       return ''
     },
+    createReg(){
+      this.racerToEdit = {
+        paytype:'cash',
+        status: 'unpaid',
+        raceid: this.$route.params.raceid
+      };
+        this.showModal=true;
+    },
     editRacer(paymentId){
       let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
       if(racer){
@@ -108,6 +116,9 @@ export default {
       this.racerToEdit = null;
       this.showModal=false;
       this.fetchData()
+    },
+    capitalize(txt){
+      return _.capitalize(txt);
     }
   },
   computed: {
@@ -120,9 +131,10 @@ export default {
     filteredRacers(){
       const filterKey = this.filterKey && this.filterKey.toLowerCase()
       let data = this.data.registeredRacers;
+
       if (filterKey.length) {
             data = data.filter((row) => {
-              return Object.keys(row).some((key) => {
+              return ['first_name','last_name','bibNumber'].some((key) => {
                 return String(row[key]).toLowerCase().indexOf(filterKey) > -1
               })
             })
@@ -138,55 +150,55 @@ export default {
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
 
-    <div v-if="loaded" class="container">
-
-
+    <div v-if="loaded" class="container-fluid">
       <!-- <Grid
         :data="data.registeredRacers"
         :columns="gridColumns"
         :filter-key="searchQuery"
         editIdColumn="paymentId">
       </Grid> -->
-      <FormKit
-                  type="text"
-                  name="search"
-                  label="Search:"
-                  help=""
-                  :delay="500"
-                  v-model="filterKey"
-                />
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class='col-4'>
+          <FormKit type="text" name="search" label="Search:" help="search in first, last or bib number" :delay="300"
+            v-model="filterKey" />
+        </div>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class='btn btn-md btn-success  ' @click="createReg()">Add New Registration</div>
+        </div>
+      </div>
       <div class="table-responsive">
-        <table class="table table-striped table-hover table-sm">
+        <table class="table table-striped table-sm">
           <thead>
             <tr>
               <th scope="col">First Name</th>
               <th scope="col">Last Name</th>
               <th scope="col">Category</th>
               <th scope="col">Bib Number</th>
+              <th scope="col">Paytype</th>
+              <th scope="col">Payment Status</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(racer, idx) in filteredRacers" :key="idx">
               <td>{{racer.first_name}}</td>
               <td>{{racer.last_name}}</td>
-              <td>{{racer.category}}</td>
+              <td>{{catName(racer.category)}}</td>
               <td>{{racer.bibNumber}}</td>
+              <td>{{racer.paytype}}</td>
+              <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
               <td>
-                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">edit</div>
+                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{racer.status === 'unpaid'? 'Register': 'edit'}}</div>
               </td>
             </tr>
 
           </tbody>
         </table>
-        <pre>
+        <!-- <pre>
             {{data}}
-          </pre>
+          </pre> -->
         <Teleport to="body">
           <!-- use the modal component, pass in the prop -->
           <modal-component :show="showModal" @close="showModal = false">
-            <template #header>
-              <h3>Edit Racer Data</h3>
-            </template>
             <template #body>
               <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions"></RacerFormComponent>
             </template>

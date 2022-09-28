@@ -2,6 +2,7 @@
 import { RouterLink, RouterView } from "vue-router";
 
 export default {
+    props:["races"],
   components: {
     RouterView
   },
@@ -15,9 +16,9 @@ export default {
 </script>
 
 <template>
-  <nav class="navbar navbar-expand-sm">
-    <div class="container-fluid">
-        <ul class="navbar-nav me-auto mb-2 mb-md-0">
+  
+    
+        <ul class="nav nav-tabs">
           <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: $route.name == 'edit-race' }" :to="{ name: 'edit-race'}">
               Event Settings
@@ -25,7 +26,7 @@ export default {
           </li>
           <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: $route.name == 'edit-racers' }" :to="{ name: 'edit-racers'}">
-              Event Racers
+              Event Registrations
             </RouterLink>
           </li>
           <!-- <li class="nav-item">
@@ -40,8 +41,7 @@ export default {
             </ul>
           </li> -->
         </ul>
-      </div>
-  </nav>
+ 
 
   <div class="container-fluid">
     <RouterView />
