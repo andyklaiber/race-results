@@ -95,6 +95,69 @@
   "resolved" "https://registry.npmjs.org/@popperjs/core/-/core-2.11.6.tgz"
   "version" "2.11.6"
 
+"@sentry/browser@7.14.0":
+  "integrity" "sha512-AdLmqeOXvCVYgJAgMUUby+TRh+yIeZO16NPpZWQPGggXIjnhSzoN4liyXJvQ7Mhm326GboFUKjQwqpCEviQcyg=="
+  "resolved" "https://registry.npmjs.org/@sentry/browser/-/browser-7.14.0.tgz"
+  "version" "7.14.0"
+  dependencies:
+    "@sentry/core" "7.14.0"
+    "@sentry/types" "7.14.0"
+    "@sentry/utils" "7.14.0"
+    "tslib" "^1.9.3"
+
+"@sentry/core@7.14.0":
+  "integrity" "sha512-Hgn7De6CiCFnz868/Lrtei+9rj7/TIwhbDe3J+NeH+2ffXYn4VI8FxrlR/p2XfIq9iCfmG80EQXDtSh+Kh7mOw=="
+  "resolved" "https://registry.npmjs.org/@sentry/core/-/core-7.14.0.tgz"
+  "version" "7.14.0"
+  dependencies:
+    "@sentry/hub" "7.14.0"
+    "@sentry/types" "7.14.0"
+    "@sentry/utils" "7.14.0"
+    "tslib" "^1.9.3"
+
+"@sentry/hub@7.14.0":
+  "integrity" "sha512-O+pxsipeiURC6Mxuivz1pX3yHlkQCI2yjP38bISxUZv1NIijHuxiDmgqrrcCJltiIfyY2+f9LAezKVCAXnPFuw=="
+  "resolved" "https://registry.npmjs.org/@sentry/hub/-/hub-7.14.0.tgz"
+  "version" "7.14.0"
+  dependencies:
+    "@sentry/types" "7.14.0"
+    "@sentry/utils" "7.14.0"
+    "tslib" "^1.9.3"
+
+"@sentry/tracing@^7.14.0":
+  "integrity" "sha512-AtSitQukvU52PsLlYZJ2g2Lhj3VMmy4EwF/OMp8UHCtbJYwTNDF5N4Co0GUwFIs8zdXkIoJD+GMKfsSX1L3NXA=="
+  "resolved" "https://registry.npmjs.org/@sentry/tracing/-/tracing-7.14.0.tgz"
+  "version" "7.14.0"
+  dependencies:
+    "@sentry/hub" "7.14.0"
+    "@sentry/types" "7.14.0"
+    "@sentry/utils" "7.14.0"
+    "tslib" "^1.9.3"
+
+"@sentry/types@7.14.0":
+  "integrity" "sha512-9iFZS9Hr5hAoL+M9oUH2dY9burOaQh+CHGH66fortuTp++YDWKdbPEeKcz8hRJaUyBBn53rdxiBmAyHsrlE6KA=="
+  "resolved" "https://registry.npmjs.org/@sentry/types/-/types-7.14.0.tgz"
+  "version" "7.14.0"
+
+"@sentry/utils@7.14.0":
+  "integrity" "sha512-q9em4ZBcaUk7J1WULiltZVEcbyCE0wwAIjqRaoNmHVe4FeK++uAPo2ULZM1kQgN8syZnQ1jcfLktIKkWfnE2cg=="
+  "resolved" "https://registry.npmjs.org/@sentry/utils/-/utils-7.14.0.tgz"
+  "version" "7.14.0"
+  dependencies:
+    "@sentry/types" "7.14.0"
+    "tslib" "^1.9.3"
+
+"@sentry/vue@^7.14.0":
+  "integrity" "sha512-ka03xD1BAdW1kXdmdDx3lSlzKuJG4GCCec+07IBbqIUpTmDrvPE0a+bSyjN1PPRG8sZgV0V/YN5iSPIuM864tQ=="
+  "resolved" "https://registry.npmjs.org/@sentry/vue/-/vue-7.14.0.tgz"
+  "version" "7.14.0"
+  dependencies:
+    "@sentry/browser" "7.14.0"
+    "@sentry/core" "7.14.0"
+    "@sentry/types" "7.14.0"
+    "@sentry/utils" "7.14.0"
+    "tslib" "^1.9.3"
+
 "@vitejs/plugin-vue@^3.0.1":
   "integrity" "sha512-fmxtHPjSOEIRg6vHYDaem+97iwCUg/uSIaTzp98lhELt2ISOQuDo2hbkBdXod0g15IhfPMQmAxh4heUks2zvDA=="
   "resolved" "https://registry.npmjs.org/@vitejs/plugin-vue/-/plugin-vue-3.1.0.tgz"
@@ -510,6 +573,11 @@
   dependencies:
     "is-number" "^7.0.0"
 
+"tslib@^1.9.3":
+  "integrity" "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="
+  "resolved" "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
+  "version" "1.14.1"
+
 "vite@^3.0.0", "vite@^3.0.5":
   "integrity" "sha512-hgxQWev/AL7nWYrqByYo8nfcH9n97v6oFsta9+JX8h6cEkni7nHKP2kJleNYV2kcGhE8jsbaY1aStwPZXzPbgA=="
   "resolved" "https://registry.npmjs.org/vite/-/vite-3.1.1.tgz"
@@ -529,7 +597,7 @@
   dependencies:
     "@vue/devtools-api" "^6.1.4"
 
-"vue@^3.2.0", "vue@^3.2.1", "vue@^3.2.25", "vue@^3.2.37", "vue@>=3.0.1", "vue@3.2.39":
+"vue@^3.2.0", "vue@^3.2.1", "vue@^3.2.25", "vue@^3.2.37", "vue@>=3.0.1", "vue@2.x || 3.x", "vue@3.2.39":
   "integrity" "sha512-tRkguhRTw9NmIPXhzk21YFBqXHT2t+6C6wPOgQ50fcFVWnPdetmRqbmySRHznrYjX2E47u0cGlKGcxKZJ38R/g=="
   "resolved" "https://registry.npmjs.org/vue/-/vue-3.2.39.tgz"
   "version" "3.2.39"

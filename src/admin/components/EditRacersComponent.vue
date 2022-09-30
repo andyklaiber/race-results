@@ -23,7 +23,9 @@ export default {
       data: {},
       racerToEdit:null,
       showModal:false,
-      filterKey:""
+      filterKey:"",
+      filterUnpaid:false,
+      filterCats:"all"
     }
   },
   
@@ -119,6 +121,13 @@ export default {
     },
     capitalize(txt){
       return _.capitalize(txt);
+    },
+    closeModal(){
+      this.showModal = false
+      _.defer(()=>{
+            let searchNode = document.querySelector('#racerFilterTxtInput');
+            searchNode.focus();
+        });
     }
   },
   computed: {
@@ -128,12 +137,33 @@ export default {
       }
       return true;
     },
+    sortedCats() {
+            let cats = {all:"All Categories"};
+            _.forEach(
+                _.orderBy(this.data.regCategories, "disporder"),
+                (element) => {
+                    cats[element.id] = element.catdispname;
+                }
+            );
+
+            return cats;
+        },
     filteredRacers(){
       const filterKey = this.filterKey && this.filterKey.toLowerCase()
       let data = this.data.registeredRacers;
 
-      if (filterKey.length) {
+      if (filterKey.length || this.filterUnpaid || this.filterCats !== 'all') {
             data = data.filter((row) => {
+              if(this.filterUnpaid){
+                if(row.status !== 'unpaid'){
+                  return false;
+                }
+              }
+              if(this.filterCats !='all'){
+                if(row.category != this.filterCats){
+                  return false;
+                }
+              }
               return ['first_name','last_name','bibNumber'].some((key) => {
                 return String(row[key]).toLowerCase().indexOf(filterKey) > -1
               })
@@ -159,9 +189,11 @@ export default {
       </Grid> -->
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <div class='col-4'>
-          <FormKit type="text" name="search" label="Search:" help="search in first, last or bib number" :delay="300"
+          <FormKit id='racerFilterTxtInput' type="text" name="search" label="Search:" help="search in first, last or bib number" :delay="300"
             v-model="filterKey" />
         </div>
+        <div class='col-4'><FormKit type="select" name="categories" label="Filter by Category" :options="sortedCats" v-model="filterCats" /></div>
+        <div><FormKit type="checkbox" name="unpaid" label="Unpaid Only" v-model="filterUnpaid" /></div>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class='btn btn-md btn-success  ' @click="createReg()">Add New Registration</div>
         </div>
@@ -176,6 +208,7 @@ export default {
               <th scope="col">Bib Number</th>
               <th scope="col">Paytype</th>
               <th scope="col">Payment Status</th>
+              <th scope="col"><strong>{{filteredRacers.length}} Found</strong></th>
             </tr>
           </thead>
           <tbody>
@@ -198,7 +231,7 @@ export default {
           </pre> -->
         <Teleport to="body">
           <!-- use the modal component, pass in the prop -->
-          <modal-component :show="showModal" @close="showModal = false">
+          <modal-component :show="showModal" @close="closeModal">
             <template #body>
               <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions"></RacerFormComponent>
             </template>

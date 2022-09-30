@@ -111,6 +111,7 @@ export default {
             <thead>
               <tr>
                 <th scope="col">Status</th>
+                <th scope="col">name</th>
                 <th scope="col">Reg Email</th>
                 <th scope="col">Race</th>
               </tr>
@@ -118,6 +119,7 @@ export default {
             <tbody>
               <tr v-for="(payment, idx) in filteredPayments" :key="idx">
                 <td>{{payment.status}}</td>
+                <td>{{payment.regData.first_name+' '+payment.regData.last_name}}</td>
                 <td>{{payment.regData.email}}</td>
                 <td>{{payment.regData.raceid}}</td>
                 <td>{{dollas(payment.stripePayment?.amount_total)}}</td>

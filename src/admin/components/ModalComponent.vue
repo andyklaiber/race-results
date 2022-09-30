@@ -47,13 +47,14 @@
     }
     
     .modal-container {
-      width: 500px;
+      width: 800px;
       margin: 0px auto;
-      padding: 20px 30px;
+      padding: 10px 20px;
       background-color: #fff;
       border-radius: 2px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
       transition: all 0.3s ease;
+      overflow-y:auto;
     }
     
     .modal-header h3 {
@@ -62,7 +63,7 @@
     }
     
     .modal-body {
-      margin: 20px 0;
+      margin: 0px 0;
     }
     
     .modal-default-button {

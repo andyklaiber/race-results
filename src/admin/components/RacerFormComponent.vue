@@ -17,9 +17,11 @@ export default {
             submitted: false,
         }
     },
-    updated() {
-        let bibNode = document.querySelector('#bibNumber');
-        bibNode.focus();
+    mounted() {
+        _.defer(()=>{
+            let bibNode = document.querySelector('#bibNumber');
+            bibNode.focus();
+        });
     },
     computed: {
         sortedCats() {
@@ -74,7 +76,7 @@ export default {
                 requestPromise = request
                     .post(
                         `/api/payments/register`,
-                        {...formData, paymentAmount: this.paymentAmount},
+                        { ...formData, paymentAmount: this.paymentAmount },
                         {
                             params: {
                                 paymentId: this.racerData.paymentId,
@@ -117,40 +119,48 @@ export default {
     
 <template>
     <div class="modal-header">
-        <h3>
+        <h5>
             {{racerData.status === 'unpaid'? 'Register Racer': 'Edit Racer Data'}}
-        </h3>
+        </h5>
     </div>
 
     <FormKit type="form" id="race-registration" :value="racerData" :form-class="submitted ? 'hide' : 'show'"
         :errors="formError" submit-label="Save" @submit="submitHandler">
+        <div class="double">
+            <FormKit type="text" name="first_name" label="First name" validation="required" />
+            <FormKit type="text" name="last_name" label="Last name" validation="required" />
+        </div>        
+        <div class="double">
+                <FormKit type="email" name="email" label="Email" validation="required|email" />
 
-        <FormKit type="text" name="first_name" label="First name" help="What is your first name"
-            validation="required" />
-        <FormKit type="text" name="last_name" label="Last name" help="What is your last name" validation="required" />
+                <FormKit type="text" name="sponsor" label="Team or Sponsor" />
+            </div>        
+      
+                <FormKit type="text" name="racerAge" label="Racer Age" help="age on dec 31" />
 
-        <FormKit type="email" name="email" label="Your email" help="Enter an email address"
-            validation="required|email" />
-
-        <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
-            help="Enter an optional Team or Sponsor name" />
-        <FormKit type="text" name="racerAge" label="Racer Age" help="age on dec 31" />
-
-        <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category" name="category"
-            :options="sortedCats" validation="required" validation-visibility="dirty" :validation-messages="{
-              is: 'You must select a race category',
-            }" />
-
-        <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" />
-        <div v-if="unpaidReg">
-            <p class="text-danger h4">Cash Payment Required</p>
-            <FormKit type="checkbox" :label="`I Collected ${dollas(paymentAmount)} from the racer`"
-                name="paymentReceived" validation="required" />
-        </div>
+                <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category"
+                name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
+                :validation-messages="{
+                    is: 'You must select a race category',
+                }" />
+                <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" />
+                <div v-if="unpaidReg">
+                    <p class="text-danger h4">Cash Payment Required</p>
+                    <FormKit type="checkbox" :label="`I Collected ${dollas(paymentAmount)} from the racer`"
+                        name="paymentReceived" validation="required" />
+                </div>
 
     </FormKit>
 </template>
     
 <style>
+
+.double {
+  display: flex;
+  justify-content: space-between;
+}
+.double > .formkit-outer {
+  width: calc(50% - 0.5em);
+}
 
 </style>

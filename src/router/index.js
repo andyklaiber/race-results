@@ -15,6 +15,7 @@ const router = createRouter({
     },
     { 
       path: '/register/:raceid', 
+      name: 'register',
       component: RaceReg
     },
     { 

@@ -19,7 +19,7 @@ export default {
       formInputData: {},
       raceData: {},
       payment: "",
-      birthdate: "1990-03-05",
+      birthdate: "",//"1990-03-05",
       submitted: false,
       couponError: [],
     };
@@ -44,9 +44,25 @@ export default {
       this.loading = true;
       if (this.$route.params.raceid) {
         request(`/api/races/${this.$route.params.raceid}`)
-          .then((response) => {
+          .then(async (response) => {
             this.raceData = response.data;
-            
+            if(this.raceData.series){
+              await request(`/api/series/${this.raceData.series}/registration`)
+                .then(({data})=>{
+                  let today = dayjs();
+                  _.some(data, ({eventDate,raceid})=>{
+                    if(dayjs(eventDate).add(21,'hour').isBefore(today)){
+                      console.log(dayjs(eventDate).add(21,'hour').format())
+                      console.log(today.format());
+                      return false;
+                    }
+                    else{
+                      this.$router.push(`/register/${raceid}`)
+                      return true;
+                    }
+                    })
+                })
+            }
             this.loading = false;
             this.payment = this.raceData.paymentOptions[0].type;
           })
@@ -89,6 +105,7 @@ export default {
       data.birthdate = undefined;
       data.racerAge = this.racerAge;
       data.paytype = this.payment;
+      data.timestamp = dayjs().format();
       await request
         .post(
           `/api/payments/start-registration?race=${this.raceData.raceid}`,
@@ -143,9 +160,9 @@ export default {
         return [];
       }
       const filtered = _.filter(this.raceData.regCategories, (cat) => {
-        if (cat.startTime && dayjs().isAfter(this.getEventTimeObj(cat.startTime).subtract(20, 'minute'))) {
-          return false;
-        }
+        // if (cat.startTime && dayjs().isAfter(this.getEventTimeObj(cat.startTime).subtract(20, 'minute'))) {
+        //   return false;
+        // }
 
         if (cat.minAge && this.racerAge < cat.minAge) {
           return false
@@ -274,9 +291,9 @@ export default {
     <div v-if="loaded">
       <EventDetailsComponent :details="raceData.eventDetails" />
       <div v-if="regDisabled">
-        <h3>Registration is closed</h3>
+        <h3>Registration is closed. Register for next week after 9 PM</h3>
       </div>
-      <div v-else>
+      <div v-else class="container mb-5">
         <FormKit type="form" id="race-registration" v-model="formInputData" :form-class="submitted ? 'hide' : 'show'"
           :errors="formError" :actions="false" @submit="submit">
           <div class="row">
@@ -306,6 +323,7 @@ export default {
               <div class="form-group pt-3">
                 <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category"
                   name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
+                  help="Select the Category you would like to race in"
                   :validation-messages="{
                     is: 'You must select a race category',
                   }" />
@@ -318,7 +336,7 @@ export default {
               </h4>
               <fieldset class="list-group mb-3">
                 <div>
-                  <FormKit type="text" name="coupon" label="Coupon Code" help="" :delay="1500" @input="onCouponChange"
+                  <FormKit type="text" name="coupon" label="Coupon Code" help="" :delay="1000" @input="onCouponChange"
                     v-if="raceData.couponsEnabled" :errors="couponError" />
                 </div>
               </fieldset>
@@ -353,7 +371,7 @@ export default {
                 ">
                   <div>
                     <h6 class="my-0">Online Processing Fee:</h6>
-                    <small class="text-muted">Credit Card and Online Registration</small>
+                    <small class="text-muted">Credit Card Processing and Online Registration</small>
                   </div>
                   <span class="text-muted">{{ paymentCostDets.regFee }}</span>
                 </li>
@@ -376,8 +394,8 @@ export default {
         <div v-if="submitted">
           <h2>Submission successful, redirecting</h2>
         </div>
-        <EventCategoryScheduleComponent :categories="raceData.regCategories" :raceDate="raceData.eventDate" />
       </div>
+      <EventCategoryScheduleComponent :categories="raceData.regCategories" :raceDate="raceData.eventDate" />
     </div>
     <div v-else>
       <div class="text-center">
