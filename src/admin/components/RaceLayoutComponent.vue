@@ -17,7 +17,7 @@ export default {
 
 <template>
   
-    
+  <div class="container-fluid">
         <ul class="nav nav-tabs">
           <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: $route.name == 'edit-race' }" :to="{ name: 'edit-race'}">
@@ -43,7 +43,7 @@ export default {
         </ul>
  
 
-  <div class="container-fluid">
+        
     <RouterView />
   </div>
 

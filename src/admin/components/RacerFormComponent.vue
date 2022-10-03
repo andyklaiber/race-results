@@ -18,6 +18,9 @@ export default {
         }
     },
     mounted() {
+        if(!this.unpaidReg){
+            return;
+        }
         _.defer(()=>{
             let bibNode = document.querySelector('#bibNumber');
             bibNode.focus();
@@ -40,6 +43,7 @@ export default {
             _.forEach(this.payments, (element) => {
                 options[element.type] = element.name;
             });
+            options['season'] = 'Volunteer/Season Comp';
             return options;
         },
         racerAge() {
@@ -129,32 +133,39 @@ export default {
         <div class="double">
             <FormKit type="text" name="first_name" label="First name" validation="required" />
             <FormKit type="text" name="last_name" label="Last name" validation="required" />
-        </div>        
+        </div>
         <div class="double">
-                <FormKit type="email" name="email" label="Email" validation="required|email" />
-
-                <FormKit type="text" name="sponsor" label="Team or Sponsor" />
-            </div>        
-      
-                <FormKit type="text" name="racerAge" label="Racer Age" help="age on dec 31" />
-
-                <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category"
-                name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
-                :validation-messages="{
-                    is: 'You must select a race category',
-                }" />
-                <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" />
-                <div v-if="unpaidReg">
-                    <p class="text-danger h4">Cash Payment Required</p>
-                    <FormKit type="checkbox" :label="`I Collected ${dollas(paymentAmount)} from the racer`"
-                        name="paymentReceived" validation="required" />
-                </div>
+            <FormKit type="email" name="email" label="Email" validation="required|email" />
+    
+            <FormKit type="text" name="sponsor" label="Team or Sponsor" />
+        </div>
+    
+        <FormKit type="text" name="racerAge" label="Racer Age" help="age on dec 31" />
+        <div class="double">
+            <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category" name="category"
+                :options="sortedCats" validation="required" validation-visibility="dirty" :validation-messages="{
+                        is: 'You must select a race category',
+                    }" />
+    
+            <FormKit type="select" id="paytype" label="Payment Type:" name="paytype" :options="paymentOptions"
+                validation="required" validation-visibility="dirty" :validation-messages="{
+                        is: 'You must select a Payment Type',
+                    }" />
+        </div>
+        <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" />
+        <div v-if="unpaidReg">
+            <p class="text-danger h4">Cash Payment Required</p>
+            <FormKit type="checkbox" :label="`I Collected ${dollas(paymentAmount)} from the racer`" name="paymentReceived"
+                validation="required" />
+        </div>
 
     </FormKit>
 </template>
     
 <style>
-
+#race-registration > .formkit-outer{
+    width: 372px;
+}
 .double {
   display: flex;
   justify-content: space-between;

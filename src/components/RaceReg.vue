@@ -46,7 +46,7 @@ export default {
         request(`/api/races/${this.$route.params.raceid}`)
           .then(async (response) => {
             this.raceData = response.data;
-            if(this.raceData.series){
+            if(this.raceData.series && this.raceData.toString().length > 1){
               await request(`/api/series/${this.raceData.series}/registration`)
                 .then(({data})=>{
                   let today = dayjs();
@@ -149,11 +149,13 @@ export default {
       if (this.hasStartTimes) {
         return dayjs.min(_.map(this.startTimes, (time) => dayjs(`${this.eventDateFormatted} ${time}`)));
       }
+      return null;
     },
     lastRaceTime() {
       if (this.hasStartTimes) {
         return dayjs.max(_.map(this.startTimes, (time) => dayjs(`${this.eventDateFormatted} ${time}`)));
       }
+      return null;
     },
     sortedCats() {
       if (!this.racerAge && this.formInputData.category == undefined) {
@@ -194,12 +196,18 @@ export default {
       return "Go to Payment"
     },
     cashEnabled() {
+      if(!this.lastRaceTime){
+        return false;
+      }
       return dayjs().isAfter(this.lastRaceTime.subtract(3, 'hour'))
     },
     eventDateFormatted() {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
     },
     regDisabled() {
+      if(!this.lastRaceTime){
+        return false;
+      }
       return dayjs().isAfter(this.lastRaceTime.subtract(20, 'minute'))
     },
     paymentOptions() {

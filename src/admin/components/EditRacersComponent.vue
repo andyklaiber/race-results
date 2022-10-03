@@ -25,6 +25,7 @@ export default {
       showModal:false,
       filterKey:"",
       filterUnpaid:false,
+      filterNoBib:false,
       filterCats:"all"
     }
   },
@@ -48,7 +49,30 @@ export default {
       this.error = null;
       this.loading = true;
       if (this.$route.params.raceid) {
-        request(`/api/racers/race/${this.$route.params.raceid}`)
+        if(this.$route.params.series){
+          request(`/api/racers/series/${this.$route.params.series}`)
+          .then(({data}) => {
+            console.log(data);
+              let today = dayjs();
+                  _.some(data, ({eventDate,raceid})=>{
+                    if(dayjs(eventDate).add(21,'hour').isBefore(today)){
+                      console.log(dayjs(eventDate).add(21,'hour').format())
+                      console.log(today.format());
+                      return false;
+                    }
+                  })
+            //this.data = response.data;
+            //this.loading = false;
+          })
+          .catch((err) => {
+            this.loading = false;
+            this.error = err.toString();
+            console.error(err);
+          });
+        }
+        else{
+
+          request(`/api/racers/race/${this.$route.params.raceid}`)
           .then((response) => {
             this.data = response.data;
             this.loading = false;
@@ -58,6 +82,7 @@ export default {
             this.error = err.toString();
             console.error(err);
           });
+        }
       }
     },
 
@@ -152,10 +177,15 @@ export default {
       const filterKey = this.filterKey && this.filterKey.toLowerCase()
       let data = this.data.registeredRacers;
 
-      if (filterKey.length || this.filterUnpaid || this.filterCats !== 'all') {
+      if (filterKey.length || this.filterUnpaid || this.filterCats !== 'all' || this.filterNoBib) {
             data = data.filter((row) => {
               if(this.filterUnpaid){
                 if(row.status !== 'unpaid'){
+                  return false;
+                }
+              }
+              if(this.filterNoBib){
+                if(row.bibNumber){
                   return false;
                 }
               }
@@ -187,14 +217,18 @@ export default {
         :filter-key="searchQuery"
         editIdColumn="paymentId">
       </Grid> -->
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <div class='col-4'>
+      <div class="racer-controls d-flex flex-row justify-content-between flex-wrap align-items-top pt-3 pb-2 mb-3 p-2 border-bottom">
+        <div class='p-2'>
           <FormKit id='racerFilterTxtInput' type="text" name="search" label="Search:" help="search in first, last or bib number" :delay="300"
             v-model="filterKey" />
         </div>
-        <div class='col-4'><FormKit type="select" name="categories" label="Filter by Category" :options="sortedCats" v-model="filterCats" /></div>
-        <div><FormKit type="checkbox" name="unpaid" label="Unpaid Only" v-model="filterUnpaid" /></div>
-        <div class="btn-toolbar mb-2 mb-md-0">
+        <div class='flex-grow-1 p-2'><FormKit type="select" name="categories" label="Filter by Category" :options="sortedCats" v-model="filterCats" />
+          <div class="d-flex flex-row search-checks">
+            <FormKit type="checkbox" name="unpaid" label="Unpaid Only" v-model="filterUnpaid" />
+          <FormKit type="checkbox" name="noBib" label="No Bib Only" v-model="filterNoBib" />
+        </div>
+        </div>
+        <div class="flex-shrink-1 justify-content-end pt-4">
           <div class='btn btn-md btn-success  ' @click="createReg()">Add New Registration</div>
         </div>
       </div>
@@ -248,6 +282,12 @@ export default {
 </template>
 
 <style>
+#racerFilterTxtInput {
+  width: 320px;
+}
+.search-checks > .formkit-outer {
+   width: 120px;
+}
 table.table {
   --bs-table-hover-bg: #76c8ff;
 }

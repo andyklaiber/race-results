@@ -25,12 +25,12 @@ const router = createRouter({
     {
       // UserPosts will be rendered inside User's <router-view>
       // when /user/:id/posts is matched
-      path: '/race/:raceid',
+      path: '/race/:raceid/',
       component: RaceLayoutComponent,
       name: "view-race",
       children:[
         { path: '', component: EditRaceComponent, name: 'edit-race' },
-        { path: 'racers', component: EditRacersComponent, name: 'edit-racers' },
+        { path: 'racers/:series?', component: EditRacersComponent, name: 'edit-racers' },
         // when /race/:raceid/roster is matched
         // { path: 'roster', component: RaceRoster },
         // // when /race/:raceid/pending is matched
