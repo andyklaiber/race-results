@@ -39,11 +39,11 @@ export default {
 
         </div>
         <div class="row">
-          <div class="col">
-          <RouterLink v-if="!isRosterPage" :to="`/roster/${$route.params.raceid}`">See who is signed up</RouterLink>
+          <div class="col" v-if="!isRosterPage">
+          <RouterLink :to="`/roster/${$route.params.raceid}`">See who is signed up</RouterLink>
         </div>
-        <div class="col">
-          <RouterLink v-if="!isRegPage" :to="{name:'register',params:$route.params.raceid}">Register</RouterLink>
+        <div class="col" v-if="!isRegPage">
+          <RouterLink :to="{name:'register',params:$route.params.raceid}">Register</RouterLink>
         </div>
       </div>
       </div>

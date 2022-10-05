@@ -5,6 +5,20 @@ import EventDetailsComponent from "./EventDetailsComponent.vue";
 import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
 import dayjs from '@/lib/dayjs';
 
+let saveForm =  _.debounce((data)=>{
+  window.localStorage.setItem('race-reg-form-data', JSON.stringify(data))
+}, 2500);
+let getForm = ()=>{
+  let data = window.localStorage.getItem('race-reg-form-data');
+  if(data){
+    return JSON.parse(data);
+  }
+  return null;
+}
+let clearFormStorage = ()=>{
+  window.localStorage.removeItem('race-reg-form-data');
+}
+
 export default {
   components: {
     EventDetailsComponent,
@@ -22,11 +36,16 @@ export default {
       birthdate: "",//"1990-03-05",
       submitted: false,
       couponError: [],
+      prevBibError: [],
+      seriesRaces:{},
+      seriesRaceIdx:0,
+      previousReg: false,
+      prevAge: null,
     };
   },
   created() {
     this.$watch(
-      () => this.$route.params,
+      () => this.$route.params.raceid,
       () => {
         this.fetchData();
       },
@@ -34,6 +53,19 @@ export default {
       // already being observed
       { immediate: true }
     );
+  },
+  watch: {
+    formInputData: {
+      handler(newValue, oldValue) {
+        if(this.previousReg == false){
+          saveForm(newValue);
+        }
+        // Note: `newValue` will be equal to `oldValue` here
+        // on nested mutations as long as the object itself
+        // hasn't been replaced.
+      },
+      deep: true
+    }
   },
   methods: {
     dollas(amt) {
@@ -46,17 +78,24 @@ export default {
         request(`/api/races/${this.$route.params.raceid}`)
           .then(async (response) => {
             this.raceData = response.data;
+            let prevFormData = getForm();
+            if(prevFormData){
+              this.formInputData = prevFormData;
+            }
             if(this.raceData.series && this.raceData.toString().length > 1){
               await request(`/api/series/${this.raceData.series}/registration`)
                 .then(({data})=>{
+                  this.seriesRaces = data;
                   let today = dayjs();
-                  _.some(data, ({eventDate,raceid})=>{
+                  this.seriesRaceIdx = 0;
+                  _.some(data, ({eventDate,raceid}, idx)=>{
                     if(dayjs(eventDate).add(21,'hour').isBefore(today)){
                       console.log(dayjs(eventDate).add(21,'hour').format())
                       console.log(today.format());
                       return false;
                     }
                     else{
+                      this.seriesRaceIdx = idx;
                       this.$router.push(`/register/${raceid}`)
                       return true;
                     }
@@ -71,6 +110,43 @@ export default {
             this.error = err.toString();
             console.error(err);
           });
+      }
+    },
+    formChanged(data){
+      console.log("formChange");
+      console.dir(data)
+    },
+    findPrevBib(bibNumber) {
+      request.post(`/api/racers/bib`, {
+        series: `${this.raceData.series}`,
+        bibNumber
+      })
+        .then(({ data }) => {
+          console.log('prevbib')
+          console.log(data);
+          if(data.paytype === 'season'){
+            this.prevBibError = ['You are already registered for the whole season']
+            return;
+          }
+          data.prevPaymentId = data.paymentId;
+          delete data.paymentId;
+          this.formInputData = data;
+          this.prevAge = data.racerAge
+        })
+        .catch(({response})=>{
+          console.dir(response)
+          if(response.status== 404){
+            this.prevBibError=[response.data.message]
+          }
+        })
+
+    },
+    onPrevBibChange(data){
+      if (data) {
+        this.findPrevBib(data);
+      } else {
+        this.prevBibError = [];
+        this.prevAge = null;
       }
     },
     getCouponPricing(couponCode) {
@@ -114,10 +190,12 @@ export default {
         .then((response) => {
           if (response.data) {
             this.submitted = true;
+            clearFormStorage();
+            console.log("response data");
             console.log(response.data);
             return new Promise((resolve) =>
               setTimeout(() => {
-                window.location.href = response.data;
+                //window.location.href = response.data;
                 resolve();
               }, 2000)
             );
@@ -260,6 +338,9 @@ export default {
       if (this.sponsoredCategorySelected) {
         return false;
       }
+      if(this.cashEnabled){
+        return true;
+      }
       if (this.raceData.paymentOptions && this.raceData.paymentOptions.length < 2) {
         return false;
       }
@@ -278,6 +359,9 @@ export default {
       return null;
     },
     racerAge() {
+      if(this.prevAge){
+        return this.prevAge;
+      }
       if (this.birthdate) {
         //calculate racer age on dec 31
         const dec31 = dayjs();
@@ -301,7 +385,18 @@ export default {
       <div v-if="regDisabled">
         <h3>Registration is closed. Register for next week after 9 PM</h3>
       </div>
-      <div v-else class="container mb-5">
+      <div v-else class="mb-5">
+        <div v-if="seriesRaceIdx > 0">
+          
+          <FormKit label-class="text-danger fw-bold fs-5" type="checkbox" name="prevBibLookup" label="I have a bib number!" help="Look up your information from a previous race" v-model="previousReg" />
+                  <FormKit v-if="previousReg" 
+                  type="text" name="bibNumber" 
+                  label="Bib Number:" 
+                  help="Enter your Bib Number from your previous race to pre-fill your info" 
+                  :delay="1000" 
+                  @input="onPrevBibChange"
+                  :errors="prevBibError" />
+        </div>
         <FormKit type="form" id="race-registration" v-model="formInputData" :form-class="submitted ? 'hide' : 'show'"
           :errors="formError" :actions="false" @submit="submit">
           <div class="row">
@@ -319,12 +414,12 @@ export default {
               </div>
 
               <div class="form-group pt-3">
-                <FormKit type="email" name="email" label="Your email" help="Enter an email address"
+                <FormKit v-if="!previousReg" type="email" name="email" label="Your email" help="Enter an email address"
                   validation="required|email" />
               </div>
               <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
                 help="Enter an optional Team or Sponsor name" />
-              <FormKit type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
+              <FormKit v-if="!previousReg" type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
                 help="Enter your birthday to see Race Categories" validation="required|before:2020-01-01"
                 validation-visibility="live" />
               <!-- <div>Racer Age: {{racerAge}}</div> -->
@@ -414,6 +509,9 @@ export default {
 </template>
 
 <style>
+.prev-lookup.formkit-label{
+  color: #c10111
+}
 table.table {
   --bs-table-hover-bg: #76c8ff;
 }
