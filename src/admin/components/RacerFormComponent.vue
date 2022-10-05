@@ -103,6 +103,7 @@ export default {
             return await requestPromise.then((response) => {
                 if (response.data) {
                     this.submitted = true;
+                    console.log('response data');
                     console.log(response.data);
                     return new Promise((resolve) =>
                         setTimeout(() => {

@@ -195,7 +195,7 @@ export default {
             console.log(response.data);
             return new Promise((resolve) =>
               setTimeout(() => {
-                //window.location.href = response.data;
+                window.location.href = response.data;
                 resolve();
               }, 2000)
             );

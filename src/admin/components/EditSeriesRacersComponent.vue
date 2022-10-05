@@ -57,21 +57,9 @@ export default {
             // _.reduce(data.filteredRaces, (allRacers, race, idx )=>{
             //   _.filter(race, {paytype: 'cash'})
             // })
-            this.data = {registeredRacers: data.racers};
+            this.data = {registeredRacers: data.racers, regCategories: data.regCategories};
             this.loading = false;
-          })
-          .catch((err) => {
-            this.loading = false;
-            this.error = err.toString();
-            console.error(err);
-          });
-        }
-        else{
-
-          request(`/api/racers/race/${this.$route.params.raceid}`)
-          .then((response) => {
-            this.data = response.data;
-            this.loading = false;
+            this.error = '';
           })
           .catch((err) => {
             this.loading = false;
@@ -80,6 +68,7 @@ export default {
           });
         }
       }
+      this.error = 'invalid URL'
     },
 
 
@@ -220,7 +209,7 @@ export default {
         </div>
         <div class="d-flex flex-grow-1 justify-content-between pt-4">
           <a class="btn btn-primary align-self-start" @click="resetFilters">Reset Filters</a>
-          <div class='btn btn-md btn-success  align-self-start' @click="createReg()">Add New Registration</div>
+          <!-- <div class='btn btn-md btn-success  align-self-start' @click="createReg()">Add New Registration</div> -->
         </div>
       </div>
       <div class="table-responsive">
@@ -229,10 +218,11 @@ export default {
             <tr>
               <th scope="col">First Name</th>
               <th scope="col">Last Name</th>
+              <th scope="col">Email</th>
               <th scope="col">Category</th>
               <th scope="col">Bib Number</th>
               <th scope="col">Paytype</th>
-              <th scope="col">Payment Status</th>
+              <th scope="col">EventName</th>
               <th scope="col"><strong>{{filteredRacers.length}} Found</strong></th>
             </tr>
           </thead>
@@ -240,10 +230,12 @@ export default {
             <tr v-for="(racer, idx) in filteredRacers" :key="idx">
               <td>{{racer.first_name}}</td>
               <td>{{racer.last_name}}</td>
+              <td>{{racer.email}}</td>
               <td>{{catName(racer.category)}}</td>
               <td>{{racer.bibNumber}}</td>
               <td>{{racer.paytype}}</td>
-              <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
+              <td>{{racer.eventDisplayName}}</td>
+              <!-- <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td> -->
               <td>
                 <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{racer.status === 'unpaid'? 'Register': 'edit'}}</div>
               </td>

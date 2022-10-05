@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 import PaymentsComponent from '@/admin/components/PaymentsComponent.vue';
 import EditRacersComponent from '@/admin/components/EditRacersComponent.vue';
 import EditRaceComponent from '@/admin/components/EditRaceComponent.vue';
+import EditSeriesRacersComponent from '@/admin/components/EditSeriesRacersComponent.vue';
 import RaceLayoutComponent from '@/admin/components/RaceLayoutComponent.vue';
 import RacesComponent from '@/admin/components/RacesComponent.vue';
 
@@ -30,7 +31,8 @@ const router = createRouter({
       name: "view-race",
       children:[
         { path: '', component: EditRaceComponent, name: 'edit-race' },
-        { path: 'racers/:series?', component: EditRacersComponent, name: 'edit-racers' },
+        { path: 'racers/', component: EditRacersComponent, name: 'edit-racers' },
+        { path: 'series/:series', component: EditSeriesRacersComponent, name: 'edit-series-racers' },
         // when /race/:raceid/roster is matched
         // { path: 'roster', component: RaceRoster },
         // // when /race/:raceid/pending is matched
