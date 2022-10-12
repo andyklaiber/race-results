@@ -31,7 +31,7 @@ export default {
           </li>
           <!-- <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: $route.name == 'edit-series-racers' }" :to="{ name: 'edit-series-racers'}">
-              Event Registrations
+              Series Single Registrations
             </RouterLink>
           </li> -->
           <!-- <li class="nav-item">

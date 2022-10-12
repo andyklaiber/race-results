@@ -7,7 +7,7 @@ import dayjs from '@/lib/dayjs';
 
 let saveForm =  _.debounce((data)=>{
   window.localStorage.setItem('race-reg-form-data', JSON.stringify(data))
-}, 2500);
+}, 3500);
 let getForm = ()=>{
   let data = window.localStorage.getItem('race-reg-form-data');
   if(data){
@@ -111,10 +111,6 @@ export default {
             console.error(err);
           });
       }
-    },
-    formChanged(data){
-      console.log("formChange");
-      console.dir(data)
     },
     findPrevBib(bibNumber) {
       request.post(`/api/racers/bib`, {
@@ -277,7 +273,7 @@ export default {
       if(!this.lastRaceTime){
         return false;
       }
-      return dayjs().isAfter(this.lastRaceTime.subtract(3, 'hour'))
+      return dayjs().isAfter(this.lastRaceTime.subtract(6, 'hour'))
     },
     eventDateFormatted() {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
@@ -286,7 +282,7 @@ export default {
       if(!this.lastRaceTime){
         return false;
       }
-      return dayjs().isAfter(this.lastRaceTime.subtract(20, 'minute'))
+      return dayjs().isAfter(this.lastRaceTime.subtract(5, 'minute'))
     },
     paymentOptions() {
       let options = {};
@@ -389,13 +385,14 @@ export default {
         <div v-if="seriesRaceIdx > 0">
           
           <FormKit label-class="text-danger fw-bold fs-5" type="checkbox" name="prevBibLookup" label="I have a bib number!" help="Look up your information from a previous race" v-model="previousReg" />
-                  <FormKit v-if="previousReg" 
-                  type="text" name="bibNumber" 
+          <FormKit v-if="previousReg" 
+                  type="number" name="bibNumber" 
                   label="Bib Number:" 
                   help="Enter your Bib Number from your previous race to pre-fill your info" 
-                  :delay="1000" 
+                  :delay="1500" 
                   @input="onPrevBibChange"
-                  :errors="prevBibError" />
+                  :errors="prevBibError"
+                  validation="required" />  
         </div>
         <FormKit type="form" id="race-registration" v-model="formInputData" :form-class="submitted ? 'hide' : 'show'"
           :errors="formError" :actions="false" @submit="submit">
@@ -405,14 +402,11 @@ export default {
                 <h5>Registration Info</h5>
                 <span class="badge badge-secondary badge-pill">3</span>
               </h4>
-
-              <div class="col">
+              
                 <FormKit type="text" name="first_name" label="First name" help="What is your first name"
                   validation="required" />
                 <FormKit type="text" name="last_name" label="Last name" help="What is your last name"
                   validation="required" />
-              </div>
-
               <div class="form-group pt-3">
                 <FormKit v-if="!previousReg" type="email" name="email" label="Your email" help="Enter an email address"
                   validation="required|email" />

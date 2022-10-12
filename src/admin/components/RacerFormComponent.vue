@@ -8,6 +8,8 @@ export default {
         "racerData",
         "categories",
         "payments",
+        "formMode",
+        "series"
     ],
     emits: ['saved'],
     data() {
@@ -15,11 +17,17 @@ export default {
             birthdate: "",
             formError: [],
             submitted: false,
+            paymentType: 'season',
+            prevBibError:[],
+            formInputData: {},
         }
     },
     mounted() {
-        if(!this.unpaidReg){
+        if(this.formMode ==='create'){
             return;
+        }
+        if(this.formMode ==='edit'){
+            this.formInputData = this.racerData;
         }
         _.defer(()=>{
             let bibNode = document.querySelector('#bibNumber');
@@ -43,6 +51,7 @@ export default {
             _.forEach(this.payments, (element) => {
                 options[element.type] = element.name;
             });
+            options['cash'] = 'Single Cash';
             options['season'] = 'Volunteer/Season Comp';
             return options;
         },
@@ -57,7 +66,10 @@ export default {
             }
         },
         unpaidReg() {
-            return this.racerData.status == 'unpaid';
+            if(this.formMode === 'create'){
+                return this.paymentType == 'cash';
+            }
+            return this.paymentType == 'single' && this.racerData.status == 'unpaid';
         },
         paymentAmount() {
             if (this.racerData.paytype === 'cash') {
@@ -73,17 +85,61 @@ export default {
             }
             return amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
         },
+        findPrevBib(bibNumber) {
+            request.post(`/api/racers/bib/${bibNumber}`, {
+                series: `${this.series}`,
+            })
+                .then(({ data }) => {
+                    console.log('prevbib')
+                    console.log(data);
+                    if (data.paytype === 'season') {
+                        this.prevBibError = ['Racer is already registered for the whole season'];
+                        return;
+                    }
+                    //   if(data.raceid == this.$route.params.raceid){
+                    //     this.prevBibError = ['Racer is already registered for this race'];
+                    //       //return; 
+                    //   }
+                    data.prevPaymentId = data.paymentId;
+                    delete data.paymentId;
+                    delete data.paymentReceived;
+                    delete data.raceid;
+
+                    this.formInputData = data;
+                    this.prevAge = data.racerAge
+                })
+                .catch(({ response }) => {
+                    console.dir(response)
+                    if (response.status == 404) {
+                        this.prevBibError = [response.data.message]
+                    }
+                })
+
+        },
+        onPrevBibChange(data) {
+            if (data) {
+                this.findPrevBib(data);
+            } else {
+                this.prevBibError = [];
+                this.prevAge = null;
+            }
+        },
         async submitHandler(formData) {
             console.log(formData);
+
             let requestPromise;
-            if (this.unpaidReg) {
+            if (this.formMode === 'create') {
+                let paymentAmount = this.paymentAmount;
+                if (formData.paytype == 'season') {
+                    paymentAmount = 0;
+                    formData.compedEntry = true;
+                }
                 requestPromise = request
                     .post(
                         `/api/payments/register`,
-                        { ...formData, paymentAmount: this.paymentAmount },
+                        { ...formData, paymentAmount },
                         {
                             params: {
-                                paymentId: this.racerData.paymentId,
                                 raceId: this.$route.params.raceid
                             }
                         }
@@ -128,8 +184,16 @@ export default {
             {{racerData.status === 'unpaid'? 'Register Racer': 'Edit Racer Data'}}
         </h5>
     </div>
-
-    <FormKit type="form" id="race-registration" :value="racerData" :form-class="submitted ? 'hide' : 'show'"
+    <FormKit v-if="formMode=='create'"
+                  type="number" name="bibNumber" 
+                  label="Bib Number:" 
+                  help="Enter racer's bib number from a previous race" 
+                  :delay="1500" 
+                  @input="onPrevBibChange"
+                  :errors="prevBibError"
+                  />  
+        
+    <FormKit type="form" id="admin-registration" v-model="formInputData" :form-class="submitted ? 'hide' : 'show'"
         :errors="formError" submit-label="Save" @submit="submitHandler">
         <div class="double">
             <FormKit type="text" name="first_name" label="First name" validation="required" />
@@ -148,7 +212,7 @@ export default {
                         is: 'You must select a race category',
                     }" />
     
-            <FormKit type="select" id="paytype" label="Payment Type:" name="paytype" :options="paymentOptions"
+            <FormKit type="select" id="paytype" label="Payment Type:" name="paytype" :options="paymentOptions" v-model="paymentType"
                 validation="required" validation-visibility="dirty" :validation-messages="{
                         is: 'You must select a Payment Type',
                     }" />

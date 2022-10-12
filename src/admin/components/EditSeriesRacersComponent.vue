@@ -26,7 +26,8 @@ export default {
       filterKey:"",
       filterUnpaid:false,
       filterNoBib:false,
-      filterCats:"all"
+      filterCats:"all",
+      filterSimilar:true,
     }
   },
   
@@ -57,7 +58,7 @@ export default {
             // _.reduce(data.filteredRaces, (allRacers, race, idx )=>{
             //   _.filter(race, {paytype: 'cash'})
             // })
-            this.data = {registeredRacers: data.racers, regCategories: data.regCategories};
+            this.data = {registeredRacers: data.racers, regCategories: data.regCategories, races: data.races};
             this.loading = false;
             this.error = '';
           })
@@ -69,12 +70,6 @@ export default {
         }
       }
       this.error = 'invalid URL'
-    },
-
-
-    submitForm(clickEvent) {
-      clickEvent.preventDefault();
-      this.$formkit.submit("race-registration");
     },
     catName(cat_id) {
       let catObj = _.find(this.data.regCategories, { id: cat_id })
@@ -90,17 +85,6 @@ export default {
         raceid: this.$route.params.raceid
       };
         this.showModal=true;
-    },
-    pullPrevSeriesReg(){
-      let racer = _.clone(_.find(this.data.registeredRacers, {paymentId, paytype:'cash'}));
-      if(racer){
-      this.racerToEdit = {
-        paytype:'cash',
-        status: 'unpaid',
-        raceid: this.$route.params.raceid
-      };
-        this.showModal=true;
-      }
     },
     editRacer(paymentId){
       let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
@@ -154,6 +138,26 @@ export default {
     filteredRacers(){
       const filterKey = this.filterKey && this.filterKey.toLowerCase()
       let data = this.data.registeredRacers;
+      if (this.filterSimilar) {
+        let returnList = [];
+        _.forEach(this.data.races, (raceid, raceIdIndex) => {
+          console.log(raceid);
+          let raceRacers = _.filter(data, { raceid });
+          _.forEach(raceRacers, (racer, racerIndex) => {
+            _.forEach(_.filter(data, { raceid: this.data.races[raceIdIndex + 1] }), (racerCompare) => {
+              if (racer.first_name.toLowerCase() === racerCompare.first_name.toLowerCase() || racer.last_name.toLowerCase() === racerCompare.last_name.toLowerCase()) {
+                  if (!_.includes(returnList, racer)) {
+                    returnList.push(racer);
+                  }
+                  if (!_.includes(returnList, racerCompare)) {
+                    returnList.push(racerCompare);
+                  }
+              }
+            })
+          })
+        })
+        return _.sortBy(returnList, [function(o) { return o.last_name.toLowerCase(); }]);
+      }
 
       if (filterKey.length || this.filterUnpaid || this.filterCats !== 'all' || this.filterNoBib) {
             data = data.filter((row) => {
@@ -177,7 +181,7 @@ export default {
               })
             })
           }
-          return _.orderBy(data, "last_name");
+          return _.sortBy(data, [function(o) { return o.last_name.toLowerCase(); }]);
     }
   },
 };
@@ -205,6 +209,7 @@ export default {
           <div class="d-flex flex-row search-checks">
             <FormKit type="checkbox" name="unpaid" label="Unpaid Only" v-model="filterUnpaid" />
           <FormKit type="checkbox" name="noBib" label="No Bib Only" v-model="filterNoBib" />
+          <FormKit type="checkbox" name="duplicates" label="Duplicates" v-model="filterSimilar" />
         </div>
         </div>
         <div class="d-flex flex-grow-1 justify-content-between pt-4">
@@ -237,7 +242,7 @@ export default {
               <td>{{racer.eventDisplayName}}</td>
               <!-- <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td> -->
               <td>
-                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{racer.status === 'unpaid'? 'Register': 'edit'}}</div>
+                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{'edit'}}</div>
               </td>
             </tr>
 
@@ -250,7 +255,7 @@ export default {
           <!-- use the modal component, pass in the prop -->
           <modal-component :show="showModal" @close="closeModal">
             <template #body>
-              <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions"></RacerFormComponent>
+              <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions" formMode="edit" :series="data.series"></RacerFormComponent>
             </template>
           </modal-component>
         </Teleport>

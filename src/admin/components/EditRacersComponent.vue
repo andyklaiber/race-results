@@ -22,6 +22,7 @@ export default {
       formInputData: {},
       data: {},
       racerToEdit:null,
+      racerFormMode:'edit',
       showModal:false,
       filterKey:"",
       filterUnpaid:false,
@@ -49,25 +50,6 @@ export default {
       this.error = null;
       this.loading = true;
       if (this.$route.params.raceid) {
-        if(this.$route.params.series){
-          request(`/api/racers/series/${this.$route.params.series}`)
-          .then(({data}) => {
-            console.log(data);
-            // let allRacers = []
-            // _.reduce(data.filteredRaces, (allRacers, race, idx )=>{
-            //   _.filter(race, {paytype: 'cash'})
-            // })
-            this.data = {registeredRacers: data.racers};
-            this.loading = false;
-          })
-          .catch((err) => {
-            this.loading = false;
-            this.error = err.toString();
-            console.error(err);
-          });
-        }
-        else{
-
           request(`/api/racers/race/${this.$route.params.raceid}`)
           .then((response) => {
             this.data = response.data;
@@ -79,13 +61,6 @@ export default {
             console.error(err);
           });
         }
-      }
-    },
-
-
-    submitForm(clickEvent) {
-      clickEvent.preventDefault();
-      this.$formkit.submit("race-registration");
     },
     catName(cat_id) {
       let catObj = _.find(this.data.regCategories, { id: cat_id })
@@ -100,23 +75,14 @@ export default {
         status: 'unpaid',
         raceid: this.$route.params.raceid
       };
+        this.racerFormMode = 'create'
         this.showModal=true;
-    },
-    pullPrevSeriesReg(){
-      let racer = _.clone(_.find(this.data.registeredRacers, {paymentId, paytype:'cash'}));
-      if(racer){
-      this.racerToEdit = {
-        paytype:'cash',
-        status: 'unpaid',
-        raceid: this.$route.params.raceid
-      };
-        this.showModal=true;
-      }
     },
     editRacer(paymentId){
       let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
       if(racer){
         this.racerToEdit = racer;
+        this.racerFormMode = 'edit'
         this.showModal=true;
       }else{
         alert('no payment id found for racer')
@@ -188,7 +154,7 @@ export default {
               })
             })
           }
-          return _.orderBy(data, "last_name");
+          return _.sortBy(data, [function(o) { return o.last_name.toLowerCase(); }]);
     }
   },
 };
@@ -206,7 +172,12 @@ export default {
         :filter-key="searchQuery"
         editIdColumn="paymentId">
       </Grid> -->
-      <div class="racer-controls d-flex flex-row justify-content-between flex-wrap align-items-top pt-3 pb-2 mb-3 p-2 border-bottom">
+      <div class="d-flex flex-row justify-content-center">
+        <div class="p-2">
+          <h3>{{data.displayName}}</h3>
+        </div>
+      </div>
+      <div class="racer-controls d-flex flex-row justify-content-between flex-wrap align-items-top pb-2 mb-3 border-bottom">
         <div class='p-2'>
           <FormKit id='racerFilterTxtInput' type="text" name="search" label="Search:" help="search in first, last or bib number" :delay="300"
             v-model="filterKey" />
@@ -218,7 +189,7 @@ export default {
           <FormKit type="checkbox" name="noBib" label="No Bib Only" v-model="filterNoBib" />
         </div>
         </div>
-        <div class="d-flex flex-grow-1 justify-content-between pt-4">
+        <div class="d-flex flex-grow-1 justify-content-between p-2 pt-4">
           <a class="btn btn-primary align-self-start" @click="resetFilters">Reset Filters</a>
           <div class='btn btn-md btn-success  align-self-start' @click="createReg()">Add New Registration</div>
         </div>
@@ -258,7 +229,7 @@ export default {
           <!-- use the modal component, pass in the prop -->
           <modal-component :show="showModal" @close="closeModal">
             <template #body>
-              <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions"></RacerFormComponent>
+              <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions" :formMode="racerFormMode" :series="data.series"></RacerFormComponent>
             </template>
           </modal-component>
         </Teleport>
