@@ -26,7 +26,7 @@ export default {
         if(this.formMode ==='create'){
             return;
         }
-        if(this.formMode ==='edit'){
+        if(this.formMode ==='edit' || this.formMode === 'regcash'){
             this.formInputData = this.racerData;
         }
         _.defer(()=>{
@@ -69,7 +69,7 @@ export default {
             if(this.formMode === 'create'){
                 return this.paymentType == 'cash';
             }
-            return this.paymentType == 'single' && this.racerData.status == 'unpaid';
+            return this.paymentType == 'cash' && this.racerData.status == 'unpaid';
         },
         paymentAmount() {
             if (this.racerData.paytype === 'cash') {
@@ -128,7 +128,7 @@ export default {
             console.log(formData);
 
             let requestPromise;
-            if (this.formMode === 'create') {
+            if (this.formMode === 'create' || this.formMode === 'regcash') {
                 let paymentAmount = this.paymentAmount;
                 if (formData.paytype == 'season') {
                     paymentAmount = 0;
@@ -140,11 +140,13 @@ export default {
                         { ...formData, paymentAmount },
                         {
                             params: {
+                                paymentId: formData.paymentId,
                                 raceId: this.$route.params.raceid
                             }
                         }
                     )
             } else {
+                delete formData.status;
                 requestPromise = request
                     .patch(
                         `/api/racers/race/${this.$route.params.raceid}`,

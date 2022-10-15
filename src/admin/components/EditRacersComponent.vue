@@ -78,9 +78,23 @@ export default {
         this.racerFormMode = 'create'
         this.showModal=true;
     },
+    regCash(paymentId){
+      let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
+      if(racer){
+        console.log('racerData:')
+        console.log(racer)
+        this.racerToEdit = racer;
+        this.racerFormMode = 'regcash'
+        this.showModal=true;
+      }else{
+        alert('no payment id found for racer')
+      }
+    },
     editRacer(paymentId){
       let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
       if(racer){
+        console.log('racerData:')
+        console.log(racer)
         this.racerToEdit = racer;
         this.racerFormMode = 'edit'
         this.showModal=true;
@@ -216,7 +230,8 @@ export default {
               <td>{{racer.paytype}}</td>
               <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
               <td>
-                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{racer.status === 'unpaid'? 'Register': 'edit'}}</div>
+                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{'edit'}}</div>
+                <div class='btn btn-sm btn-outline-secondary' v-if="racer.status === 'unpaid'" @click="regCash(racer.paymentId)">{{'Register'}}</div>
               </td>
             </tr>
 
