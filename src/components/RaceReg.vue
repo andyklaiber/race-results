@@ -270,10 +270,10 @@ export default {
       return "Go to Payment"
     },
     cashEnabled() {
-      if(!this.lastRaceTime){
+      if(!this.raceData.cashPaymentsEnabled || !this.lastRaceTime){
         return false;
       }
-      return dayjs().isAfter(this.lastRaceTime.subtract(6, 'hour'))
+      return dayjs().isAfter(this.firstRaceTime.subtract(6, 'hour'));
     },
     eventDateFormatted() {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
@@ -379,7 +379,7 @@ export default {
     <div v-if="loaded">
       <EventDetailsComponent :details="raceData.eventDetails" />
       <div v-if="regDisabled">
-        <h3>Registration is closed. Register for next week after 9 PM</h3>
+        <h3>Registration is closed.</h3>
       </div>
       <div v-else class="mb-5">
         <div v-if="seriesRaceIdx > 0">
