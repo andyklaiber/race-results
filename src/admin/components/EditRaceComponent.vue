@@ -149,6 +149,7 @@ export default {
             <FormKit type="group" name="stripeMeta">
               <FormKit :value="raceData?.stripeMeta?.accountId" type="text" name="accountId" label="Stripe Integration Account ID" />
             </FormKit>
+            <FormKit :value="raceData.archived" type="checkbox" label="Archive Race (will not be visible in admin race list)" name="archived" />
           </FormKit>
         </div>
         <div class="col-md-6">

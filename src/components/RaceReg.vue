@@ -5,18 +5,18 @@ import EventDetailsComponent from "./EventDetailsComponent.vue";
 import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
 import dayjs from '@/lib/dayjs';
 
-let saveForm =  _.debounce((data)=>{
-  window.localStorage.setItem('race-reg-form-data', JSON.stringify(data))
+let saveForm =  _.debounce((data, raceid)=>{
+  window.localStorage.setItem(`race-reg-form-data-${raceid}`, JSON.stringify(data))
 }, 3500);
-let getForm = ()=>{
-  let data = window.localStorage.getItem('race-reg-form-data');
+let getForm = (raceid)=>{
+  let data = window.localStorage.getItem(`race-reg-form-data-${raceid}`);
   if(data){
     return JSON.parse(data);
   }
   return null;
 }
-let clearFormStorage = ()=>{
-  window.localStorage.removeItem('race-reg-form-data');
+let clearFormStorage = (raceid)=>{
+  window.localStorage.removeItem(`race-reg-form-data-${raceid}`);
 }
 
 export default {
@@ -58,7 +58,7 @@ export default {
     formInputData: {
       handler(newValue, oldValue) {
         if(this.previousReg == false){
-          saveForm(newValue);
+          saveForm(newValue, this.$route.params.raceid);
         }
         // Note: `newValue` will be equal to `oldValue` here
         // on nested mutations as long as the object itself
@@ -78,8 +78,12 @@ export default {
         request(`/api/races/${this.$route.params.raceid}`)
           .then(async (response) => {
             this.raceData = response.data;
-            let prevFormData = getForm();
+            let prevFormData = getForm(this.$route.params.raceid);
             if(prevFormData){
+              let category = _.find(this.raceData?.regCategories, { "id": prevFormData.category });
+              if(!category){
+                delete prevFormData.category;
+              }
               this.formInputData = prevFormData;
             }
             if(this.raceData.series && this.raceData.toString().length > 1){
@@ -186,7 +190,7 @@ export default {
         .then((response) => {
           if (response.data) {
             this.submitted = true;
-            clearFormStorage();
+            clearFormStorage(this.$route.params.raceid);
             console.log("response data");
             console.log(response.data);
             return new Promise((resolve) =>
@@ -232,20 +236,17 @@ export default {
       return null;
     },
     sortedCats() {
-      if (!this.racerAge && this.formInputData.category == undefined) {
-        return [];
-      }
       const filtered = _.filter(this.raceData.regCategories, (cat) => {
         // if (cat.startTime && dayjs().isAfter(this.getEventTimeObj(cat.startTime).subtract(20, 'minute'))) {
         //   return false;
         // }
 
-        if (cat.minAge && this.racerAge < cat.minAge) {
-          return false
-        }
-        if (cat.maxAge && this.racerAge > cat.maxAge) {
-          return false
-        }
+        // if (cat.minAge && this.racerAge < cat.minAge) {
+        //   return false
+        // }
+        // if (cat.maxAge && this.racerAge > cat.maxAge) {
+        //   return false
+        // }
         return true;
       })
       let cats = {};
