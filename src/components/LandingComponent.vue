@@ -1,6 +1,8 @@
 <script>
+import _ from "lodash";
 import dropdown from "bootstrap/js/dist/dropdown";
 import { RouterLink, RouterView } from "vue-router";
+import request from "@/lib/ApiClient";
 
 export default {
   emits: ['logout'],
@@ -10,9 +12,57 @@ export default {
   data() {
     return {
       count: 0,
+      races: [],
     };
   },
-  computed: {},
+  created() {
+    this.$watch(
+      () => this.$route.query,
+      () => {
+        this.fetchData();
+      },
+      // fetch the data when the view is created and the data is
+      // already being observed
+      { immediate: true }
+    );
+  },
+  methods: {
+    fetchData() {
+      this.error = null;
+      this.loading = true;
+      console.log('fetch plz')
+      if (this.$route) {
+       return request(`/api/races/`)
+          .then((response) => {
+            this.races = response.data;
+            this.loading = false;
+            console.log("fetched")
+            console.log(this.races);
+            
+          })
+          .catch((err) => {
+            this.loading = false;
+            this.error = err.toString();
+            console.error(err);
+          });
+      }
+    }
+  },
+  computed: {
+    displayRaces(){
+      let filtered = _.filter(this.races, (raceInfo)=>{
+        if(!raceInfo.isTestData){
+          return true;
+        }
+      })
+      return filtered;
+      // order by upcoming race date?
+      //return _.sortBy(filtered, [function(o) { return o.displayName.toLowerCase(); }]);
+    },
+    loggedIn(){
+      return false;
+    }
+  },
   
 };
 </script>
@@ -32,6 +82,9 @@ export default {
             <RouterLink class="nav-link" :class="{ active: $route.name == 'races' }" :to="{ name: 'races'}">
               Races
             </RouterLink>
+            <RouterLink class="nav-link" :class="{ active: $route.name == 'races' }" :to="{ name: 'results'}">
+              Results
+            </RouterLink>
           </li>
           <li class="nav-item">
             <!-- <RouterLink class="nav-link" :class="{ active: $route.name == 'payments' }" :to="{ name: 'payments'}">
@@ -50,13 +103,16 @@ export default {
             </ul>
           </li> -->
         </ul>
-        <button type="button" class="btn btn-secondary" @click="$emit('logout')">Logout</button>
+        <button v-if="loggedIn" type="button" class="btn btn-secondary" @click="$emit('logout')">Logout</button>
       </div>
     </div>
   </nav>
 <body>
   <div class="container-fluid">
-    <div v-for="(race, idx) in raceData" :key="idx">
+    <div v-for="(race, idx) in displayRaces" :key="idx">
+      {{race.displayName}}
+      <pre>{{Object.keys(race)}}</pre>
+      <pre>{{Object.keys(race.eventDetails)}}</pre>
 
     </div>
   </div>

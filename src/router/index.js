@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+import Landing from '../components/LandingComponent.vue'
 import RaceResult from '../components/RaceResult.vue';
 import RaceReg from '../components/RaceReg.vue';
 import RaceRegConfirm from '../components/RaceRegConfirm.vue';
@@ -9,6 +10,10 @@ import Roster from '../components/Roster.vue';
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
+    { 
+      path: '/', 
+      component: Landing
+    },
     { 
         path: '/race/:raceid', 
         component: RaceResult
