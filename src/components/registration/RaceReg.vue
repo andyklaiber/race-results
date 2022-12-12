@@ -218,8 +218,10 @@ export default {
           }
         })
         .catch((error) => {
+          if(error.response?.data?.message){
+            return this.formError = [error.response.data.message];
+          }
           this.formError = ["Error submitting request"];
-          console.log(error);
         });
     },
     getEventTimeObj(startTime) {
@@ -542,15 +544,16 @@ export default {
             <h5>{{raceData.waiver.header}}</h5>
             <p>{{raceData.waiver.text}}</p>
           <FormKit  
-          type="checkbox" 
+          type="checkbox"
           label="I HAVE READ AND UNDERSTAND THIS WAIVER"
           help="I acknowledge that I have read, understand, and accepted the above release of liability."
           name="waiverAccepted" 
-          validation="is:true"
+          validation="accepted"
           :validation-messages="{
-            is: 'You must agree to the terms of the liability release above'
+            accepted: 'You must agree to the terms of the liability release above'
           }"
-          validation-visibility="dirty" />
+          validation-visibility="dirty"
+          />
           </div>
           <div v-if="sponsoredCategorySelected">
             <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>

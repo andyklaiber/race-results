@@ -1,6 +1,7 @@
 <script>
 import _ from "lodash";
 import EventDetailsComponent from "@/components/EventDetailsComponent.vue";
+import MainNav from "@/components/MainNav.vue";
 
 import request from "@/lib/ApiClient";
 
@@ -8,7 +9,7 @@ const dollas = (amt) =>
   amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default {
-  components: { EventDetailsComponent },
+  components: { EventDetailsComponent, MainNav },
   data() {
     return {
       categories: {},
@@ -104,6 +105,7 @@ export default {
 </script>
 
 <template>
+  <MainNav></MainNav>
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
