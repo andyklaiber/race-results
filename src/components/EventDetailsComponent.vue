@@ -40,18 +40,17 @@ export default {
           <div class="col col-md-auto">
             <h3 class="display-5 fw-bold lh-3">{{ details.name }}</h3>
           </div>
+        </div>
+        <p class="lead fw-bold">{{details.formattedDates}}</p>
+        <div v-if="details.homepageUrl" class="d-grid gap-2 d-md-flex justify-content-md mb-4 mb-lg-3">
+          <div class="col-md-auto">
+            <a class="btn btn-sm btn-success" :href="details.homepageUrl">Event Homepage</a>
+          </div>
           <div class="col col-lg-2">
             <div v-if="details.facebookShare">
               <FbShareComponent :url="details.homepageUrl" />
             </div>
           </div>
-        </div>
-        <p class="lead fw-bold">{{details.formattedDates}}</p>
-        <div v-if="details.homepageUrl" class="d-grid gap-2 d-md-flex justify-content-md-between mb-4 mb-lg-3">
-          <div >
-            <a class="btn btn-success" :href="details.homepageUrl">Event Homepage</a>
-          </div>
-
         </div>
         <p class="lead">{{ details.tagline }}</p>
         <div v-if="regDisabled" class="fw-bold">
