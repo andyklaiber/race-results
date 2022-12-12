@@ -1,8 +1,7 @@
 <script>
 import _ from "lodash";
 import request from "@/lib/ApiClient";
-
-import dayjs from 'dayjs/esm/index.js';
+import dayjs from '@/lib/dayjs';
 
 export default {
   components: {
@@ -90,6 +89,12 @@ export default {
     eventDate() {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DDTHH:mm');
     },
+    regOpenDate() {
+      return dayjs(this.raceData.regOpenDate).format('YYYY-MM-DDTHH:mm');
+    },
+    timeToOpen() {
+      return dayjs().to(this.raceData.regOpenDate)
+    },
     paymentOptions() {
       let options = {};
       _.forEach(this.raceData.paymentOptions, (element) => {
@@ -126,9 +131,12 @@ export default {
           <FormKit type="form" :errors="formError" id="race-settings" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
             <FormKit :value="raceData?.displayName" type="text" name="displayName" label="Event Name" />
             <FormKit :value="eventDate" type="datetime-local" name="eventDate" label="Date" />
+            <FormKit :value="regOpenDate" type="datetime-local" name="regOpenDate" label="Registration Open Date" />
+            <p>Registration Opens {{timeToOpen}}</p>
             <FormKit :value="raceData?.series" type="text" name="series" label="Event Series Name" />
             <FormKit type="group" name="eventDetails">
               <FormKit :value="raceData?.eventDetails?.name" type="text" name="name" label="Header Event Name" />
+              <FormKit :value="raceData?.eventDetails?.formattedDates" type="text" name="formattedDates" label="Header Formatted dates" />
               <FormKit :value="raceData?.eventDetails?.tagline" type="text" name="tagline"
                 label="Header tagline text" />
               <FormKit :value="raceData?.eventDetails?.logoUrl" type="text" name="logoUrl" label="Logo URL" />

@@ -1,9 +1,10 @@
 <script>
 import _ from "lodash";
 import request from "@/lib/ApiClient";
-import EventDetailsComponent from "./EventDetailsComponent.vue";
-import EventCategoryScheduleComponent from "./EventCategoryScheduleComponent.vue"
+import EventDetailsComponent from "@/components/EventDetailsComponent.vue";
+import EventCategoryScheduleComponent from "@/components/EventCategoryScheduleComponent.vue"
 import dayjs from '@/lib/dayjs';
+import MainNav from "@/components/MainNav.vue";
 
 let saveForm =  _.debounce((data, raceid)=>{
   window.localStorage.setItem(`race-reg-form-data-${raceid}`, JSON.stringify(data))
@@ -19,8 +20,23 @@ let clearFormStorage = (raceid)=>{
   window.localStorage.removeItem(`race-reg-form-data-${raceid}`);
 }
 
+function getFees(priceInDollars){
+    let cents = priceInDollars * 100;
+
+    let onlineFee = cents * .04;
+    if(onlineFee > 600){
+        onlineFee = 600
+    }
+
+    let ccFee = Math.round((cents + onlineFee + 30)/( 1 - .029 ));
+
+    return ccFee - cents;
+    // return { stripeFee: ccFee - onlineFee - cents, regFee: onlineFee };
+}
+
 export default {
   components: {
+    MainNav,
     EventDetailsComponent,
     EventCategoryScheduleComponent,
   },
@@ -329,6 +345,22 @@ export default {
         ),
 
       });
+      if (this.raceData?.optionalPurchases && this.formInputData.optionalPurchases) {
+        let newTot = amt;
+        this.raceData.optionalPurchases.forEach(({ id, label, description, amount }) => {
+          if (this.formInputData.optionalPurchases[id]) {
+            if (!dets.options) {
+              dets.options = [];
+            }
+            dets.options.push({ description,label, id, amount:this.dollas(parseFloat(amount)) })
+            newTot += parseFloat(amount);
+          }
+        })
+        fees = getFees(newTot)/100
+        dets.regFee = this.dollas(fees);
+        dets.tot = this.dollas(newTot + fees)
+
+      }
       return dets;
     },
     showPaymentOption() {
@@ -373,12 +405,13 @@ export default {
 </script>
 
 <template>
+   <MainNav></MainNav>
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <EventDetailsComponent :details="raceData.eventDetails" />
+      <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid" />
       <div v-if="regDisabled">
         <h3>Registration is closed.</h3>
       </div>
@@ -415,9 +448,9 @@ export default {
               <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
                 help="Enter an optional Team or Sponsor name" />
               <FormKit v-if="!previousReg" type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
-                help="Enter your birthday to see Race Categories" validation="required|before:2020-01-01"
+                help="Enter your birthdate" validation="required|before:2020-01-01"
                 validation-visibility="live" />
-              <!-- <div>Racer Age: {{racerAge}}</div> -->
+              <div>Racer Age: {{racerAge}}</div>
               <div class="form-group pt-3">
                 <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category"
                   name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
@@ -430,7 +463,6 @@ export default {
             <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
               <h4 class="d-flex justify-content-between align-items-center mb-3">
                 <h5>Payment Detail</h5>
-                <span class="badge badge-secondary badge-pill">3</span>
               </h4>
               <fieldset class="list-group mb-3">
                 <div>
@@ -444,6 +476,15 @@ export default {
                     validation="required" v-model="payment" v-if="showPaymentOption" />
                 </div>
               </fieldset>
+              <div v-if="raceData.optionalPurchases">
+                <FormKit type="group" name="optionalPurchases">
+                <div v-for="(item, idx) in raceData.optionalPurchases">
+                  <h6>{{item.description}}</h6>
+                  <FormKit type="checkbox" :label="`${item.label} - ${dollas(parseFloat(item.amount))}`" :name="item.id" />
+                  <FormKit v-if="formInputData.optionalPurchases && formInputData.optionalPurchases[item.id]" type="select" :options="item.options" :label="item.optionsLabel" :name="`${item.id}-option`"></FormKit>
+                </div>
+                </FormKit>
+              </div>
               <ul class="list-group mb-3 formkit-fieldset">
                 <li class="
                   list-group-item
@@ -459,6 +500,20 @@ export default {
                     <span v-if="paymentCostDets.discounted" class="mx-3 text-decoration-line-through text-danger">{{
                     dollas(paymentCostDets.orig) }}</span>
                     <span :class="{'text-success':paymentCostDets.discounted}">{{ paymentCostDets.cost }}</span>
+                  </div>
+                </li>
+                <li  v-if="paymentCostDets.options" v-for="(item, id) in paymentCostDets.options" class="
+                  list-group-item
+                  d-flex
+                  justify-content-between
+                  lh-condensed
+                ">
+                  <div>
+                    <h6 class="my-0">{{item.label}}</h6>
+                    <small v-if="item.option" class="text-muted">{{ item.option }}</small>
+                  </div>             
+                  <div>
+                    <span>{{ item.amount }}</span>      
                   </div>
                 </li>
                 <li class="
@@ -482,6 +537,20 @@ export default {
           </div>
           <div v-if="payment ==='cash'">
             <h2 class="text-danger">Your registration will not be active until payment is received at the event</h2>
+          </div>
+          <div v-if="raceData.waiver">
+            <h5>{{raceData.waiver.header}}</h5>
+            <p>{{raceData.waiver.text}}</p>
+          <FormKit  
+          type="checkbox" 
+          label="I HAVE READ AND UNDERSTAND THIS WAIVER"
+          help="I acknowledge that I have read, understand, and accepted the above release of liability."
+          name="waiverAccepted" 
+          validation="is:true"
+          :validation-messages="{
+            is: 'You must agree to the terms of the liability release above'
+          }"
+          validation-visibility="dirty" />
           </div>
           <div v-if="sponsoredCategorySelected">
             <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
@@ -509,5 +578,9 @@ export default {
 }
 table.table {
   --bs-table-hover-bg: #76c8ff;
+}
+body {
+  min-height: 75rem;
+  padding-top: 4.5rem;
 }
 </style>

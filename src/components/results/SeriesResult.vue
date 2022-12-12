@@ -1,6 +1,6 @@
 <script>
 import _ from "lodash";
-import request from "../lib/ApiClient";
+import request from "@/lib/ApiClient";
 import SeriesResultRow from "./SeriesResultRow.vue";
 import SeriesNavBar from "./SeriesNavBar.vue";
 
@@ -48,6 +48,8 @@ export default {
           this.categories = data.categories;
           this.displayName = data.displayName;
           this.series = this.$route.params.seriesid;
+          let temp = _.map(data.categories, (cat)=>_.omit(cat, ['results','columns']))
+          console.log('temp:', _.orderBy(temp, 'disporder'))
         })
         .catch((err) => {
           console.error(err);

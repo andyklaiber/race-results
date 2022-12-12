@@ -1,1 +1,262 @@
-{"_id":"62f54882f8091e598894c5fb","series":"rcx_2022","displayName":"2022 Rodeo Cross","regCategories":[{"id":"a_men","catdispname":"A Men","disporder":0},{"id":"b_men","catdispname":"B Men","disporder":1},{"id":"b35+_men","catdispname":"B35+ Men","disporder":2},{"id":"c_men","catdispname":"C Men","disporder":3},{"id":"c35+_men","catdispname":"C35+ Men","disporder":4},{"id":"a_women","catdispname":"A Women","disporder":5},{"id":"b_women","catdispname":"B Women","disporder":6},{"id":"c_women","catdispname":"C Women","disporder":7},{"id":"junior_boys","catdispname":"Junior Boys","disporder":8},{"id":"junior_girls","catdispname":"Junior Girls","disporder":9},{"id":"open_45+","catdispname":"Open 45+","disporder":10},{"id":"single_speed","catdispname":"Single Speed","disporder":11},{"id":"tracklocross","catdispname":"Tracklocross","disporder":12}],"paymentOptions":[{"name":"Single Race","type":"single","amount":"25"},{"name":"Season Pass (5 for the price of 4)","type":"season","amount":"100"}]}
+{
+    "_id": {
+        "$oid": "639564b467fec13b2cbb0adc"
+    },
+    "seriesRaceNumber": "1",
+    "active": true,
+    "displayName": "2023 PCRS #1",
+    "eventStart": 1653528053477,
+    "eventDate": "2022-09-28T00:00",
+    "regOpenDate": "2022-12-12T00:00",
+    "formattedStartDate": "9/28",
+    "raceid": "pcrs_2023_1",
+    "series": "pcrs_2023",
+    "useActualStarts": false,
+    "eventDetails": {
+        "name": "Prairie City Race Series #1 2022",
+        "tagline": "NorCal's largest weekly mountain bike race series!",
+        "logoUrl": "/Pcrs2022Logo_x385.png",
+        "homepageUrl": "https://racemtb.com",
+        "facebookShare": {}
+    },
+    "regCategories": [
+        {
+            "id": "pro_expert",
+            "catdispname": "Pro Expert",
+            "laps": 4,
+            "disporder": 0
+        },
+        {
+            "id": "expert_men_39",
+            "catdispname": "Expert Men 39-",
+            "laps": 4,
+            "disporder": 1
+        },
+        {
+            "id": "expert_men_4049",
+            "catdispname": "Expert Men 40-49",
+            "laps": 4,
+            "disporder": 2
+        },
+        {
+            "id": "expert_men_5059",
+            "catdispname": "Expert Men 50-59",
+            "laps": 4,
+            "disporder": 3
+        },
+        {
+            "id": "expert_men_60",
+            "catdispname": "Expert Men 60+",
+            "laps": 4,
+            "disporder": 4
+        },
+        {
+            "id": "expert_women",
+            "catdispname": "Expert Women",
+            "laps": 4,
+            "disporder": 5
+        },
+        {
+            "id": "single_speed_expert",
+            "catdispname": "Single Speed Expert",
+            "laps": 4,
+            "disporder": 6
+        },
+        {
+            "id": "varsity_boys",
+            "catdispname": "Varsity Boys",
+            "laps": 4,
+            "disporder": 7
+        },
+        {
+            "id": "single_speed_sport",
+            "catdispname": "Single Speed Sport",
+            "laps": 3,
+            "disporder": 9
+        },
+        {
+            "id": "emtb_men",
+            "catdispname": "e-Mtb Men",
+            "laps": 4,
+            "disporder": 10
+        },
+        {
+            "id": "emtb_women",
+            "catdispname": "e-Mtb Women",
+            "laps": 3,
+            "disporder": 11
+        },
+        {
+            "id": "sport_men_1939",
+            "catdispname": "Sport Men 19-39",
+            "laps": 3,
+            "disporder": 12
+        },
+        {
+            "id": "sport_men_4049",
+            "catdispname": "Sport Men 40-49",
+            "laps": 3,
+            "disporder": 13
+        },
+        {
+            "id": "sport_men_5059",
+            "catdispname": "Sport Men 50-59",
+            "laps": 3,
+            "disporder": 14
+        },
+        {
+            "id": "sport_men_60",
+            "catdispname": "Sport Men 60+",
+            "laps": 3,
+            "disporder": 15
+        },
+        {
+            "id": "jv_boys",
+            "catdispname": "JV Boys",
+            "laps": 3,
+            "disporder": 16
+        },
+        {
+            "id": "clydesdale_210lb",
+            "catdispname": "Clydesdale 210lb+",
+            "laps": 3,
+            "disporder": 17
+        },
+        {
+            "id": "tandem",
+            "catdispname": "Tandem",
+            "laps": 3,
+            "disporder": 18
+        },
+        {
+            "id": "sport_women_39",
+            "catdispname": "Sport Women 39-",
+            "laps": 3,
+            "disporder": 19
+        },
+        {
+            "id": "sport_women_40",
+            "catdispname": "Sport Women 40+",
+            "laps": 3,
+            "disporder": 20
+        },
+        {
+            "id": "jv_girls",
+            "catdispname": "JV Girls",
+            "disporder": 21
+        },
+        {
+            "id": "beginner_men_1939",
+            "catdispname": "Beginner Men 19-39",
+            "laps": 2,
+            "disporder": 23
+        },
+        {
+            "id": "beginner_men_4049",
+            "catdispname": "Beginner Men 40-49",
+            "laps": 2,
+            "disporder": 24
+        },
+        {
+            "id": "beginner_men_5059",
+            "catdispname": "Beginner Men 50-59",
+            "laps": 2,
+            "disporder": 25
+        },
+        {
+            "id": "beginner_men_60",
+            "catdispname": "Beginner Men 60+",
+            "laps": 2,
+            "disporder": 26
+        },
+        {
+            "id": "beginner_women_39",
+            "catdispname": "Beginner Women 39-",
+            "laps": 2,
+            "disporder": 27
+        },
+        {
+            "id": "beginner_women_40",
+            "catdispname": "Beginner Women 40+",
+            "laps": 2,
+            "disporder": 28
+        },
+        {
+            "id": "freshsoph_boys",
+            "catdispname": "Fresh/Soph Boys",
+            "laps": 2,
+            "disporder": 29
+        },
+        {
+            "id": "freshsoph_girls",
+            "catdispname": "Fresh/Soph Girls",
+            "laps": 2,
+            "disporder": 30
+        },
+        {
+            "id": "grom_boys_78_grade",
+            "catdispname": "Grom Boys 7/8 Grade",
+            "laps": 6,
+            "disporder": 31
+        },
+        {
+            "id": "grom_girls_78_grade",
+            "catdispname": "Grom Girls 7/8 Grade",
+            "laps": 5,
+            "disporder": 32
+        },
+        {
+            "id": "grom_boys_56_grade",
+            "catdispname": "Grom Boys 5/6 Grade",
+            "laps": 6,
+            "disporder": 33
+        },
+        {
+            "id": "grom_girls_56_grade",
+            "catdispname": "Grom Girls 5/6 Grade",
+            "laps": 5,
+            "disporder": 34
+        },
+        {
+            "id": "grom_coed_4_grade",
+            "catdispname": "Grom Coed 4- Grade",
+            "laps": 5,
+            "disporder": 35
+        }
+    ],
+    "paymentOptions": [
+        {
+            "name": "Single Entry - March 22",
+            "type": "single",
+            "amount": "25"
+        },
+        {
+            "name": "Junior Entry - March 22",
+            "type": "single",
+            "amount": "15"
+        },
+        {
+            "name": "Early Bird Season Pass (10 Entries for the price of 9)",
+            "type": "season",
+            "amount": "225"
+        }
+    ],
+    "optionalPurchases": [
+        {
+            "id": "tshirt",
+            "description": "T-Shirt and Water Bottle",
+            "optionsLabel": "T-shirt size",
+            "options": [
+                "s",
+                "m",
+                "l",
+                "xl",
+                "xxl"
+            ],
+            "amount": "15"
+        }
+    ],
+    "stripeMeta": {
+        "accountId": "acct_1LX8HmJuCa64kY2C"
+    }
+}

@@ -1,6 +1,6 @@
 <script>
 import _ from "lodash";
-import request from "../lib/ApiClient";
+import request from "@/lib/ApiClient";
 import ResultRow from "./TeamCompDetailRow.vue";
 import SeriesNavBar from "./SeriesNavBar.vue";
 
