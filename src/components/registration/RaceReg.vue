@@ -298,6 +298,12 @@ export default {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
     },
     regDisabled() {
+      if(this.$route.query.test !== undefined){
+        return false;
+      }
+      if(dayjs().isBefore(this.raceData.eventDetails.regOpenDate)){
+        return true;
+      }
       if(!this.lastRaceTime){
         return false;
       }
@@ -480,10 +486,10 @@ export default {
               </fieldset>
               <div v-if="raceData.optionalPurchases">
                 <FormKit type="group" name="optionalPurchases">
-                <div v-for="(item, idx) in raceData.optionalPurchases">
+                <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
                   <h6>{{item.description}}</h6>
                   <FormKit type="checkbox" :label="`${item.label} - ${dollas(parseFloat(item.amount))}`" :name="item.id" />
-                  <FormKit v-if="formInputData.optionalPurchases && formInputData.optionalPurchases[item.id]" type="select" :options="item.options" :label="item.optionsLabel" :name="`${item.id}-option`"></FormKit>
+                  <FormKit v-if="item.options && formInputData.optionalPurchases[item.id]" type="select" :options="item.options" :label="item.optionsLabel" :name="`${item.id}-option`"></FormKit>
                 </div>
                 </FormKit>
               </div>

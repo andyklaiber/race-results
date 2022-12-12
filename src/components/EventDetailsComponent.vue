@@ -1,6 +1,7 @@
 <script>
 import { RouterLink } from "vue-router";
 import FbShareComponent from './FbShareComponent.vue';
+import dayjs from '@/lib/dayjs';
 
 export default {
   components: { FbShareComponent },
@@ -15,7 +16,13 @@ export default {
     },
     isRegPage() {
       return this.$route.name === 'register'
-    }
+    },
+    regDisabled() {
+      return dayjs().isBefore(this.details.regOpenDate)
+    },
+    regTimeToOpen() {
+      return dayjs().to(this.details.regOpenDate)
+    },
   },
 };
 </script>
@@ -47,7 +54,10 @@ export default {
 
         </div>
         <p class="lead">{{ details.tagline }}</p>
-        <div class="row">
+        <div v-if="regDisabled" class="fw-bold">
+          Registration will open {{regTimeToOpen}}
+        </div>
+        <div v-else class="row">
           <div class="col col-md-auto" v-if="!isRegPage">
             <RouterLink class="btn btn-success" :to="{ name: 'register', params: { raceid } }">Register</RouterLink>
           </div>
