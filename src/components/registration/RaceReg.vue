@@ -51,6 +51,7 @@ export default {
       payment: "",
       birthdate: "",//"1990-03-05",
       submitted: false,
+      waiverAccepted: false,
       couponError: [],
       prevBibError: [],
       seriesRaces:{},
@@ -100,6 +101,7 @@ export default {
               if(!category){
                 delete prevFormData.category;
               }
+              prevFormData.waiverAccepted = false;
               this.formInputData = prevFormData;
             }
             if(this.raceData.series && this.raceData.toString().length > 1){
@@ -551,6 +553,7 @@ export default {
             <p>{{raceData.waiver.text}}</p>
           <FormKit  
           type="checkbox"
+          v-model="waiverAccepted"
           label="I HAVE READ AND UNDERSTAND THIS WAIVER"
           help="I acknowledge that I have read, understand, and accepted the above release of liability."
           name="waiverAccepted" 
@@ -558,7 +561,7 @@ export default {
           :validation-messages="{
             accepted: 'You must agree to the terms of the liability release above'
           }"
-          validation-visibility="dirty"
+          validation-visibility="live"
           />
           </div>
           <div v-if="sponsoredCategorySelected">
