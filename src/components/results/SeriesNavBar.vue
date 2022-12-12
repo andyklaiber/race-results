@@ -1,7 +1,7 @@
 <script>
 import dropdown from "bootstrap/js/dist/dropdown";
 import { RouterLink } from "vue-router";
-import request from "../lib/ApiClient";
+import request from "@/lib/ApiClient";
 
 
 export default {

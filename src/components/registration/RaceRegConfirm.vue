@@ -1,8 +1,8 @@
 <script>
 import _ from "lodash";
-import EventDetailsComponent from "./EventDetailsComponent.vue";
+import EventDetailsComponent from "@/components/EventDetailsComponent.vue";
 
-import request from "../lib/ApiClient";
+import request from "@/lib/ApiClient";
 
 const dollas = (amt) =>
   amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -109,7 +109,7 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <EventDetailsComponent :details="raceData.eventDetails" />
+      <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid"/>
       <FormKit
         type="form"
         id="race-registration"

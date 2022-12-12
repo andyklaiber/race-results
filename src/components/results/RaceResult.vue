@@ -2,7 +2,7 @@
 import _ from "lodash";
 import ResultRow from "./ResultRow.vue";
 import SeriesNavBar from "./SeriesNavBar.vue";
-import request from "../lib/ApiClient";
+import request from "@/lib/ApiClient";
 
 export default {
   components: {

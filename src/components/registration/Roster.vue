@@ -1,11 +1,15 @@
 <script>
 import _ from "lodash";
-import request from "../lib/ApiClient";
-import EventDetailsComponent from "./EventDetailsComponent.vue";
+import request from "@/lib/ApiClient";
+import EventDetailsComponent from "@/components/EventDetailsComponent.vue";
+import MainNav from "@/components/MainNav.vue";
 import dayjs from 'dayjs/esm/index.js'
 
 export default {
-  components: {EventDetailsComponent,},
+  components: {
+    EventDetailsComponent,
+    MainNav,
+  },
   data() {
     return {
       categories: {},
@@ -105,11 +109,12 @@ export default {
 </script>
 
 <template>
+  <MainNav></MainNav>
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-else id="top">
-    <EventDetailsComponent :details="raceData.eventDetails" />
+    <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid"/>
     <div v-if="Object.keys(racers).length">
       <div class="row">
       <div :class="{'col-md-6':showPaytype}">
@@ -182,5 +187,9 @@ export default {
 <style>
 table.table {
   --bs-table-hover-bg: #76c8ff;
+}
+body {
+  min-height: 75rem;
+  padding-top: 4.5rem;
 }
 </style>

@@ -18,9 +18,9 @@ export default {
     }
   },
   mounted: function(){
-    if(window.location.hash == '#/'){
-      this.$router.push(`/series/pcrs_2022`)
-    }
+    // if(window.location.hash == '#/'){
+    //   this.$router.push(`/series/pcrs_2022`)
+    // }
 // fetch(dataUrl)
     //     .then(response => response.json())
     //     .then(data => {
