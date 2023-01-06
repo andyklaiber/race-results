@@ -80,17 +80,16 @@ export default {
 
 <template>
   <MainNav></MainNav>
-<body>
+
   <div v-if="loading">
     Plz wait, loading...
   </div>
-  <div v-else class="container-fluid">
+  <div v-else>
     <div v-for="(race, idx) in displayRaces" :key="idx">
       <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" />
 
     </div>
   </div>
-</body>
 </template>
 <style scoped>
 body {
