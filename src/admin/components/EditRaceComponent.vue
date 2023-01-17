@@ -14,7 +14,6 @@ export default {
       error: null,
       formError: [],
       formInputData: {},
-      newEventDetails: {},
       raceData: {},
     };
   },
@@ -93,7 +92,7 @@ export default {
       return dayjs(this.raceData.regOpenDate).format('YYYY-MM-DDTHH:mm');
     },
     timeToOpen() {
-      return dayjs().to(this.raceData.eventDetails.regOpenDate)
+      return dayjs().to(this.raceData.eventDetails?.regOpenDate)
     },
     paymentOptions() {
       let options = {};
@@ -147,6 +146,8 @@ export default {
                   label="FB Share URL" />
               </FormKit>
             </FormKit>
+            <FormKit :value="raceData?.entryCountMax" type="number"
+              label="Maximum Number of registrations" name="entryCountMax" />
             <FormKit :value="raceData?.showPaytypeOnRoster" type="checkbox"
               label="Show Payment Type as stages on roster" name="showPaytypeOnRoster" />
             <FormKit :value="raceData.isTestData" type="checkbox" label="Use Test payment integrations"

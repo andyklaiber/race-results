@@ -21,8 +21,10 @@ let clearFormStorage = (raceid)=>{
 }
 
 function getFees(priceInDollars){
+    if(priceInDollars === 0){
+      return 0
+    }
     let cents = priceInDollars * 100;
-
     let onlineFee = cents * .04;
     if(onlineFee > 600){
         onlineFee = 600
@@ -174,8 +176,12 @@ export default {
       })
         .then(({ data }) => {
           this.raceData.paymentOptions = data.paymentOptions;
+          
 
           if (!data.validCoupon) {
+            if(data.reason){
+              return this.couponError = [data.reason];
+            }
             this.couponError = ["Invalid Coupon Code"];
           } else {
             this.couponError = [];
@@ -207,16 +213,22 @@ export default {
         )
         .then((response) => {
           if (response.data) {
-            this.submitted = true;
-            clearFormStorage(this.$route.params.raceid);
             console.log("response data");
             console.log(response.data);
-            return new Promise((resolve) =>
+            if(response.data.redirect){
+              this.submitted = true;
+              clearFormStorage(this.$route.params.raceid);
+              return new Promise((resolve) =>
               setTimeout(() => {
-                window.location.href = response.data;
+                window.location.href = response.data.redirect;
                 resolve();
               }, 2000)
-            );
+              );
+            }else{
+              if(response.data.message){
+                this.formError = [response.data.message];
+              }
+            }
           }
         })
         .catch((error) => {
@@ -303,6 +315,9 @@ export default {
       if(this.$route.query.test !== undefined){
         return false;
       }
+      if(this.eventFull){
+        return true;
+      }
       if(dayjs().isBefore(this.raceData.eventDetails.regOpenDate)){
         return true;
       }
@@ -310,6 +325,14 @@ export default {
         return false;
       }
       return dayjs().isAfter(this.lastRaceTime.subtract(5, 'minute'))
+    },
+    eventFull(){
+      if(this.raceData.entryCountMax && this.raceData.entryCountMax > 1){
+        if(this.raceData.entryCount >= this.raceData.entryCountMax){
+          return true;
+        }
+      }
+      return false;
     },
     paymentOptions() {
       let options = {};
@@ -422,6 +445,7 @@ export default {
 
     <div v-if="loaded">
       <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid" />
+      <div v-if="eventFull" class="h5">This event has reached the registration entry max of {{ raceData.entryCountMax }}</div>
       <div v-if="regDisabled">
         <h3>Registration is closed.</h3>
       </div>
@@ -460,13 +484,12 @@ export default {
               <FormKit v-if="!previousReg" type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
                 help="Enter your birthdate" validation="required|before:2020-01-01"
                 validation-visibility="live" />
-              <div>Racer Age: {{racerAge}}</div>
+              <div>Age: {{racerAge}}</div>
               <div class="form-group pt-3">
-                <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category"
+                <FormKit type="select" id="category" label="Category:" placeholder="Select a category"
                   name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
-                  help="Select the Category you would like to race in"
                   :validation-messages="{
-                    is: 'You must select a race category',
+                    is: 'You must select a category',
                   }" />
               </div>
             </div>
@@ -503,7 +526,7 @@ export default {
                   lh-condensed
                 ">
                   <div>
-                    <h6 class="my-0">Race Entry:</h6>
+                    <h6 class="my-0">Event Entry:</h6>
                     <small class="text-muted">{{ paymentCostDets.name }}</small>
                   </div>
                   <div>
