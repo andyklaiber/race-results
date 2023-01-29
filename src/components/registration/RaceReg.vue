@@ -512,7 +512,7 @@ export default {
               <div v-if="raceData.optionalPurchases">
                 <FormKit type="group" name="optionalPurchases">
                 <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
-                  <h6>{{item.description}}</h6>
+                  <h6 v-html="item.description"></h6>
                   <FormKit type="checkbox" :label="`${item.label} - ${dollas(parseFloat(item.amount))}`" :name="item.id" />
                   <FormKit v-if="item.options && formInputData.optionalPurchases[item.id]" type="select" :options="item.options" :label="item.optionsLabel" :name="`${item.id}-option`"></FormKit>
                 </div>

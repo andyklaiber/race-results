@@ -86,7 +86,7 @@ export default {
   </div>
   <div v-else>
     <div v-for="(race, idx) in displayRaces" :key="idx">
-      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" />
+      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" compact-mode="true"/>
 
     </div>
   </div>

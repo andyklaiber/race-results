@@ -5,7 +5,7 @@ import dayjs from '@/lib/dayjs';
 
 export default {
   components: { FbShareComponent },
-  props: ["details", "raceid"],
+  props: ["details", "raceid", "compactMode"],
   data() {
     return {
     };
@@ -23,6 +23,12 @@ export default {
     regTimeToOpen() {
       return dayjs().to(this.details.regOpenDate)
     },
+    imgWidth(){
+      if(this.compactMode){
+        return 150;
+      }
+      return 225
+    }
   },
 };
 </script>
@@ -32,18 +38,18 @@ export default {
     <div class="row p-1 pb-0 pe-lg-0 pt-lg-3 align-items-center rounded-3 border shadow">
       <div class="col-sm-3 offset-sm-1 p-0">
         <a :href="details.homepageUrl">
-        <img class="pb-1" :src="details.logoUrl" alt="" width="225">
+        <img class="pb-1" :src="details.logoUrl" alt="" :width="imgWidth">
       </a>
       </div>
       <div class="col-lg-7 p-3 p-lg-3 pt-lg-3">
         <div class="row">
           <div class="col col-md-auto">
             <h3 class="display-7 fw-bold lh-3">{{ details.name }}</h3>
-            <p class="lead mb-0 fw-bold">{{ details.tagline }}</p>
+            <p v-if="!compactMode" class="lead mb-0 fw-bold">{{ details.tagline }}</p>
           </div>
         </div>
         <p class="display-9">{{details.formattedDates}}</p>
-        <div v-if="details.homepageUrl" class="d-grid gap-2 d-md-flex justify-content-md mb-4 mb-lg-3">
+        <div v-if="details.homepageUrl && !compactMode" class="d-grid gap-2 d-md-flex justify-content-md mb-4 mb-lg-3">
           <div class="col-md-auto">
             <a class="btn btn-sm btn-success" :href="details.homepageUrl">Event Homepage</a>
           </div>
