@@ -216,6 +216,7 @@ export default {
               <th scope="col">Last Name</th>
               <th scope="col">Category</th>
               <th scope="col">Bib Number</th>
+              <th scope="col">Age</th>
               <th scope="col">Paytype</th>
               <th scope="col">Payment Status</th>
               <th scope="col"><strong>{{filteredRacers.length}} Found</strong></th>
@@ -227,6 +228,7 @@ export default {
               <td>{{racer.last_name}}</td>
               <td>{{catName(racer.category)}}</td>
               <td>{{racer.bibNumber}}</td>
+              <td>{{racer.racerAge}}</td>
               <td>{{racer.paytype}}</td>
               <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
               <td>

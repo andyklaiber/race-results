@@ -89,7 +89,9 @@ export default {
     },
     filteredRacers(){
       if(this.showPaytype && this.stageFilter !== 'all'){
-        return _.filter(this.racers, {paytype:this.stageFilter} )
+        return _.filter(this.racers, (racer)=>{
+          return racer.paytype == this.stageFilter || racer.paytype == 'season';
+        } )
       }else{
         return this.racers
       }
@@ -118,7 +120,7 @@ export default {
     <div v-if="Object.keys(racers).length">
       <div class="row">
       <div :class="{'col-md-6':showPaytype}">
-        <h4>{{raceData.count}} Registered for {{raceData.displayName}} on {{raceDate}}</h4>
+        <h4>{{filteredRacers.length}} Registered for {{raceData.displayName}} on {{raceDate}}</h4>
       </div>
       <div v-if="showPaytype" class="col-md-6">
         <FormKit

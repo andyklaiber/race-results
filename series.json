@@ -222,21 +222,27 @@
             "catdispname": "Grom Coed 4- Grade",
             "laps": 5,
             "disporder": 35
+        },
+        {
+            "id": "poker_league",
+            "catdispname": "Poker League",
+            "laps": 3,
+            "disporder": 36
         }
     ],
     "paymentOptions": [
         {
-            "name": "Single Entry - March 22",
+            "name": "Single Entry - $25 - March 22",
             "type": "single",
             "amount": "25"
         },
         {
-            "name": "Junior Entry - March 22",
-            "type": "single",
+            "name": "Junior 17 and under Entry $15 - March 22",
+            "type": "junior",
             "amount": "15"
         },
         {
-            "name": "Early Bird Season Pass (10 Entries for the price of 9)",
+            "name": "Early Bird Season Pass - $225 (10 Entries for the price of 9)",
             "type": "season",
             "amount": "225"
         }

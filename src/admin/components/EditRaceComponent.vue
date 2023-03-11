@@ -148,6 +148,7 @@ export default {
             </FormKit>
             <FormKit :value="raceData?.entryCountMax" type="number"
               label="Maximum Number of registrations" name="entryCountMax" />
+              <p><h6>Current Reg Count: {{ raceData.entryCount }}</h6></p>
             <FormKit :value="raceData?.showPaytypeOnRoster" type="checkbox"
               label="Show Payment Type as stages on roster" name="showPaytypeOnRoster" />
             <FormKit :value="raceData.isTestData" type="checkbox" label="Use Test payment integrations"
@@ -177,6 +178,18 @@ export default {
               <h5>Payment Options</h5>
               <div class="row g-2 px-4 gx-4 border bg-light">
                 <div v-for="payOpt in raceData.paymentOptions" class="my-1">
+                  {{payOpt.name}}:{{`  ${dollas(payOpt.amount)}`}}
+                </div>
+              </div>
+            </div>
+              
+            <FormKit type="button" @click="editPaytypes">
+                Edit Paytypes
+              </FormKit>
+            <div class="col-md mb-3">
+              <h5>Coupons</h5>
+              <div class="row g-2 px-4 gx-4 border bg-light">
+                <div v-for="couponCode in raceData.coupons" class="my-1">
                   {{payOpt.name}}:{{`  ${dollas(payOpt.amount)}`}}
                 </div>
               </div>
