@@ -20,11 +20,17 @@ export default {
     regDisabled() {
       return dayjs().isBefore(this.details.regOpenDate)
     },
+    regEnded() {
+      return dayjs().isAfter(this.details.regCloseDate)
+    },
     regTimeToOpen() {
       return dayjs().to(this.details.regOpenDate)
     },
-    imgWidth(){
-      if(this.compactMode){
+    regTimeToClose() {
+      return dayjs().to(this.details.regCloseDate)
+    },
+    imgWidth() {
+      if (this.compactMode) {
         return 150;
       }
       return 225
@@ -38,8 +44,8 @@ export default {
     <div class="row p-1 pb-0 pe-lg-0 pt-lg-3 align-items-center rounded-3 border shadow">
       <div class="col-sm-3 offset-sm-1 p-0">
         <a :href="details.homepageUrl">
-        <img class="pb-1" :src="details.logoUrl" alt="" :width="imgWidth">
-      </a>
+          <img class="pb-1" :src="details.logoUrl" alt="" :width="imgWidth">
+        </a>
       </div>
       <div class="col-lg-7 p-3 p-lg-3 pt-lg-3">
         <div class="row">
@@ -48,7 +54,7 @@ export default {
             <p v-if="!compactMode" class="lead mb-0 fw-bold">{{ details.tagline }}</p>
           </div>
         </div>
-        <p class="display-9">{{details.formattedDates}}</p>
+        <p class="display-9">{{ details.formattedDates }}</p>
         <div v-if="details.homepageUrl && !compactMode" class="d-grid gap-2 d-md-flex justify-content-md mb-4 mb-lg-3">
           <div class="col-md-auto">
             <a class="btn btn-sm btn-success" :href="details.homepageUrl">Event Homepage</a>
@@ -59,20 +65,28 @@ export default {
             </div>
           </div>
         </div>
-        
+
         <div v-if="regDisabled" class="fw-bold">
-          Registration will open {{regTimeToOpen}}
+          Registration will open {{ regTimeToOpen }}
         </div>
         <div v-else class="row">
-          <div class="col col-md-auto" v-if="!isRegPage">
+          <div v-if="details?.regCloseDate" class="fw-bold">
+            <div v-if="regEnded" class="fw-bold">
+              Registration is closed
+            </div>
+            <div v-else class="fw-bold">
+              Registration will close {{ regTimeToClose }}
+            </div>
+          </div>
+          <div class="col col-md-auto" v-if="!isRegPage && !regEnded">
             <RouterLink class="btn btn-success" :to="{ name: 'register', params: { raceid } }">Register</RouterLink>
           </div>
           <div class="col" v-if="!isRosterPage">
-            <RouterLink class="btn btn-secondary" :to="{ name: 'roster', params: { raceid } }">See who is signed up</RouterLink>
+            <RouterLink class="btn btn-secondary" :to="{ name: 'roster', params: { raceid } }">See who is signed up
+            </RouterLink>
           </div>
         </div>
       </div>
     </div>
   </div>
-
 </template>

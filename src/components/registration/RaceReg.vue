@@ -321,6 +321,9 @@ export default {
       if(dayjs().isBefore(this.raceData.eventDetails.regOpenDate)){
         return true;
       }
+      if(this.raceData.eventDetails.regCloseDate && dayjs().isAfter(this.raceData.eventDetails.regCloseDate)){
+        return true;
+      }
       if(!this.lastRaceTime){
         return false;
       }

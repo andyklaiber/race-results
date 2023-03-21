@@ -94,6 +94,9 @@ export default {
     timeToOpen() {
       return dayjs().to(this.raceData.eventDetails?.regOpenDate)
     },
+    timeToClose() {
+      return dayjs().to(this.raceData.eventDetails?.regCloseDate)
+    },
     paymentOptions() {
       let options = {};
       _.forEach(this.raceData.paymentOptions, (element) => {
@@ -138,6 +141,8 @@ export default {
               label="Header tagline text" />
               <FormKit :value="raceData?.eventDetails?.regOpenDate" type="datetime-local" name="regOpenDate" label="Registration Open Date" />
               <p>Registration Opens {{timeToOpen}}</p>
+              <FormKit :value="raceData?.eventDetails?.regCloseDate" type="datetime-local" name="regCloseDate" label="Registration Close Date" />
+              <p>Registration Closes {{timeToClose}}</p>
               <FormKit :value="raceData?.eventDetails?.logoUrl" type="text" name="logoUrl" label="Logo URL" />
               <FormKit :value="raceData?.eventDetails?.homepageUrl" type="text" name="homepageUrl"
                 label="Home Page URL" />
