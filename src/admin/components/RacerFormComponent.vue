@@ -24,6 +24,7 @@ export default {
     },
     mounted() {
         if(this.formMode ==='create'){
+            this.paymentType = this.racerData.paytype;
             return;
         }
         if(this.formMode ==='edit' || this.formMode === 'regcash'){
@@ -51,8 +52,9 @@ export default {
             _.forEach(this.payments, (element) => {
                 options[element.type] = element.name;
             });
-            options['cash'] = 'Single Cash';
-            options['season'] = 'Volunteer/Season Comp';
+            options['cash'] = 'Cash Single Entry';
+            options['volunteer'] = 'Volunteer Single Entry';
+            options['season'] = 'Season Comp';
             return options;
         },
         racerAge() {
@@ -130,7 +132,7 @@ export default {
             let requestPromise;
             if (this.formMode === 'create' || this.formMode === 'regcash') {
                 let paymentAmount = this.paymentAmount;
-                if (formData.paytype == 'season') {
+                if (formData.paytype == 'season' || formData.paytype == 'volunteer') {
                     paymentAmount = 0;
                     formData.compedEntry = true;
                 }
@@ -202,7 +204,7 @@ export default {
             <FormKit type="text" name="last_name" label="Last name" validation="required" />
         </div>
         <div class="double">
-            <FormKit type="email" name="email" label="Email" validation="required|email" />
+            <FormKit type="email" name="email" label="Email" validation="email" />
     
             <FormKit type="text" name="sponsor" label="Team or Sponsor" />
         </div>
