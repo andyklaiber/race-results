@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import Landing from '@/components/LandingComponent.vue'
 import RaceResult from '@/components/results/RaceResult.vue';
+import ResultComponent from '@/components/results/ResultComponent.vue';
+import SeriesResultComponent from '@/components/results/SeriesResultComponent.vue';
 import RaceReg from '@/components/registration/RaceReg.vue';
 import RaceRegConfirm from '@/components/registration/RaceRegConfirm.vue';
 import SeriesRaceResult from '@/components/results/SeriesResult.vue';
@@ -23,6 +25,14 @@ const router = createRouter({
     { 
         path: '/race/:raceid', 
         component: RaceResult
+    },
+    { 
+        path: '/result/:id', 
+        component: ResultComponent
+    },
+    { 
+        path: '/result/series/:seriesid', 
+        component: SeriesResultComponent
     },
     { 
       path: '/register/:raceid', 

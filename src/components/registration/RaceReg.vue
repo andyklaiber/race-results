@@ -110,12 +110,10 @@ export default {
               await request(`/api/series/${this.raceData.series}/registration`)
                 .then(({data})=>{
                   this.seriesRaces = data;
-                  let today = dayjs();
+                  let now = dayjs();
                   this.seriesRaceIdx = 0;
                   _.some(data, ({eventDate,raceid}, idx)=>{
-                    if(dayjs(eventDate).add(21,'hour').isBefore(today)){
-                      console.log(dayjs(eventDate).add(21,'hour').format())
-                      console.log(today.format());
+                    if(dayjs(eventDate).isBefore(now)){
                       return false;
                     }
                     else{

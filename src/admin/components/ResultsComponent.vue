@@ -32,9 +32,9 @@ export default {
       this.error = null;
       this.loading = true;
       if (this.$route) {
-       return request(`/api/races/`)
+       return request(`/api/results/`)
           .then((response) => {
-            this.raceData = response.data;
+            this.results = response.data;
             this.loading = false;
             
           })
@@ -49,7 +49,7 @@ export default {
   computed: {
     
     loaded() {
-      if (!this.raceData) {
+      if (!this.results) {
         return false;
       }
       return true;
@@ -97,26 +97,30 @@ export default {
           </div> -->
         <!-- </div> -->
 
-        <h2>Active Races</h2>
+        <h2>Race Result Uploads</h2>
         <div class="table-responsive">
           <table class="table table-striped table-hover table-sm">
             <thead>
               <tr>
-                <th scope="col">Name</th>
+                <th scope="col">Event Name</th>
+                <th scope="col">Series Points Display Name</th>
+                <th scope="col">Formatted Date</th>
                 <th scope="col">series ID</th>
-                <th>Test Payments</th>
+                <th scope="col">Finalized</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(race, idx) in raceData" :key="idx">
-                <td><RouterLink :to="{ name: 'edit-racers', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
-                <td>{{race.series}}</td>
-                <td><Check v-if="race.isTestData" color="orange" ></Check></td>
-                <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
+              <tr v-for="(resultUpload, idx) in results" :key="idx">
+                <!-- <td><RouterLink :to="{ name: 'edit-result', params: { resultid: resultUpload._id }}" >{{resultUpload.displayName}}</RouterLink></td> -->
+                <td>{{resultUpload.eventName}}</td>
+                <td>{{resultUpload.shortName}}</td>
+                <td>{{resultUpload.formattedStartDate}}</td>
+                <td>{{resultUpload.series}}</td>
+                <td><Check v-if="resultUpload.final" color="red" ></Check></td>
+                <td><RouterLink :to="{ name: 'edit-result', params: { resultid: resultUpload.raceid }}" >Edit</RouterLink></td>
+                <td><a :href="`/#/result/${resultUpload.raceid}`">View Output</a></td>
                 <td>
                   <!-- <RouterLink v-if="!!race.series" class='btn btn-sm mx-1 btn-secondary' :to="{ name: 'edit-series-racers', params: { raceid: race.raceid, series: race.series }}" >Series Single Entries</RouterLink> -->
-                  <a class="btn btn-sm btn-secondary mx-1" :href="`/api/racers/race/${race.raceid}/export-contact`">Contact List</a>
-                  <a class="btn btn-sm btn-secondary mx-1" :href="`/api/racers/race/${race.raceid}/export`">export</a>
                 </td>
               </tr>
 
@@ -129,7 +133,7 @@ export default {
     </div>
     <div v-else>
       <div class="text-center">
-        <h2 class="mt-5">Error loading races...</h2>
+        <h2 class="mt-5">Error loading results...</h2>
       </div>
     </div>
   </div>

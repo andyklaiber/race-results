@@ -56,14 +56,27 @@ export default {
   },
   computed: {
     displayRaces(){
+      let series = {};
       let filtered = _.filter(this.races, (raceInfo)=>{
-        let isInFuture =  dayjs().isBefore(dayjs(`${dayjs(raceInfo.eventDate).format("YYYY-MM-DD")} 12:00`))
+        
+        if(raceInfo.series && series[raceInfo.series]){
+          // console.log("exclude "+raceInfo.series)
+          return false;
+        }else{
+          if(typeof raceInfo.series === 'string' && raceInfo.series.length > 1){
+            console.log("set as shown "+raceInfo.raceid)
+            series[raceInfo.series] = true;
+          }
+        }
+        let isInFuture =  dayjs().isBefore(dayjs(raceInfo.eventDate));
+        // console.log('isInFuture' + isInFuture)
         if(raceInfo.isTestData && !this.$route.query.test){
           return false;
         }
         if(!isInFuture && !this.$route.query.past){
           return false;
         }
+        // console.log("show "+raceInfo.raceid)
         return true;
       })
       return filtered;

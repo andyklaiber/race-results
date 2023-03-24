@@ -38,6 +38,16 @@ export default {
               Payments
             </RouterLink>
           </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: $route.name == 'results' }" :to="{ name: 'results'}">
+              Results
+            </RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: $route.name == 'series-results' }" :to="{ name: 'series-results'}">
+              Series Points
+            </RouterLink>
+          </li>
           <!-- <li class="nav-item">
             <a class="nav-link disabled">Disabled</a>
           </li> -->
