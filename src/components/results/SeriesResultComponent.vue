@@ -60,8 +60,8 @@ export default {
   },
   computed: {
     sortedCats() {
-      let cats;
-      return _.orderBy(cats, "disporder");
+      
+      return _.orderBy(this.categories, "disporder");
     },
     haveResults() {
       if (!this.categories) {
@@ -81,7 +81,7 @@ export default {
     <h2>{{ displayName }}</h2>
     <h3>Series Standings</h3>
     <p>Glossary of terms below:<br>
-1/50 = 1st Place/50 Points     -/- = Did not race</p></div>
+1/100 = 1st Place/100 Points     -/- = Did not race</p></div>
     <div v-if="haveResults">
       <div class="container-fluid text-center mt-5">
           <ul class="list-inline">

@@ -11,6 +11,7 @@ export default {
   },
   data() {
     return {
+      resultData:{},
       categories: {},
       loading: false,
       error: null,

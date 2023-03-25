@@ -118,7 +118,7 @@ export default {
                 <td>{{resultUpload.series}}</td>
                 <td><Check v-if="resultUpload.final" color="red" ></Check></td>
                 <td><RouterLink :to="{ name: 'edit-result', params: { resultid: resultUpload.raceid }}" >Edit</RouterLink></td>
-                <td><a :href="`/#/result/${resultUpload.raceid}`">View Output</a></td>
+                <td><a :href="`/#/result/${resultUpload.raceid}`" target="_blank">View Output</a></td>
                 <td>
                   <!-- <RouterLink v-if="!!race.series" class='btn btn-sm mx-1 btn-secondary' :to="{ name: 'edit-series-racers', params: { raceid: race.raceid, series: race.series }}" >Series Single Entries</RouterLink> -->
                 </td>
