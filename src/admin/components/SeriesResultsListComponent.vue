@@ -56,11 +56,13 @@ export default {
             let seriesList = {};
             response.data.forEach((result)=>{
               if(result.series){
-                if(!seriesList[result.series]){
-                  seriesList[result.series] = 1;
-                }else{
-
-                  seriesList[result.series] += 1;
+                if(!this.getSeriesResult(result.series)){
+                  if(!seriesList[result.series]){
+                    seriesList[result.series] = 1;
+                  }else{
+                    
+                    seriesList[result.series] += 1;
+                  }
                 }
               }
             })
@@ -134,29 +136,26 @@ export default {
             </button> -->
           </div>
         </div>
-        <div class="table-responsive" v-if="Object.keys(seriesOptions).length">
+        <div class="table-responsive" v-if="Object.keys(results).length">
           <table class="table table-striped table-hover table-sm">
             <thead>
               <tr>
                 <th scope="col">series ID</th>
-                <th scope="col">number of results</th>
+                <th scope="col">Display Name</th>
+                <th scope="col">Published</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(numRaces, seriesid) in seriesOptions">
+              <tr v-for="(seriesData, idx) in results">
                 
                 
-                <td>{{seriesid}}</td>
-                <td>{{ numRaces }}</td>
-                <td><div v-if="getSeriesResult(seriesid)">
-                  <td><a :href="`/#/result/series/${seriesid}`" target="_blank">view series points</a></td>
-                </div>
-                <div v-else>
-                  no series points yet
-                </div>
-              </td>
+                <td>{{seriesData.series}}</td>
+                <td>{{seriesData.eventName}}</td>
+                <td><Check v-if="seriesData.published" color="green" ></Check></td>
+                <td><RouterLink :to="{ name: 'edit-series-result', params: { series: seriesData._id }}" >Edit</RouterLink></td>
+                <td><a :href="`/#/result/series/${seriesData.series}`" target="_blank">view series points</a></td>
                 <td><button type="button" class="btn btn-sm btn-primary" @click="generateSeriesPoints(seriesid)">
-                Calculate Series Points
+                Update Series Points
               </button></td>
                 <!--<td><Check v-if="race.isTestData" color="orange" ></Check></td>
                 <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
@@ -174,6 +173,39 @@ export default {
           </pre> -->
         </div><div v-else>
           <h4>No series points calculations found</h4>
+        </div>
+        <div class="table-responsive" v-if="Object.keys(seriesOptions).length">
+          <table class="table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th scope="col">series ID</th>
+                <th scope="col">number of results</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(numRaces, seriesid) in seriesOptions">
+                
+                
+                <td>{{seriesid}}</td>
+                <td>{{ numRaces }}</td>
+                <td><button type="button" class="btn btn-sm btn-primary" @click="generateSeriesPoints(seriesid)">
+                Create Series Points
+              </button>
+                  </td>
+                <!--<td><Check v-if="race.isTestData" color="orange" ></Check></td>
+                <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
+                <td>
+                  <RouterLink v-if="!!race.series" class='btn btn-sm mx-1 btn-secondary' :to="{ name: 'edit-series-racers', params: { raceid: race.raceid, series: race.series }}" >Series Single Entries</RouterLink>
+                  <a class="btn btn-sm btn-secondary mx-1" :href="`/api/racers/race/${race.raceid}/export-contact`">Contact List</a>
+                  <a class="btn btn-sm btn-secondary mx-1" :href="`/api/racers/race/${race.raceid}/export`">export</a>
+                </td> -->
+              </tr>
+
+            </tbody>
+          </table>
+          <!-- <pre>
+            {{raceData}}
+          </pre> -->
         </div>
     </div>
     <div v-else>

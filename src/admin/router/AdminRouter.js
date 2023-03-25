@@ -9,6 +9,7 @@ import ResultLayoutComponent from '@/admin/components/ResultLayoutComponent.vue'
 import ResultsListComponent from '@/admin/components/ResultsComponent.vue';
 import ResultEditorComponent from '@/admin/components/ResultEditorComponent.vue';
 import SeriesResultsListComponent from '@/admin/components/SeriesResultsListComponent.vue';
+import SeriesResultsEditorComponent from '@/admin/components/SeriesResultEditorComponent.vue';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/series-results/',
       component: SeriesResultsListComponent,
       name: "series-results"
+    },
+    {
+      path: '/edit-series-result/:series',
+      component: SeriesResultsEditorComponent,
+      name: "edit-series-result"
     },
     {
       path: '/results/:resultid/',

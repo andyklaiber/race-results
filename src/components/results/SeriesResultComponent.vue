@@ -2,7 +2,7 @@
 import _ from "lodash";
 import request from "@/lib/ApiClient";
 import SeriesResultRow from "./SeriesResultRow.vue";
-import SeriesNavBar from "./SeriesNavBar.vue";
+import SeriesNavBar from "./SeriesResultNavComponent.vue";
 
 export default {
   components: {
@@ -46,7 +46,7 @@ export default {
         .then(({data}) => {
           this.loading = false;
           this.categories = data.categories;
-          this.displayName = data.displayName;
+          this.displayName = data.eventName;
           this.series = this.$route.params.seriesid;
           let temp = _.map(data.categories, (cat)=>_.omit(cat, ['results','columns']))
           console.log('temp:', _.orderBy(temp, 'disporder'))
@@ -74,11 +74,11 @@ export default {
 </script>
 
 <template>
+  <SeriesNavBar :series="series" :displayName="displayName"/>
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
      <div class="container-fluid text-center mt-5">
-    <h2>{{ displayName }}</h2>
     <h3>Series Standings</h3>
     <p>Glossary of terms below:<br>
 1/100 = 1st Place/100 Points     -/- = Did not race</p></div>

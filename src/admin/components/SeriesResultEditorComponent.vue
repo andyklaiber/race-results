@@ -9,12 +9,12 @@ export default {
   },
   data() {
     return {
-      categories: {},
+      
       loading: false,
       error: null,
       formError: [],
       formInputData: {},
-      raceData: {},
+      data: {},
     };
   },
   created() {
@@ -38,14 +38,13 @@ export default {
     fetchData() {
       this.error = null;
       this.loading = true;
-      if (this.$route.params.resultid) {
-        return request(`/api/results/${this.$route.params.resultid}`)
+      if (this.$route.params.series) {
+        return request(`/api/results/series/${this.$route.params.series}`)
           .then((response) => {
-            this.raceData = response.data;
+            this.data = response.data;
             this.loading = false;
           })
           .catch((err) => {
-            this.raceData = {};
             this.loading = false;
             this.error = err.toString();
             console.error(err);
@@ -60,7 +59,7 @@ export default {
     },
     async saveRaceData(formData) {
       await request.patch(
-        `/api/results/${this.raceData._id}`,
+        `/api/results/series/${this.data._id}`,
         this.formInputData
       ).then((response) => {
         if (response.data) {
@@ -99,19 +98,16 @@ export default {
     "homepageUrl": -->
 
 
-      <div v-if="raceData.raceid">
+      <div v-if="this.data?.series">
         <div class="my-3">
-            <a :href="`/#/result/${raceData.raceid}`">View Result</a>
+          <a :href="`/#/result/series/${data.series}`" target="_blank">view series points</a>
           </div>
           <div class="row">
         <div class="col-md-6">
-          <FormKit type="form" :errors="formError" id="race-settings" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
-            <FormKit :value="raceData?.eventName" type="text" name="eventName" label="Event Name" />
-            <FormKit :value="raceData?.shortName" type="text" name="shortName" label="Short Name for series points column header" />
-            <FormKit :value="raceData?.formattedStartDate" type="text" name="formattedStartDate" label="Display Date" />
-            <FormKit :value="raceData?.series" type="text" name="series" label="series" />
+          <FormKit type="form" :errors="formError" id="season-pts-form" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
+            <FormKit :value="data?.eventName" type="text" name="eventName" label="Event Name" />
          
-            <FormKit :value="raceData?.final" type="checkbox" label="Finalized - results cannot be updated via upload" name="final" />
+            <FormKit :value="data?.published" type="checkbox" label="Published - will show on main index" name="published" />
           </FormKit>
         </div>
       </div>
@@ -120,7 +116,7 @@ export default {
       </div>
       <div v-else>
         <div class="text-center">
-          <h2 class="mt-5">Result upload not found...</h2>
+          <h2 class="mt-5">Series Points record not found...</h2>
         </div>
       </div>
     </div>
