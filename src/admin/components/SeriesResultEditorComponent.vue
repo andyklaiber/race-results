@@ -12,6 +12,7 @@ export default {
       
       loading: false,
       error: null,
+      final:false,
       formError: [],
       formInputData: {},
       data: {},
@@ -42,6 +43,7 @@ export default {
         return request(`/api/results/series/${this.$route.params.series}`)
           .then((response) => {
             this.data = response.data;
+            this.final = response.data.final;
             this.loading = false;
           })
           .catch((err) => {
@@ -60,7 +62,7 @@ export default {
     async saveRaceData(formData) {
       await request.patch(
         `/api/results/series/${this.data._id}`,
-        this.formInputData
+        formData
       ).then((response) => {
         if (response.data) {
           
@@ -107,6 +109,7 @@ export default {
           <FormKit type="form" :errors="formError" id="season-pts-form" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
             <FormKit :value="data?.eventName" type="text" name="eventName" label="Event Name" />
          
+            <FormKit :value="final" type="checkbox" label="Finalized - don't allow updates" name="final" />
             <FormKit :value="data?.published" type="checkbox" label="Published - will show on main index" name="published" />
           </FormKit>
         </div>

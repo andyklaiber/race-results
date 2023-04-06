@@ -301,10 +301,10 @@ export default {
       return "Go to Payment"
     },
     cashEnabled() {
-      if(!this.raceData.cashPaymentsEnabled || !this.lastRaceTime){
+      if(!this.raceData.cashPaymentsEnabled){
         return false;
       }
-      return dayjs().isAfter(this.firstRaceTime.subtract(6, 'hour'));
+      return true;
     },
     eventDateFormatted() {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
@@ -341,7 +341,7 @@ export default {
         options[element.type] = element.name;
       });
       if (this.cashEnabled) {
-        options['cash'] = 'Cash Payment (Today\'s Race)';
+        options['cash'] = 'Cash Payment (Today\'s Race Only)';
       }
       return options;
     },

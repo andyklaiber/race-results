@@ -51,12 +51,32 @@ export default {
           .catch((err) => {
             console.error(err);
             this.categories = {};
-            this.error = err.toString();
+            if(err.response.status == 404){
+              this.error = '';
+
+            }else{
+
+              this.error = err.toString();
+            }
+            this.loading = false;
           });
       }
       else{
         this.$router.push('');
       }
+    },
+    metaColumns(cols) {
+      return cols.slice(0,4)
+    },
+    lapColumns(firstRacerLaps) {
+      let headers = [];
+      for(let i = 1; i<=firstRacerLaps.length; i++){
+        headers.push(`Lap ${i}`);
+      }
+      headers.push(`Total`);
+      headers.push(`Time Behind Leader`);
+      
+      return headers
     },
   },
   computed: {
@@ -86,7 +106,7 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="haveResults">
-      <div class="container text-center mt-5">
+      <div id="top" class="container text-center mt-5">
         <ul class="list-inline">
           <template v-for="(cat, key) in sortedCats" :key="cat.id">
             <li class="list-inline-item  mx-2">
@@ -102,7 +122,14 @@ export default {
             <thead>
               <tr>
                 <th
-                  v-for="(columnName, index) in cat.columns"
+                  v-for="(columnName, index) in metaColumns(cat.columns)"
+                  scope="col"
+                  :key="index"
+                >
+                  {{ columnName }}
+                </th>
+                <th
+                  v-for="(columnName, index) in lapColumns(cat.results[0].laps)"
                   scope="col"
                   :key="index"
                 >
@@ -112,7 +139,7 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(racer, idx) in cat.results" :key="idx">
-                <ResultRow :totLaps="cat.laps" :Pos="idx" :data="racer" />
+                <ResultRow :totLaps="cat.results[0].laps.length" :Pos="idx" :data="racer" />
               </tr>
             </tbody>
           </table>

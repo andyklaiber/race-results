@@ -154,7 +154,7 @@ export default {
                 <td><Check v-if="seriesData.published" color="green" ></Check></td>
                 <td><RouterLink :to="{ name: 'edit-series-result', params: { series: seriesData._id }}" >Edit</RouterLink></td>
                 <td><a :href="`/#/result/series/${seriesData.series}`" target="_blank">view series points</a></td>
-                <td><button type="button" class="btn btn-sm btn-primary" @click="generateSeriesPoints(seriesid)">
+                <td><button v-if="!seriesData.final" type="button" class="btn btn-sm btn-primary" @click="generateSeriesPoints(seriesData.series)">
                 Update Series Points
               </button></td>
                 <!--<td><Check v-if="race.isTestData" color="orange" ></Check></td>
