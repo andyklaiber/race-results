@@ -151,6 +151,7 @@ export default {
                   label="FB Share URL" />
               </FormKit>
             </FormKit>
+            <FormKit type="textarea" :value="raceData?.headerContent" :v-model="raceData?.headerContent" label="Extra content below header" name="headerContent" ></FormKit>
             <FormKit :value="raceData?.entryCountMax" type="number"
               label="Maximum Number of registrations" name="entryCountMax" />
               <p><h6>Current Reg Count: {{ raceData.entryCount }}</h6></p>
