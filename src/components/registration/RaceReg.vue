@@ -12,7 +12,13 @@ let saveForm =  _.debounce((data, raceid)=>{
 let getForm = (raceid)=>{
   let data = window.localStorage.getItem(`race-reg-form-data-${raceid}`);
   if(data){
-    return JSON.parse(data);
+    let parsed = {};
+    try{
+      parsed = JSON.parse(data);
+    }catch(err){
+      // ignore invalid json
+    }
+    return parsed;
   }
   return null;
 }
@@ -295,7 +301,7 @@ export default {
       return true;
     },
     submitLabel() {
-      if (this.payment == 'cash') {
+      if (this.payment == 'cash' || this.sponsoredCategorySelected) {
         return "Sign Up!"
       }
       return "Go to Payment"
@@ -360,10 +366,16 @@ export default {
       } else {
         altPaytype = this.payment;
       }
-      const payOpt = _.find(this.raceData?.paymentOptions,
+      let payOpt = _.find(this.raceData?.paymentOptions,
         (el) => el.type === altPaytype
       );
-      if (!payOpt) return null;
+      if (!payOpt){
+        // couldn't find selected paytype, reset selection
+        this.payment = "single";
+        payOpt = _.find(this.raceData?.paymentOptions,
+          (el) => el.type === this.payment
+        );
+      }
       const amt = parseFloat(payOpt.amount);
       let fees = 0;
       if (amt > 0 && this.payment !== 'cash') {
@@ -510,7 +522,7 @@ export default {
                     validation="required" v-model="payment" v-if="showPaymentOption" />
                 </div>
               </fieldset>
-              <div v-if="raceData.optionalPurchases">
+              <div v-if="raceData.optionalPurchases && showPaymentOption">
                 <FormKit type="group" name="optionalPurchases">
                 <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
                   <h6 v-html="item.description"></h6>
@@ -569,6 +581,11 @@ export default {
               </ul>
             </div>
           </div>
+          <div v-if="sponsoredCategorySelected">
+            <p class="mb-5">
+              <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
+            </p>
+          </div>
           <div v-if="payment ==='cash'">
             <h2 class="text-danger">Your registration will not be active until payment is received at the event</h2>
           </div>
@@ -588,11 +605,7 @@ export default {
           validation-visibility="live"
           />
           </div>
-          <div v-if="sponsoredCategorySelected">
-            <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
-            <FormKit type="submit" label="Sign Up!" @click="submitForm" />
-          </div>
-          <FormKit v-if="!sponsoredCategorySelected" type="submit" :label="submitLabel" @click="submitForm" />
+          <FormKit type="submit" :label="submitLabel" @click="submitForm" />
         </FormKit>
         <div v-if="submitted">
           <h2>Submission successful, redirecting</h2>

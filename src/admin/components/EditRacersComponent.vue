@@ -123,6 +123,15 @@ export default {
       this.filterNoBib=false,
       this.filterCats="all";
     },
+    optionalPurchases(obj){
+      if(!obj) return '';
+      let returnStr = '';
+      if(obj.tshirt){
+        returnStr = 'shirt: '+obj["tshirt-option"];
+      }
+      if(obj.bottle) returnStr += " + Bottle"
+      return returnStr;
+    }
   },
   computed: {
     loaded() {
@@ -216,7 +225,7 @@ export default {
               <th scope="col">Last Name</th>
               <th scope="col">Category</th>
               <th scope="col">Bib Number</th>
-              <th scope="col">Age</th>
+              <th scope="col">Purchases</th>
               <th scope="col">Paytype</th>
               <th scope="col">Payment Status</th>
               <th scope="col"><strong>{{filteredRacers.length}} Found</strong></th>
@@ -228,11 +237,11 @@ export default {
               <td>{{racer.last_name}}</td>
               <td>{{catName(racer.category)}}</td>
               <td>{{racer.bibNumber}}</td>
-              <td>{{racer.racerAge}}</td>
+              <td>{{optionalPurchases(racer.optionalPurchases)}}</td>
               <td>{{racer.paytype}}</td>
               <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
               <td>
-                <div class='btn btn-sm btn-outline-secondary' @click="editRacer(racer.paymentId)">{{'edit'}}</div>
+                <div class='btn btn-sm btn-outline-secondary' v-if="racer.status !== 'unpaid'" @click="editRacer(racer.paymentId)">{{'edit'}}</div>
                 <div class='btn btn-sm btn-outline-secondary' v-if="racer.status === 'unpaid'" @click="regCash(racer.paymentId)">{{'Register'}}</div>
               </td>
             </tr>

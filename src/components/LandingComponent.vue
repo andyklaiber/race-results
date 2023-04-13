@@ -62,14 +62,9 @@ export default {
         if(raceInfo.series && series[raceInfo.series]){
           // console.log("exclude "+raceInfo.series)
           return false;
-        }else{
-          if(typeof raceInfo.series === 'string' && raceInfo.series.length > 1){
-            console.log("set as shown "+raceInfo.raceid)
-            series[raceInfo.series] = true;
-          }
         }
         let isInFuture =  dayjs().isBefore(dayjs(raceInfo.eventDate));
-        // console.log('isInFuture' + isInFuture)
+         console.log('isInFuture' + isInFuture)
         if(raceInfo.isTestData && !this.$route.query.test){
           return false;
         }
@@ -77,6 +72,10 @@ export default {
           return false;
         }
         // console.log("show "+raceInfo.raceid)
+        if(typeof raceInfo.series === 'string' && raceInfo.series.length > 1){
+            console.log("set as shown "+raceInfo.raceid)
+            series[raceInfo.series] = true;
+          }
         return true;
       })
       return filtered;
