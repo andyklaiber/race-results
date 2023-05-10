@@ -188,6 +188,8 @@ export default {
             {{racerData.status === 'unpaid'? 'Register Racer': 'Edit Racer Data'}}
         </h5>
     </div>
+    <div class="edit-racer-form">
+
     <FormKit v-if="formMode=='create'"
                   type="number" name="bibNumber" 
                   label="Bib Number:" 
@@ -229,11 +231,12 @@ export default {
         </div>
 
     </FormKit>
+    </div>
 </template>
     
 <style>
-#race-registration > .formkit-outer{
-    width: 372px;
+.edit-racer-form{
+    padding: 0 5px
 }
 .double {
   display: flex;

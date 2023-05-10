@@ -49,7 +49,7 @@ export default {
           this.displayName = data.eventName;
           this.series = this.$route.params.seriesid;
           let temp = _.map(data.categories, (cat)=>_.omit(cat, ['results','columns']))
-          console.log('temp:', _.orderBy(temp, 'disporder'))
+          // console.log('temp:', _.orderBy(temp, 'disporder'))
         })
         .catch((err) => {
           console.error(err);
@@ -69,6 +69,9 @@ export default {
       }
       return Object.keys(this.categories).length > 0;
     },
+    isPCRS(){
+      return _.isString(this.series) && this.series.indexOf('pcrs') > -1;
+    }
   },
 };
 </script>
@@ -80,8 +83,10 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
      <div class="container-fluid text-center mt-5">
     <h3>Series Standings</h3>
-    <p>Glossary of terms below:<br>
-1/100 = 1st Place/100 Points     -/- = Did not race</p></div>
+    <p>Glossary of terms below:</p>
+    <p v-if="isPCRS">1/50 = 1st Place/50 Points &nbsp&nbsp-/- = Did not race</p>
+    <p v-else>1/100 = 1st Place/100 Points &nbsp&nbsp-/- = Did not race</p>
+  </div>
     <div v-if="haveResults">
       <div class="container-fluid text-center mt-5">
           <ul class="list-inline">

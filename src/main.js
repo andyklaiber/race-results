@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import { plugin, defaultConfig } from '@formkit/vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
+import * as bootstrap from 'bootstrap'
 import '@formkit/themes/genesis';
 import { datadogLogs } from '@datadog/browser-logs'
 const devMode = import.meta.env.DEV

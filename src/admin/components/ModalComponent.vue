@@ -54,7 +54,6 @@
       border-radius: 2px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
       transition: all 0.3s ease;
-      overflow-y:auto;
     }
     
     .modal-header h3 {
@@ -64,6 +63,8 @@
     
     .modal-body {
       margin: 0px 0;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
     }
     
     .modal-default-button {
