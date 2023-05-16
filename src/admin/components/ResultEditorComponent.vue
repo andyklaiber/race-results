@@ -110,7 +110,7 @@ export default {
             <FormKit :value="raceData?.shortName" type="text" name="shortName" label="Short Name for series points column header" />
             <FormKit :value="raceData?.formattedStartDate" type="text" name="formattedStartDate" label="Display Date" />
             <FormKit :value="raceData?.series" type="text" name="series" label="series" />
-         
+            <FormKit :value="raceData?.showMillis" type="checkbox" label="Show milliseconds on times" name="showMillis" />
             <FormKit :value="raceData?.final" type="checkbox" label="Finalized - results cannot be updated via upload" name="final" />
           </FormKit>
         </div>

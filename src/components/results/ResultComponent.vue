@@ -139,7 +139,7 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(racer, idx) in cat.results" :key="idx">
-                <ResultRow :totLaps="cat.results[0].laps.length" :Pos="idx" :data="racer" />
+                <ResultRow :totLaps="cat.results[0].laps.length" :Pos="idx" :data="racer" :showMillis="resultData.showMillis" />
               </tr>
             </tbody>
           </table>
