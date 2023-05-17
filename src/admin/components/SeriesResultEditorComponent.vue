@@ -60,6 +60,8 @@ export default {
 
     },
     async saveRaceData(formData) {
+      // console.log("formData")
+      // console.log(formData)
       await request.patch(
         `/api/results/series/${this.data._id}`,
         formData
@@ -108,6 +110,7 @@ export default {
         <div class="col-md-6">
           <FormKit type="form" :errors="formError" id="season-pts-form" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
             <FormKit :value="data?.eventName" type="text" name="eventName" label="Event Name" />
+            <FormKit :value="data?.gromRaceNumbers" type="text" name="gromRaceNumbers" label="Grom Race Numbers" />
          
             <FormKit :value="final" type="checkbox" label="Finalized - don't allow updates" name="final" />
             <FormKit :value="data?.published" type="checkbox" label="Published - will show on main index" name="published" />
