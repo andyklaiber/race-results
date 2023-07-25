@@ -1,8 +1,10 @@
 <script>
 import _ from "lodash";
 import ResultRow from "./ResultRow.vue";
-import SeriesNavBar from "./SeriesNavBar.vue";
+import SeriesNavBar from "./SeriesResultNavComponent.vue";
 import request from "@/lib/ApiClient";
+
+
 
 export default {
   components: {
@@ -94,7 +96,7 @@ export default {
 </script>
 
 <template>
-<!-- <SeriesNavBar :series="series" /> -->
+<SeriesNavBar :series="series" />
     <div v-if="resultData.eventName" class="text-center">
         <h2 class="mt-5">Race Results - {{resultData.eventName}}</h2>
     </div>

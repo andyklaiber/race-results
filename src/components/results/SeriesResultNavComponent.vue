@@ -22,12 +22,19 @@ export default {
     request(dataUrl)
       .then(({data}) => {
         this.races = data;
-      });
+        return request(`api/results/series/?series=${this.series}`)
+      })
+      .then(({data})=>{
+        this.seriesData = data;
+      })
   })
   },
   computed: {
     isPcrs(){
       return this.series && this.series.indexOf('pcrs') > -1;
+    },
+    hasTeamComp(){
+      return this.seriesData?.teamCompDates?.length > 1;
     }
   },
 };
@@ -36,16 +43,16 @@ export default {
 <template>
   <nav id="top" class="navbar navbar-light bg-light">
     <div class="container-fluid">
-      <div class="navbar-brand h2" href="#">{{displayName}}</div>
+      <div class="navbar-brand h2" href="#">{{displayName || seriesData.eventName}}</div>
 
-      <div class="nav-item" v-if='seriesData.homepage'>
+      <!-- <div class="nav-item" v-if='seriesData.homepage'>
         <a
           class="nav-link active"
           aria-current="page"
           :href="seriesData.homepage.url"
           >{{seriesData.homepage.linkString}}</a
         >
-      </div>
+      </div> -->
     </div>
   </nav>
   <p class="mt-3">View Individual Event Times:</p>
@@ -53,10 +60,24 @@ export default {
     <li v-for="race in races" :key="race.raceid" class="nav-item">
       <RouterLink
         class="nav-link"
-        :class="{ active: $route.params.raceid === race.raceid }"
+        :class="{ active: $route.params.id === race.raceid && $route.name =='raceResult' }"
         :to="`/result/${race.raceid}`"
         >{{ race.eventName + ` - ${race.formattedStartDate}` }}</RouterLink
       >
     </li>
+    <li v-if="hasTeamComp">
+      <RouterLink
+        class="nav-link"
+        :class="{ active: $route.name == 'seriesResults' }"
+        :to="{ name: 'seriesResults', params: { seriesid: series }}"
+        >Overall Standings</RouterLink
+      ></li>
+    <li v-if="hasTeamComp">
+      <RouterLink
+        class="nav-link"
+        :class="{ active: $route.name == 'teamCompResults' }"
+        :to="{ name: 'teamCompResults', params: { seriesid: series }}"
+        >Team Competition Standings</RouterLink
+      ></li>
   </ul>
 </template>

@@ -131,7 +131,7 @@ export default {
 
             <div v-if="pendingPayment" class="mb-5">
               <div
-                class="d-flex justify-content-between align-items-center mb-3"
+                class="d-flex justify-content-between align-items-center mb-3 text-danger"
               >
                 <h4>Your Registration is Incomplete</h4>
               </div>
@@ -176,7 +176,12 @@ export default {
         </div>
       </FormKit>
       Please send any corrections or questions to
-      <a href="mailto:support@signup.bike">support@signup.bike</a>
+      <div v-if="raceData.contactEmail">
+        <a :href="`mailto:${raceData.contactEmail}`">{{raceData.contactEmail}}</a>
+      </div>
+      <div v-else>
+        <a href="mailto:support@signup.bike">support@signup.bike</a>
+      </div>
     </div>
     <div v-else>
       <div class="text-center">

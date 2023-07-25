@@ -158,7 +158,11 @@ export default {
               return false;
             }
           }
+          if(parseInt(filterKey)){
+                  return parseInt(filterKey) === parseInt(record.regData['bibNumber']);
+          }
           return ['first_name','last_name'].some((key) => {
+                
                 return String(record.regData[key]).toLowerCase().indexOf(filterKey) > -1
               })
         });
@@ -197,7 +201,7 @@ export default {
               />
           </div>  
         <div class="btn-toolbar mb-2 mb-md-0">
-          <FormKit id='racerFilterTxtInput' type="text" name="search" label="Search:" help="search in first, last" :delay="300"
+          <FormKit id='racerFilterTxtInput' type="text" name="search" label="Search:" help="search in first, last, bib number" :delay="300"
             v-model="filterKey" />
           </div>
         <div class="btn-toolbar mb-2 mb-md-0">
@@ -238,11 +242,11 @@ export default {
               <tr v-for="(payment, idx) in filteredPayments" :key="idx">
                 <td>{{payment.status}}</td>
                 <td>{{payment.regData.first_name+' '+payment.regData.last_name}}</td>
-                <td>{{payment.regData.email}}</td>
-                <td>{{payment.regData.raceid}}</td>
+                <td><a :href="`mailto:${payment.regData.email}`">{{payment.regData.email}}</a></td>
                 <td>{{payment.regData.paytype}}</td>
                 <td>{{dollas(payment.stripePayment?.amount_total)}}</td>
-                <td>{{idx}}</td>
+                <td><a :href="`/#/regconfirmation/${payment.regData.raceid}/${payment._id}`">Reg Confirmation Page</a></td>
+                <td>{{payment.regData.bibNumber}}</td>
                 <td><div class='btn btn-sm btn-secondary' v-if="payment.status !== 'unpaid' && payment.regData.paytype != 'season'" @click="editPayment(payment._id)">Edit</div>
                 </td>
               </tr>

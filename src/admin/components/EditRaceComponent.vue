@@ -132,6 +132,7 @@ export default {
         <div class="col-md-6">
           <FormKit type="form" :errors="formError" id="race-settings" @submit="saveRaceData" submit-label="Save" v-model="formInputData">
             <FormKit :value="raceData?.displayName" type="text" name="displayName" label="Event Name" />
+            <FormKit :value="raceData?.contactEmail" type="text" name="contactEmail" label="Contact Email" />
             <FormKit :value="eventDate" type="datetime-local" name="eventDate" label="Date" />
             <FormKit :value="raceData?.series" type="text" name="series" label="Event Series Name" />
             <FormKit :value="raceData?.seriesRaceNumber" type="number" name="seriesRaceNumber" label="Series Race Number" />
@@ -145,6 +146,7 @@ export default {
               <FormKit :value="raceData?.eventDetails?.regCloseDate" type="datetime-local" name="regCloseDate" label="Registration Close Date" />
               <p>Registration Closes {{timeToClose}}</p>
               <FormKit :value="raceData?.eventDetails?.logoUrl" type="text" name="logoUrl" label="Logo URL" />
+              <FormKit :value="raceData?.eventDetails?.headerPhoto" type="text" name="headerPhoto" label="Header Photo URL" />
               <FormKit :value="raceData?.eventDetails?.homepageUrl" type="text" name="homepageUrl"
                 label="Home Page URL" />
               <FormKit type="group" name="facebookShare">

@@ -64,7 +64,7 @@ export default {
           return false;
         }
         let isInFuture =  dayjs().isBefore(dayjs(raceInfo.eventDate));
-         console.log('isInFuture' + isInFuture)
+         console.log('isInFuture' + isInFuture + " "+raceInfo.displayName)
         if(raceInfo.isTestData && !this.$route.query.test){
           return false;
         }

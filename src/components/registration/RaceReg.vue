@@ -352,6 +352,12 @@ export default {
       return options;
     },
     paymentCostDets() {
+      if(!this.selectedCategory){
+        return {}
+      }
+      if (this.paymenttypeRequiredCategorySelected) {
+        this.payment = this.selectedCategory?.paytype;
+      }
       if (this.sponsoredCategorySelected) {
         this.payment = "season";
         return {
@@ -410,6 +416,9 @@ export default {
       return dets;
     },
     showPaymentOption() {
+      if (this.paymenttypeRequiredCategorySelected) {
+        return false;
+      }
       if (this.sponsoredCategorySelected) {
         return false;
       }
@@ -420,6 +429,12 @@ export default {
         return false;
       }
       return true;
+    },
+    paymenttypeRequiredCategorySelected(){
+      if (!this.selectedCategory || this.selectedCategory?.paytype) {
+        return true;
+      }
+      return false;
     },
     sponsoredCategorySelected() {
       if (this.selectedCategory?.sponsored) {
@@ -523,7 +538,7 @@ export default {
                     validation="required" v-model="payment" v-if="showPaymentOption" />
                 </div>
               </fieldset>
-              <div v-if="raceData.optionalPurchases && showPaymentOption">
+              <div v-if="raceData.optionalPurchases"><!--  && showPaymentOption"> -->
                 <FormKit type="group" name="optionalPurchases">
                 <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
                   <h6 v-html="item.description"></h6>

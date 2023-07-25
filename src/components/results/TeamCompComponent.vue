@@ -2,8 +2,7 @@
 import _ from "lodash";
 import request from "@/lib/ApiClient";
 import ResultRow from "./TeamCompDetailRow.vue";
-import SeriesNavBar from "./SeriesNavBar.vue";
-
+import SeriesNavBar from "./SeriesResultNavComponent.vue";
 
 export default {
   components: {
@@ -13,6 +12,7 @@ export default {
   data() {
     return {
       teamResults: {},
+      teamDates:[],
       loading: false,
       error: null,
       series: null,
@@ -48,6 +48,7 @@ export default {
             this.teamResults = data;
             this.teamDates = data.teamCompDates;
 
+
           })
           .catch((err) => {
             console.error(err);
@@ -59,6 +60,15 @@ export default {
   },
   computed: {
     dates: () => {},
+    fivePlusTeams(){
+      return _.filter(this.teamResults?.result, (res)=>{ return res.count > 4})
+    },
+    threeFourTeams(){
+      return _.filter(this.teamResults?.result, (res)=>{ return res.count < 5})
+    },
+    sortedResults(){
+      return _.sortBy(this.teamResults.result, "teamName");
+    }
   },
 };
 </script>
@@ -68,7 +78,7 @@ export default {
   <div v-if="loading" class="loading">Loading...</div>
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
-        <h2 class="mt-5">Team Standings</h2>
+        <h2 class="mt-5"> 5+ Team Standings</h2>
          <div class="container-fluid  mt-5">
           <table class="table table-striped table-hover">
             <thead>
@@ -80,7 +90,27 @@ export default {
             </thead>
             <tbody>
                 
-              <tr v-for="(team, key) in teamResults.result" :key="key">
+              <tr v-for="(team, key) in fivePlusTeams" :key="key">
+            <td>{{key+1}}</td>
+            <td>{{team.teamName}}</td>
+            <td>{{team.totalScore}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h2 class="mt-5"> 3 Person Team Standings</h2>
+          <div class="container-fluid  mt-5">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                  <th>Position</th>
+                <th>Team</th>
+                <th>Total Score</th>
+              </tr>
+            </thead>
+            <tbody>
+                
+              <tr v-for="(team, key) in threeFourTeams" :key="key">
             <td>{{key+1}}</td>
             <td>{{team.teamName}}</td>
             <td>{{team.totalScore}}</td>
@@ -89,7 +119,7 @@ export default {
           </table>
       </div>
       <h2 class="mt-5">Team Results</h2>
-    <div class="mt-5" v-for="(team, key) in teamResults.result" :key="key">
+    <div class="mt-5" v-for="(team, key) in sortedResults" :key="key">
            <h3> {{team.teamName}}</h3>
         
       <div class="container-fluid">
@@ -98,29 +128,19 @@ export default {
               <tr>
                 <th style="width: 25%">Racer Name</th>
                 <th style="width: 25%">Class</th>
-                <th style="width: 12.5%">5/4</th>
-                <th style="width: 12.5%">5/11</th>
-                <th style="width: 12.5%">5/18</th>
-                <th style="width: 12.5%">5/25</th>
+                <th v-for="date in teamDates" >{{date}}</th>
               </tr>
             </thead>
             <tbody>
                 
               <tr v-for="(racer, idx) in teamResults.teamDets[team.teamName]" :key="idx">
-                <ResultRow :data="racer" :dates="teamDates" />
+                <ResultRow :data="racer" :dates="teamDates"/>
+              </tr>    
+              <tr>
+                <td colspan="2" style="text-align:right">Score (Avg of individual results):</td>
+                <td v-for="date in teamDates" >{{team.results[date] ? team.results[date].avg : '-'}}</td>
               </tr>
             </tbody>
-          </table>
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th style="width: 50%; text-align:right">Score (Avg of individual results):</th>
-                <th style="width: 12.5%">{{team.results['5/4'] ? team.results['5/4'].avg : '-'}}</th>
-            <th style="width: 12.5%">{{team.results['5/11'] ? team.results['5/11'].avg : '-'}}</th>
-            <th style="width: 12.5%">{{team.results['5/18'] ? team.results['5/18'].avg : '-'}}</th>
-            <th style="width: 12.5%">{{team.results['5/25'] ? team.results['5/25'].avg : "-"}}</th>
-              </tr>
-            </thead>
         </table>
       </div>
     </div>

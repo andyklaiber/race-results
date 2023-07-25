@@ -7,6 +7,7 @@ import RaceReg from '@/components/registration/RaceReg.vue';
 import RaceRegConfirm from '@/components/registration/RaceRegConfirm.vue';
 import SeriesRaceResult from '@/components/results/SeriesResult.vue';
 import TeamComp from '@/components/results/TeamComp.vue'
+import TeamCompComponent from '@/components/results/TeamCompComponent.vue'
 import Roster from '@/components/registration/Roster.vue';
 
 const router = createRouter({
@@ -27,12 +28,19 @@ const router = createRouter({
         component: RaceResult
     },
     { 
-        path: '/result/:id', 
+        path: '/result/:id',
+        name: 'raceResult',
         component: ResultComponent
     },
     { 
         path: '/result/series/:seriesid', 
+        name: 'seriesResults',
         component: SeriesResultComponent
+    },
+    { 
+        path: '/result/series/:seriesid/team',
+        name: "teamCompResults",
+        component: TeamCompComponent
     },
     { 
       path: '/register/:raceid', 
