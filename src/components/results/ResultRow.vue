@@ -36,6 +36,16 @@ export default {
       },
       formattedTime(){
           return msToTimeString(this.data.duration, this.showMillis);
+      },
+      trailingTime(){
+        if(!this.data.back){
+          return "-";
+        }
+        if(this.showMillis){
+          return msToTimeString(this.data.backMs, true);
+        }else{
+          return this.data.back;
+        }
       }
   }
 }
@@ -52,6 +62,6 @@ export default {
       <td v-for="fill in incompleteLaps">{{fill}}</td>
   </template>
   <td>{{formattedTime}}</td>
-  <td>{{data.back || "-"}}</td>
+  <td>{{trailingTime}}</td>
 
 </template>

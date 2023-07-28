@@ -75,13 +75,20 @@ export default {
       for(let i = 1; i<=firstRacerLaps.length; i++){
         headers.push(`Lap ${i}`);
       }
-      headers.push(`Total`);
+      if(this.fastestLapScoring){
+        headers.push(`Fastest Lap:`);
+      }else{
+        headers.push(`Total`);
+      }
       headers.push(`Time Behind Leader`);
       
       return headers
     },
   },
   computed: {
+    fastestLapScoring(){
+      return this.resultData.scoringType == 'fastestlap';
+    },
     sortedCats() {
       return _.orderBy(this.categories, "disporder");
     },
@@ -96,7 +103,7 @@ export default {
 </script>
 
 <template>
-<SeriesNavBar :series="series" />
+<SeriesNavBar :series="series" v-if="series"/>
     <div v-if="resultData.eventName" class="text-center">
         <h2 class="mt-5">Race Results - {{resultData.eventName}}</h2>
     </div>
@@ -141,7 +148,7 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(racer, idx) in cat.results" :key="idx">
-                <ResultRow :totLaps="cat.results[0].laps.length" :Pos="idx" :data="racer" :showMillis="resultData.showMillis" />
+                <ResultRow :totLaps="cat.results[0].laps.length" :Pos="idx" :data="racer" :showMillis="resultData.showMillis || fastestLapScoring" />
               </tr>
             </tbody>
           </table>
