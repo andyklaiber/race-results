@@ -41,7 +41,7 @@ export default {
 
 <template>
   <div class="container mb-4">
-    <img class="img-fluid" :src="details.headerPhoto" alt="">
+    <img v-if="isRegPage" class="img-fluid" :src="details.headerPhoto" alt="">
     <div class="row p-1 pb-0 pe-lg-0 pt-lg-3 align-items-center rounded-3 border shadow">
       <div v-if="details.logoUrl" class="col-sm-3 offset-sm-1 p-0">
         <a :href="details.homepageUrl">

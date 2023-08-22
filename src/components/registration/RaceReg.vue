@@ -55,7 +55,7 @@ export default {
       error: null,
       formError: [],
       formInputData: {},
-      raceData: {},
+      raceData: null,
       payment: "",
       birthdate: "",//"1990-03-05",
       submitted: false,
@@ -134,8 +134,13 @@ export default {
             this.payment = this.raceData.paymentOptions[0].type;
           })
           .catch((err) => {
+            this.raceData = null;
             this.loading = false;
             this.error = err.toString();
+            if(err.code == 'ERR_BAD_REQUEST'){
+              console.warn('tried to load raceid: '+this.$route.params.raceid);
+              return console.warn(err.message);
+            }
             console.error(err);
           });
       }
@@ -631,7 +636,7 @@ export default {
     </div>
     <div v-else>
       <div class="text-center">
-        <h2 class="mt-5">Race not available for registration...</h2>
+        <h2 class="mt-5">Race not found...</h2>
       </div>
     </div>
   </div>
