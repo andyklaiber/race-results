@@ -19,6 +19,7 @@ export default {
       filterPayStatus:'all',
       filterEvent:false,
       filterPaytype:'all',
+      filterOptionalPurchases: 'all',
       payments:[],
       selectedRaceId:'',
       showModal:false
@@ -130,6 +131,20 @@ export default {
       _.each(_.filter(this.races, {series:selectedRaceData.series}),({raceid, displayName})=>out[raceid]=displayName)
       return out;
     },
+    filterOptionalOptions(){
+      let options = {"all":"All"};
+      this.payments.forEach(({regData})=>{
+        if(regData && regData.optionalPurchases){
+
+          Object.keys(regData.optionalPurchases).forEach((optionName)=>{
+            if(regData.optionalPurchases[optionName]=== true){
+              options[optionName] = optionName;
+            }
+          })
+        }
+        })
+      return options;
+    },
     filterPayStatusOptions(){
       return {
         "all":"All",
@@ -146,8 +161,13 @@ export default {
     },
     filteredPayments(){
       const filterKey = this.filterKey && this.filterKey.toLowerCase()
-      if(this.payments && (filterKey.length || this.filterPayStatus !== 'all' || this.filterPaytype !== 'all')){
+      if(this.payments && (filterKey.length || this.filterPayStatus !== 'all' || this.filterPaytype !== 'all' || this.filterOptionalPurchases !== 'all')){
         return _.filter(this.payments, (record)=>{
+          if(this.filterOptionalPurchases !== 'all'){
+            if(!record.regData.optionalPurchases || record.regData.optionalPurchases[this.filterOptionalPurchases] !== true){
+              return false;
+            }
+          }
           if(this.filterPayStatus !== 'all'){
             if(this.filterPayStatus !== record.status){
               return false;
@@ -225,8 +245,22 @@ export default {
                 :options="filterPayTypeOptions"
               />
           </div>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <FormKit
+                type="select"
+                label="Filter by optional purchases:"
+                name="filterOptionalPurchases"
+                v-model="filterOptionalPurchases"
+                default="All"
+                :options="filterOptionalOptions"
+              />
+          </div>
         </div>
-        <h2>Payments</h2>
+        <div class="d-flex justify-content-between
+            flex-wrap flex-md-nowrap
+            align-items-center">
+          <h2>Payments</h2><div class="h5">Count: {{ filteredPayments.length }}</div>
+        </div>
         <div class="table-responsive">
           <table class="table table-striped table-hover table-sm">
             <thead>

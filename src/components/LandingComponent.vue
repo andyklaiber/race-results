@@ -78,9 +78,9 @@ export default {
           }
         return true;
       })
-      return filtered;
+      // return filtered;
       // order by upcoming race date?
-      //return _.sortBy(filtered, [function(o) { return o.displayName.toLowerCase(); }]);
+      return _.sortBy(filtered, [function(o) { return dayjs(o.eventDate); }]);
     },
     loggedIn(){
       return false;
