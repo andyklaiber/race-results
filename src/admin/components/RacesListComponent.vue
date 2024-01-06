@@ -2,17 +2,25 @@
 import _ from "lodash";
 import request from "@/lib/ApiClient";
 import dayjs from 'dayjs/esm/index.js';
+import ModalComponent from './ModalComponent.vue';
+import CloneRaceComponent from './CloneRaceComponent.vue';
 import { RouterLink } from 'vue-router';
-import { Check } from 'lucide-vue-next';
+import { Check, Copy } from 'lucide-vue-next';
 
 export default {
   components: {
     RouterLink,
-    Check
+    Check,
+    Copy,
+    ModalComponent,
+    CloneRaceComponent
   },
   data() {
     return {
       loading: false,
+      modalMode:null,
+      showModal:false,
+      raceToClone:{},
       error: null,
     };
   },
@@ -32,7 +40,13 @@ export default {
       this.error = null;
       this.loading = true;
       if (this.$route) {
-       return request(`/api/races/`)
+        let options = {};
+        if(this.$route.query.archived == "true"){
+          options.params= {
+            archived:true
+          }
+        }
+       return request(`/api/races/`,options)
           .then((response) => {
             this.raceData = response.data;
             this.loading = false;
@@ -44,7 +58,37 @@ export default {
             console.error(err);
           });
       }
-    }
+    },
+    createRaceClone(race){
+      this.showModal = true;
+      this.modalMode = 'clone'
+      this.raceToClone = race;
+    },
+    async cloneRace(raceData){
+      console.log("race to clone");
+      console.log(this.raceToClone.raceid)
+      console.log(raceData.raceid);
+      await request.post(
+        `/api/races/clone/${this.raceToClone.raceid}`,
+        raceData
+      ).then((response) => {
+        if (response.data) {
+          console.log(raceData);
+          this.closeModal();
+          console.log(response.data);
+          return this.fetchData()
+        }
+      })
+        .catch((error) => {
+          this.formError = ["Error submitting request"];
+          console.log(error);
+        });
+      
+    },
+    closeModal(){
+      this.showModal = false;
+      this.modalMode = null;
+    },
   },
   computed: {
     
@@ -114,6 +158,7 @@ export default {
                 <td><Check v-if="race.isTestData" color="orange" ></Check></td>
                 <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
                 <td>
+                  <Copy class="mx-3" color="black" @click="createRaceClone(race)" ></Copy>
                   <!-- <RouterLink v-if="!!race.series" class='btn btn-sm mx-1 btn-secondary' :to="{ name: 'edit-series-racers', params: { raceid: race.raceid, series: race.series }}" >Series Single Entries</RouterLink> -->
                   <a class="btn btn-sm btn-secondary mx-1" :href="`/api/racers/race/${race.raceid}/export-contact`">Contact List</a>
                   <a class="btn btn-sm btn-secondary mx-1" :href="`/api/racers/race/${race.raceid}/export`">export</a>
@@ -125,6 +170,22 @@ export default {
           <!-- <pre>
             {{raceData}}
           </pre> -->
+          <Teleport to="body">
+          <!-- use the modal component, pass in the prop -->
+          <modal-component v-if="modalMode=='clone'" :show="showModal" @close="closeModal">
+            <template #header>
+              <h5>
+                Clone Race
+            </h5>
+            </template>
+            <template #body >
+                <CloneRaceComponent :raceData="raceToClone" @close="closeModal" @save="cloneRace"></CloneRaceComponent>
+            </template>
+            <template #footer >
+              <div></div>
+            </template>
+          </modal-component>
+        </Teleport>
         </div>
     </div>
     <div v-else>

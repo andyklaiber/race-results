@@ -4,7 +4,7 @@ import EditRacersComponent from '@/admin/components/EditRacersComponent.vue';
 import EditRaceComponent from '@/admin/components/EditRaceComponent.vue';
 import EditSeriesRacersComponent from '@/admin/components/EditSeriesRacersComponent.vue';
 import RaceLayoutComponent from '@/admin/components/RaceLayoutComponent.vue';
-import RacesComponent from '@/admin/components/RacesComponent.vue';
+import RacesComponent from '@/admin/components/RacesListComponent.vue';
 import ResultLayoutComponent from '@/admin/components/ResultLayoutComponent.vue';
 import ResultsListComponent from '@/admin/components/ResultsComponent.vue';
 import ResultEditorComponent from '@/admin/components/ResultEditorComponent.vue';

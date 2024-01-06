@@ -11,6 +11,9 @@
         <div v-if="show" class="modal-mask">
           <div class="modal-wrapper">
             <div class="modal-container" @keydown.esc="$emit('close')" tabIndex="0">
+              <div class="modal-header">
+                <slot name="header"></slot>
+              </div>
               <div class="modal-body">
                 <slot name="body">default body</slot>
               </div>
@@ -18,7 +21,7 @@
               <div class="modal-footer">
                 <slot name="footer">
                   <button class="btn btn-sm btn-danger modal-default-button"
-                    @click="$emit('close')"
+                  @click="$emit('close')"
                   >Cancel</button>
                 </slot>
               </div>

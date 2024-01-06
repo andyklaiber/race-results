@@ -174,6 +174,7 @@ export default {
         </div><div v-else>
           <h4>No series points calculations found</h4>
         </div>
+        <h4>Races without points Listings</h4>
         <div class="table-responsive" v-if="Object.keys(seriesOptions).length">
           <table class="table table-striped table-hover table-sm">
             <thead>

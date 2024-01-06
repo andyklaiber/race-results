@@ -154,7 +154,7 @@ body {
  */
 
 body {
-  min-height: 75rem;
+  /* min-height: 75rem; */
   padding-top: 4.5rem;
 }
 </style>

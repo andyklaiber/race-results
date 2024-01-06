@@ -156,7 +156,8 @@ export default {
       return {
         "all":"All",
         "season":"Season",
-        "single":"Single"
+        "single":"Single",
+        "cash":"cash"
       }
     },
     filteredPayments(){
