@@ -197,6 +197,7 @@ export default {
               <FormKit :value="raceData.isTestData" type="checkbox" label="Use Test payment integrations"
                 name="isTestData" />
               <FormKit :value="raceData.couponsEnabled" type="checkbox" label="Enable Coupons" name="couponsEnabled" />
+              <FormKit :value="raceData.disableAge" type="checkbox" label="Disable Birthdate requirement" name="disableAge" />
               <FormKit :value="raceData?.cashPaymentsEnabled" type="checkbox" label="Enable Cash payments on race day"
                 name="cashPaymentsEnabled" />
               <FormKit type="group" name="stripeMeta">

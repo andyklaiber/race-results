@@ -210,7 +210,8 @@ export default {
     
             <FormKit type="text" name="sponsor" label="Team or Sponsor" />
         </div>
-    
+        <FormKit type="text" name="contactNumber" label="Phone Number" help="If there is an issue on race day, we will try to contact you via this number" />
+        <FormKit type="text" name="emergencyNumber" label="Emergency Contact Name and Number" help="In case of an emergency, we will contact this person" />
         <FormKit type="text" name="racerAge" label="Racer Age" help="age on dec 31" />
         <div class="double">
             <FormKit type="select" id="category" label="Race Category:" placeholder="Select a category" name="category"

@@ -465,7 +465,7 @@ export default {
         return dec31.year() - bday.year();
 
       }
-    }
+    },
   },
 };
 </script>
@@ -515,10 +515,10 @@ export default {
               </div>
               <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
                 help="Enter an optional Team or Sponsor name" />
-              <FormKit v-if="!previousReg" type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
-                help="Enter your birthdate" validation="required|before:2020-01-01"
+              <FormKit v-if="!raceData?.disableAge && !previousReg" type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
+                help="Tap on the year at the top of the popup to change it" validation="required|before:2020-01-01"
                 validation-visibility="live" />
-              <div>Age: {{racerAge}}</div>
+              <p v-if="!raceData?.disableAge" class="fw-bolder">Racing Age (as of Dec 31): {{racerAge}}</p>
               <div class="form-group pt-3">
                 <FormKit type="select" id="category" label="Category:" placeholder="Select a category"
                   name="category" :options="sortedCats" validation="required" validation-visibility="dirty"
@@ -526,6 +526,8 @@ export default {
                     is: 'You must select a category',
                   }" />
               </div>
+              <FormKit type="text" name="contactNumber" label="Phone Number" help="If there is an issue on race day, we will try to contact you via this number" />
+              <FormKit type="text" name="emergencyNumber" label="Emergency Contact Name and Number" help="In case of an emergency, we will contact this person" />
             </div>
             <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
               <h4 class="d-flex justify-content-between align-items-center mb-3">
@@ -543,7 +545,7 @@ export default {
                     validation="required" v-model="payment" v-if="showPaymentOption" />
                 </div>
               </fieldset>
-              <div v-if="raceData.optionalPurchases"><!--  && showPaymentOption"> -->
+              <div v-if="raceData.optionalPurchases && showPaymentOption">
                 <FormKit type="group" name="optionalPurchases">
                 <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
                   <h6 v-html="item.description"></h6>

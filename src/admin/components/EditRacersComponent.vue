@@ -123,6 +123,7 @@ export default {
       this.filterNoBib=false,
       this.filterCats="all";
     },
+
     optionalPurchases(obj){
       if(!obj) return '';
       let returnStr = '';
@@ -224,6 +225,7 @@ export default {
               <th scope="col">First Name</th>
               <th scope="col">Last Name</th>
               <th scope="col">Category</th>
+              <th scope="col">Race Age</th>
               <th scope="col">Bib Number</th>
               <th scope="col">Purchases</th>
               <th scope="col">Paytype</th>
@@ -236,6 +238,7 @@ export default {
               <td>{{racer.first_name}}</td>
               <td>{{racer.last_name}}</td>
               <td>{{catName(racer.category)}}</td>
+              <td>{{racer.racerAge}}</td>
               <td>{{racer.bibNumber}}</td>
               <td>{{optionalPurchases(racer.optionalPurchases)}}</td>
               <td>{{racer.paytype}}</td>
