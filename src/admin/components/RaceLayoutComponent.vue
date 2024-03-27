@@ -29,6 +29,11 @@ export default {
               Event Registrations
             </RouterLink>
           </li>
+          <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: $route.name == 'racer-purchases' }" :to="{ name: 'racer-purchases'}">
+              Extra Purchases
+            </RouterLink>
+          </li>
           <!-- <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: $route.name == 'edit-series-racers' }" :to="{ name: 'edit-series-racers'}">
               Series Single Registrations

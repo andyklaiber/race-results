@@ -1,16 +1,12 @@
 <script>
 import _ from "lodash";
 import Grid from './GridComponent.vue'
-import ModalComponent from './ModalComponent.vue';
-import RacerFormComponent from './RacerFormComponent.vue'
 import request from "@/lib/ApiClient";
 
 import dayjs from 'dayjs/esm/index.js';
 
 export default {
   components: {
-    ModalComponent,
-    RacerFormComponent,
     Grid,
   },
   data() {
@@ -18,11 +14,7 @@ export default {
       categories: {},
       loading: false,
       error: null,
-      formError: [],
-      formInputData: {},
       data: {},
-      racerToEdit:null,
-      racerFormMode:'edit',
       showModal:false,
       filterKey:"",
       filterUnpaid:false,
@@ -43,9 +35,6 @@ export default {
     );
   },
   methods: {
-    dollas(amt) {
-      return amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
-    },
     fetchData() {
       this.error = null;
       this.loading = true;
@@ -62,61 +51,7 @@ export default {
           });
         }
     },
-    catName(cat_id) {
-      let catObj = _.find(this.data.regCategories, { id: cat_id })
-      if(catObj){
-        return catObj.catdispname
-      }
-      return ''
-    },
-    createReg(){
-      this.racerToEdit = {
-        paytype:'cash',
-        status: 'unpaid',
-        raceid: this.$route.params.raceid
-      };
-        this.racerFormMode = 'create'
-        this.showModal=true;
-    },
-    regCash(paymentId){
-      let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
-      if(racer){
-        console.log('racerData:')
-        console.log(racer)
-        this.racerToEdit = racer;
-        this.racerFormMode = 'regcash'
-        this.showModal=true;
-      }else{
-        alert('no payment id found for racer')
-      }
-    },
-    editRacer(paymentId){
-      let racer = _.clone(_.find(this.data.registeredRacers, {paymentId}));
-      if(racer){
-        console.log('racerData:')
-        console.log(racer)
-        this.racerToEdit = racer;
-        this.racerFormMode = 'edit'
-        this.showModal=true;
-      }else{
-        alert('no payment id found for racer')
-      }
-    },
-    racerUpdated(){
-      this.racerToEdit = null;
-      this.showModal=false;
-      this.fetchData()
-    },
-    capitalize(txt){
-      return _.capitalize(txt);
-    },
-    closeModal(){
-      this.showModal = false
-      _.defer(()=>{
-            let searchNode = document.querySelector('#racerFilterTxtInput');
-            searchNode.focus();
-        });
-    },
+
     resetFilters(){
       this.filterKey="",
       this.filterUnpaid=false,
@@ -138,8 +73,16 @@ export default {
         })
       }
       returnStr = itemDescriptions.join(', ');
+      // if(obj.tshirt){
+      //   returnStr = 'shirt: '+obj["tshirt-option"];
+      // }
+      // if(obj.bottle) returnStr += " + Bottle"
+      // if(obj.socks) returnStr += ` + ${obj["socks-option"]} Socks`
       return returnStr;
-    }
+    },
+    capitalize(txt){
+      return _.capitalize(txt);
+    },
   },
   computed: {
     loaded() {
@@ -161,7 +104,8 @@ export default {
         },
     filteredRacers(){
       const filterKey = this.filterKey && this.filterKey.toLowerCase()
-      let data = this.data.registeredRacers;
+      let data = this.data.registeredRacers.filter((row) => {
+        return row.optionalPurchases && Object.keys(row.optionalPurchases).length > 0});
 
       if (filterKey.length || this.filterUnpaid || this.filterCats !== 'all' || this.filterNoBib) {
             data = data.filter((row) => {
@@ -222,7 +166,6 @@ export default {
         </div>
         <div class="d-flex flex-grow-1 justify-content-between p-2 pt-4">
           <a class="btn btn-primary align-self-start" @click="resetFilters">Reset Filters</a>
-          <div class='btn btn-md btn-success  align-self-start' @click="createReg()">Add New Registration</div>
         </div>
       </div>
       <div class="table-responsive">
@@ -231,12 +174,11 @@ export default {
             <tr>
               <th scope="col">First Name</th>
               <th scope="col">Last Name</th>
-              <th scope="col">Category</th>
-              <th scope="col">Race Age</th>
-              <th scope="col">Bib Number</th>
+              <!-- <th scope="col">Race Age</th> -->
+              <!-- <th scope="col">Bib Number</th> -->
               <th scope="col">Purchases</th>
-              <th scope="col">Paytype</th>
-              <th scope="col">Payment Status</th>
+              <!-- <th scope="col">keys</th>
+              <th scope="col">Paytype</th> -->
               <th scope="col"><strong>{{filteredRacers.length}} Found</strong></th>
             </tr>
           </thead>
@@ -244,31 +186,18 @@ export default {
             <tr v-for="(racer, idx) in filteredRacers" :key="idx">
               <td>{{racer.first_name}}</td>
               <td>{{racer.last_name}}</td>
-              <td>{{catName(racer.category)}}</td>
-              <td>{{racer.racerAge}}</td>
-              <td>{{racer.bibNumber}}</td>
+              <!-- <td>{{racer.racerAge}}</td> -->
+              <!-- <td>{{racer.bibNumber}}</td> -->
               <td>{{optionalPurchases(racer.optionalPurchases)}}</td>
+              <!-- <td>{{Object.keys(racer.optionalPurchases)}}</td> -->
               <td>{{racer.paytype}}</td>
-              <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
-              <td>
-                <div class='btn btn-sm btn-outline-secondary' v-if="racer.status !== 'unpaid'" @click="editRacer(racer.paymentId)">{{'edit'}}</div>
-                <div class='btn btn-sm btn-outline-secondary' v-if="racer.status === 'unpaid'" @click="regCash(racer.paymentId)">{{'Register'}}</div>
-              </td>
-            </tr>
+              </tr>
 
           </tbody>
         </table>
         <!-- <pre>
             {{data}}
           </pre> -->
-        <Teleport to="body">
-          <!-- use the modal component, pass in the prop -->
-          <modal-component :show="showModal" @close="closeModal">
-            <template #body>
-              <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions" :formMode="racerFormMode" :series="data.series"></RacerFormComponent>
-            </template>
-          </modal-component>
-        </Teleport>
       </div>
     </div>
     <div v-else>

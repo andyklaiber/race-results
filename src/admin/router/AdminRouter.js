@@ -3,6 +3,7 @@ import PaymentsComponent from '@/admin/components/PaymentsComponent.vue';
 import EditRacersComponent from '@/admin/components/EditRacersComponent.vue';
 import EditRaceComponent from '@/admin/components/EditRaceComponent.vue';
 import EditSeriesRacersComponent from '@/admin/components/EditSeriesRacersComponent.vue';
+import RacerPurchasesComponent from '@/admin/components/RacerPurchasesComponent.vue';
 import RaceLayoutComponent from '@/admin/components/RaceLayoutComponent.vue';
 import RacesComponent from '@/admin/components/RacesListComponent.vue';
 import ResultLayoutComponent from '@/admin/components/ResultLayoutComponent.vue';
@@ -56,6 +57,7 @@ const router = createRouter({
       children:[
         { path: '', component: EditRaceComponent, name: 'edit-race' },
         { path: 'racers/', component: EditRacersComponent, name: 'edit-racers' },
+        { path: 'racers-purchases/', component: RacerPurchasesComponent, name: 'racer-purchases' },
         { path: 'series/:series', component: EditSeriesRacersComponent, name: 'edit-series-racers' },
         // when /race/:raceid/roster is matched
         // { path: 'roster', component: RaceRoster },
