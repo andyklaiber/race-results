@@ -147,7 +147,7 @@ export default {
                                     }" />
                                 <FormKit type="number" :value="fractionToPercentage(element.fractionDiscount)"
                                     name="percentDiscount" validation="min:0|max:100" validation-visibility="live"
-                                    label="Discount Percentage" number="integer" />
+                                    label="Discount Percentage" />
 
                             </div>
                             <FormKit type="checkbox" v-model="element.singleUse" name="singleUse" label="singleUse" />

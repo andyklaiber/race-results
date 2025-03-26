@@ -19,16 +19,6 @@ export default {
         
     },
     computed: {
-
-    },
-    methods: {
-        submitHandler() {
-            this.formInputData.raceid = this.formatNameToId(this.formInputData.displayName);
-            this.$emit('save', this.formInputData);
-        },
-        formatNameToId(name){   
-            return name.replace(/\s+/g, '_').toLowerCase().replace('+', '_plus_').replace('-', '_minus_').replace(/\W/g, '');
-        },
         eventDate() {
             return dayjs(this.raceData.eventDate).format('YYYY-MM-DDTHH:mm');
         },
@@ -41,6 +31,16 @@ export default {
         timeToClose() {
             return dayjs().to(this.formInputData.eventDetails?.regCloseDate)
         },
+    },
+    methods: {
+        submitHandler() {
+            this.formInputData.raceid = this.formatNameToId(this.formInputData.displayName);
+            this.$emit('save', this.formInputData);
+        },
+        formatNameToId(name){   
+            return name.replace(/\s+/g, '_').toLowerCase().replace('+', '_plus_').replace('-', '_minus_').replace(/\W/g, '');
+        },
+        
     }
 }
 </script>

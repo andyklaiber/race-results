@@ -42,6 +42,9 @@ export default {
         async submitHandler() {
             let formData = this.formCats.map((cat, idx) => {
                 let newCat = Object.assign({}, cat);
+                if(newCat.paytype == "null"){
+                    delete newCat.paytype;
+                }
                 newCat.disporder = idx + 1;
 
                 return newCat;
@@ -154,6 +157,8 @@ export default {
                             <FormKit v-if="!element.sponsored" type="select" name="paytype" label="Category Payment Type"
                                 help="Force payment type when this category is selected" :value="element.paytype"
                                 :options="payTypeOptions" />
+                            <FormKit v-else type="text" :value="element.sponsorName" name="sponsorName" label="Sponsor Name"
+                                validation="required" />
                         </div>
                         <button class="btn btn-primary my-3 mx-2" type="button" @click="submitForm">Save</button>
                         <button class="btn btn-danger my-3 mx-2" type="button" @click="cancelEdit">Cancel</button>

@@ -6,109 +6,94 @@ import { Pencil, Copy, Trash2 } from 'lucide-vue-next';
 
 export default {
     components: {
-        draggable,
         ModalComponent,
         Pencil,
         Copy,
         Trash2
     },
     props: [
-        "categories",
-        "payTypes",
+        "paymentOptions",
     ],
     emits: ['save', 'show', 'close'],
     data() {
         return {
             formError: [],
             formInputData: {},
-            formCats: [],
-            editCatId: null,
+            formPayTypes: [],
+            editPaytypeId: null,
             show: false,
         }
     },
     mounted() {
-        this.formCats = this.categories.map(cat => Object.assign({}, cat));
+        this.formPayTypes = this.paymentOptions.map(cat => Object.assign({}, cat));
     },
     computed: {
-        payTypeOptions() {
+        paymentTypeOptions() {
 
             return {
-                null: 'Not required',
-                ...this.payTypes
+                season: 'Pays for all races in the series',
+                single: 'Pays for only the current race',
+                custom: 'create a custom paytype category, single race only',
             }
         }
+        
     },
     methods: {
         async submitHandler() {
-            let formData = this.formInputData.map((cat, idx) => {
-                let newCat = Object.assign({}, cat);
-                newCat.disporder = idx + 1;
-
-                return newCat;
-            })
+            
             console.log(this.formInputData);
-            await request.patch(
-                `/api/races/${this.$route.params.raceid}`,
-                { regCategories: formData }
-            ).then((response) => {
-                if (response.data) {
-                    this.$emit('save', this.formInputData);
-                }
-            })
-                .catch((error) => {
-                    this.formError = ["Error submitting request"];
-                    console.log(error);
-                });
+            // await request.patch(
+            //     `/api/races/${this.$route.params.raceid}`,
+            //     { paymentOptions: formData }
+            // ).then((response) => {
+            //     if (response.data) {
+            //         this.$emit('save', this.formInputData);
+            //     }
+            // })
+            //     .catch((error) => {
+            //         this.formError = ["Error submitting request"];
+            //         console.log(error);
+            //     });
         },
         submitForm(clickEvent) {
             clickEvent.stopPropagation();
             this.$formkit.submit("editingCategoryForm");
         },
-        saveCategory(formData) {
-            let existingCatData = this.formCats[this.editCatId];
-            if (existingCatData.catdispname !== formData.catdispname) {
-                existingCatData.id = this.formatNameToId(formData.catdispname);
-            }
+        savePaytype(formData) {
+            let existingCatData = this.formPayTypes[this.editPaytypeId];
+            
             Object.assign(existingCatData, formData)
-            if (existingCatData.paytype === null) {
-                delete existingCatData.paytype;
-            }
+            
             console.log("update: ", existingCatData)
-            this.formCats.splice(this.editCatId, 1, existingCatData);
-            this.editCatId = null;
+            this.formPayTypes.splice(this.editPaytypeId, 1, existingCatData);
+            this.editPaytypeId = null;
         },
         formatNameToId(name) {
             return name.replace(/\s+/g, '_').toLowerCase().replace('+', '_plus_').replace('-', '_minus_').replace(/\W/g, '');
         },
-        onDragStart(event) {
 
-
-        },
-        onDragEnd() {
-
-        },
-        editCategoryData(index) {
-            if (this.editCatId === null) {
-                return this.editCatId = index
+        editPaytypeData(index) {
+            if (this.editPaytypeId === null) {
+                return this.editPaytypeId = index
             }
         },
         cancelEdit(event) {
             event.stopPropagation();
-            this.editCatId = null;
+            this.editPaytypeId = null;
         },
-        copyCategory(event, index) {
+        copyPaytype(event, index) {
             event.stopPropagation();
-            const newCat = { ...this.formCats[index] };
+            const newCat = { ...this.formPayTypes[index] };
             newCat.catdispname = newCat.catdispname + ' (copy)';
             newCat.id = this.formatNameToId(newCat.catdispname);
-            this.formCats.splice(index + 1, 0, newCat);
+            this.formPayTypes.splice(index + 1, 0, newCat);
         },
-        deleteCategory(event, index) {
+        deletePaytype(event, index) {
             event.stopPropagation();
-            this.formCats.splice(index, 1);
+            this.formPayTypes.splice(index, 1);
         },
         checkMove: function (evt) {
-            return this.editCatId === null;
+            return this.editPaytypeId === null;
         }
     }
 }
@@ -120,48 +105,44 @@ export default {
             <modal-component :show="show" @close="emit('close')">
               <template #header>
                 <h5>
-                  Edit Race Categories
+                  Edit Payments
                 </h5>
-                Click to Edit, Drag to reorder categories
+                Click to Edit
               </template>
               <template #body>
     <div class="edit-categories-form">
 
         <!-- <FormKit type="form" id="edit-categories" v-model="formInputData" 
         :errors="formError" submit-label="Save" @submit="submitHandler"> -->
-        <draggable v-model="formCats" @end="onDragEnd" @start="onDragStart" item-key="id" :move="checkMove">
-            <template #item="{ element, index }">
-                <div class="cat-group" @click="editCategoryData(index)">
+       <div v-for="(element, index) in formPayTypes" class="cat-group-container">
+                <div class="cat-group" @click="editPaytypeData(index)">
 
-                    <FormKit v-if="editCatId === index" type="form" id="editingCategoryForm" label="Category Name"
-                        validation="required" @submit="saveCategory" :actions="false">
+                    <FormKit v-if="editPaytypeId === index" type="form" id="editingCategoryForm" label="Category Name"
+                        validation="required" @submit="savePaytype" :actions="false">
                         <div class="double">
-                            <FormKit type="text" :value="element.catdispname" name="catdispname" label="Category Name"
+                            <FormKit type="text" :value="element.name" name="name" label="Pay type description"
                                 validation="required" />
-                            <FormKit type="number" :value="element.laps" name="laps" label="Laps" number="integer" />
-
+                            <FormKit type="number" :value="element.amount" name="amount" label="Amount" number="integer" />
+                            <!-- <FormKit type="select" name="type" label="Payment Type"
+                                help="Select the type of payment" :value="element.type"
+                                :options="paymentTypeOptions" /> -->
                       
-                            
-                            <FormKit v-if="!element.sponsored" type="select" name="paytype" label="Category Payment Type"
-                                help="Force payment type when this category is selected" :value="element.paytype"
-                                :options="payTypeOptions" />
                         </div>
                         <button class="btn btn-primary my-3 mx-2" type="button" @click="submitForm">Save</button>
                         <button class="btn btn-danger my-3 mx-2" type="button" @click="cancelEdit">Cancel</button>
                     </FormKit>
                     <div v-else class="d-flex flex-row justify-content-between">
-                        <div class="cat-name">{{ element.catdispname }} <strong v-if="element.sponsored">Sponsored</strong>
+                        <div class="cat-name">{{ element.name }} 
                         </div>
                         <div class="">
-                            <label class="">{{ index + 1 }} of {{ formCats.length }}
+                            <label class="">{{ index + 1 }} of {{ formPayTypes.length }}
                             </label>
-                            <Copy class="mx-3" color="black" @click="copyCategory($event, index)"></Copy>
-                            <Trash2 color="black" @click="deleteCategory($event, index)"></Trash2>
+                            <!-- <Copy class="mx-3" color="black" @click="copyPaytype($event, index)"></Copy>
+                            <Trash2 color="black" @click="deletePaytype($event, index)"></Trash2> -->
                         </div>
                     </div>
                 </div>
-            </template>
-        </draggable>
+            </div>
         <!-- </FormKit> -->
 
 
@@ -208,6 +189,4 @@ export default {
     justify-content: flex-end;
 }
 
-.cat-name {
-    cursor: move;
-}</style>
+</style>

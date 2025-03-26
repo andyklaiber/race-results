@@ -48,6 +48,11 @@ const router = createRouter({
       component: RaceReg
     },
     { 
+      path: '/register/test/:raceid', 
+      name: 'register-test',
+      component: RaceReg
+    },
+    { 
       path: '/regconfirmation/:raceid/:payment_id', 
       component: RaceRegConfirm
     },

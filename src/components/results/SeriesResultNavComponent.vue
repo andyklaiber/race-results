@@ -35,15 +35,21 @@ export default {
     },
     hasTeamComp(){
       return this.seriesData?.teamCompDates?.length > 1;
-    }
+    },
+    headerName(){
+      return this.displayName || this.seriesData?.eventName
+    },
+    isSeriesResultPage(){
+      return this.$route.name =='seriesResults'
+    },
   },
 };
 </script>
 
 <template>
-  <nav id="top" class="navbar navbar-light bg-light">
+  <nav v-if="headerName" id="top" class="navbar navbar-light bg-light">
     <div class="container-fluid">
-      <div class="navbar-brand h2" href="#">{{displayName || seriesData.eventName}}</div>
+      <div class="navbar-brand h2" href="#">{{headerName}}</div>
 
       <!-- <div class="nav-item" v-if='seriesData.homepage'>
         <a
@@ -55,6 +61,7 @@ export default {
       </div> -->
     </div>
   </nav>
+  <div v-if="races.length > 1">
   <p class="mt-3">View Individual Event Times:</p>
   <ul class="nav nav-tabs mt-1 justify-content-center">
     <li v-for="race in races" :key="race.raceid" class="nav-item">
@@ -65,7 +72,7 @@ export default {
         >{{ race.eventName + ` - ${race.formattedStartDate}` }}</RouterLink
       >
     </li>
-    <li v-if="hasTeamComp">
+    <li v-if="!isSeriesResultPage">
       <RouterLink
         class="nav-link"
         :class="{ active: $route.name == 'seriesResults' }"
@@ -80,4 +87,5 @@ export default {
         >Team Competition Standings</RouterLink
       ></li>
   </ul>
+</div>
 </template>

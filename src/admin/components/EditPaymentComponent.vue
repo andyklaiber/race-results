@@ -14,11 +14,13 @@ export default {
             formError: [],
             formInputData: {},
             target: '',
+            successMessage: '',
         }
     },
     mounted() {
         console.log(this.races)
-        this.target = this.races[0]
+        this.target = Object.keys(this.races)[0]
+        console.log(this.target)
     },
     computed: {
         raceOptions() {
@@ -41,7 +43,9 @@ export default {
                         }
                     }
                 )
-
+                .then((response) => {
+                    this.successMessage = 'Registration moved';
+                })
                 .catch((error) => {
                     this.formError = ["Error submitting request"];
                     console.log(error);
@@ -49,7 +53,6 @@ export default {
         },
         async deleteReg(event) {
             console.log(event)
-            console.log(this.target);
             return request
                 .delete(
                     `/api/racers/race/${this.target}`,
@@ -59,7 +62,9 @@ export default {
                         }
                     }
                 )
-
+                .then((response) => {
+                    this.successMessage = 'Registration deleted';
+                })
                 .catch((error) => {
                     this.formError = ["Error submitting request"];
                     console.log(error);
@@ -79,13 +84,16 @@ export default {
 
         Move This reg to Event:
         <FormKit type="select" label="Select an Event:" placeHolder="Select race to transfer to" name="selectedRace"
-            v-model="target" :options="raceOptions" />
+             :options="raceOptions" />
         <div class='btn btn-sm btn-primary' @click="moveReg()">Transfer</div>
     </div>
     <div>
 
         Delete registration
         <div class='btn btn-sm btn-primary' @click="deleteReg()">Delete!</div>
+    </div>
+    <div v-if="successMessage">
+        {{successMessage}}
     </div>
 </template>
     

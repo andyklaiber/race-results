@@ -42,13 +42,15 @@ export default {
 <template>
   <div class="container mb-4">
     <img v-if="isRegPage" class="img-fluid" :src="details.headerPhoto" alt="">
-    <div class="row p-1 pb-0 pe-lg-0 pt-lg-3 align-items-center rounded-3 border shadow">
-      <div v-if="details.logoUrl" class="col-sm-3 offset-sm-1 p-0">
+    <div class="row p-1 px-3 pb-0 pe-lg-0 pt-lg-3 align-items-center rounded-3 border shadow">
+      <div v-if="details.logoUrl" class="col-md-3 px-3">
+        <div class="d-flex justify-content-center">
         <a :href="details.homepageUrl">
           <img class="pb-1" :src="details.logoUrl" alt="" :width="imgWidth">
         </a>
       </div>
-      <div class="col-lg-7 p-3 p-lg-3 pt-lg-3">
+      </div>
+      <div class="col-md-7 p-3 p-lg-3 pt-lg-3">
         <div class="row">
           <div class="col col-md-auto">
             <h3 class="display-7 fw-bold lh-3">{{ details.name }}</h3>

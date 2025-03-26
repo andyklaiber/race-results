@@ -59,7 +59,7 @@ export default {
       let series = {};
       let filtered = _.filter(this.races, (raceInfo)=>{
         
-        if(raceInfo.series && series[raceInfo.series]){
+        if(raceInfo.series && series[raceInfo.series] && !raceInfo.disableSeriesRedirect){
           // console.log("exclude "+raceInfo.series)
           return false;
         }

@@ -112,7 +112,7 @@ export default {
               prevFormData.waiverAccepted = false;
               this.formInputData = prevFormData;
             }
-            if(this.raceData.series && this.raceData.toString().length > 1){
+            if(!this.raceData.disableSeriesRedirect &&this.raceData.series && this.raceData.toString().length > 1 && this.$route.name !== 'register-test'){
               await request(`/api/series/${this.raceData.series}/registration`)
                 .then(({data})=>{
                   this.seriesRaces = data;
@@ -124,7 +124,9 @@ export default {
                     }
                     else{
                       this.seriesRaceIdx = idx;
-                      this.$router.push(`/register/${raceid}`)
+                      if(this.$route.params.raceid !== raceid){
+                        this.$router.push(`/register/${raceid}`)
+                      }
                       return true;
                     }
                     })
@@ -152,12 +154,12 @@ export default {
       })
         .then(({ data }) => {
           console.log('prevbib')
-          console.log(data);
           if(data.paytype === 'season'){
-            this.prevBibError = ['You are already registered for the whole season']
+            this.prevBibError = ['You are already registered for the whole season. You do not need to register every week.']
             return;
           }
           data.prevPaymentId = data.paymentId;
+          delete data.optionalPurchases;
           delete data.paymentId;
           this.formInputData = data;
           this.prevAge = data.racerAge
@@ -321,7 +323,7 @@ export default {
       return dayjs(this.raceData.eventDate).format('YYYY-MM-DD');
     },
     regDisabled() {
-      if(this.$route.query.test !== undefined){
+      if(this.$route.name == 'register-test'){
         return false;
       }
       if(this.eventFull){
@@ -352,7 +354,7 @@ export default {
         options[element.type] = element.name;
       });
       if (this.cashEnabled) {
-        options['cash'] = 'Cash Payment (Today\'s Race Only)';
+        options['cash'] = 'Cash Payment (This Race Only)';
       }
       return options;
     },
@@ -514,8 +516,8 @@ export default {
                   validation="required|email" />
               </div>
               <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
-                help="Enter an optional Team or Sponsor name" />
-              <FormKit v-if="!raceData?.disableAge && !previousReg" type="date" value="2001-01-01" name="birthdate" label="Birthday" v-model="birthdate"
+                help="Enter an optional Team or Sponsor name" maxlength="25"/>
+              <FormKit v-if="!raceData?.disableAge && !previousReg" type="date" name="birthdate" label="Birthday" v-model="birthdate"
                 help="Tap on the year at the top of the popup to change it" validation="required|before:2020-01-01"
                 validation-visibility="live" />
               <p v-if="!raceData?.disableAge" class="fw-bolder">Racing Age (as of Dec 31): {{racerAge}}</p>
@@ -526,8 +528,8 @@ export default {
                     is: 'You must select a category',
                   }" />
               </div>
-              <FormKit type="text" name="contactNumber" label="Phone Number" help="If there is an issue on race day, we will try to contact you via this number" />
-              <FormKit type="text" name="emergencyNumber" label="Emergency Contact Name and Number" help="In case of an emergency, we will contact this person" />
+              <FormKit v-if="!previousReg" type="text" name="contactNumber" label="Phone Number" help="If there is an issue on race day, we will try to contact you via this number" />
+              <FormKit v-if="!previousReg" type="text" name="emergencyNumber" label="Emergency Contact Name and Number" help="In case of an emergency, we will contact this person" />
             </div>
             <div class="col-md-5 order-md-2 mb-4" v-if="paymentCostDets">
               <h4 class="d-flex justify-content-between align-items-center mb-3">
@@ -545,7 +547,7 @@ export default {
                     validation="required" v-model="payment" v-if="showPaymentOption" />
                 </div>
               </fieldset>
-              <div v-if="raceData.optionalPurchases && showPaymentOption">
+              <div v-if="raceData.optionalPurchases && (showPaymentOption || paymentCostDets.name)">
                 <FormKit type="group" name="optionalPurchases">
                 <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
                   <h6 v-html="item.description"></h6>
@@ -613,8 +615,11 @@ export default {
             <h2 class="text-danger">Your registration will not be active until payment is received at the event</h2>
           </div>
           <div v-if="raceData.waiver">
-            <h5>{{raceData.waiver.header}}</h5>
-            <p>{{raceData.waiver.text}}</p>
+            <div v-if="raceData.waiver.format =='html'" v-html="raceData.waiver.text"></div>
+            <div v-else>
+              <h5>{{raceData.waiver.header}}</h5>
+              <p>{{ raceData.waiver.text }}</p>
+            </div> 
           <FormKit  
           type="checkbox"
           v-model="waiverAccepted"

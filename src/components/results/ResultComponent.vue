@@ -103,7 +103,7 @@ export default {
 </script>
 
 <template>
-<SeriesNavBar :series="series" v-if="series"/>
+<SeriesNavBar :series="series"/>
     <div v-if="resultData.eventName" class="text-center">
         <h2 class="mt-5">Race Results - {{resultData.eventName}}</h2>
     </div>

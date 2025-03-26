@@ -76,6 +76,9 @@ export default {
         paymentAmount() {
             if (this.racerData.paytype === 'cash') {
                 let payOpt = _.find(this.payments, { type: 'single' })
+                if(!payOpt){
+                    return null;
+                }
                 return payOpt.amount;
             }
         }
@@ -84,6 +87,9 @@ export default {
         dollas(amt) {
             if (typeof amt === 'string') {
                 amt = parseInt(amt);
+            }
+            if(amt !== 0 &&!amt){
+                return '';
             }
             return amt.toLocaleString("en-US", { style: "currency", currency: "USD" });
         },

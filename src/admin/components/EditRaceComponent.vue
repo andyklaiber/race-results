@@ -5,12 +5,14 @@ import dayjs from '@/lib/dayjs';
 import ModalComponent from './ModalComponent.vue';
 import EditRaceCategoriesComponent from './EditRaceCategoriesComponent.vue';
 import EditRaceCouponsComponent from './EditRaceCouponsComponent.vue';
+import EditRacePaymentsComponent from './EditRacePaymentsComponent.vue';
 
 export default {
   components: {
     ModalComponent,
     EditRaceCategoriesComponent,
-    EditRaceCouponsComponent
+    EditRaceCouponsComponent,
+    EditRacePaymentsComponent
   },
   data() {
     return {
@@ -147,7 +149,7 @@ export default {
       <div v-if="true">
         <div class="d-flex flex-row">
           <div class="my-3 mx-5">
-            <a :href="`/#/register/${raceData.raceid}`">View Reg Form</a>
+            <a :href="`/#/register/test/${raceData.raceid}`">View Reg Form</a>
           </div>
           <div class="my-3">
             <a :href="`/#/roster/${raceData.raceid}`">View Roster</a>
@@ -198,6 +200,7 @@ export default {
                 name="isTestData" />
               <FormKit :value="raceData.couponsEnabled" type="checkbox" label="Enable Coupons" name="couponsEnabled" />
               <FormKit :value="raceData.disableAge" type="checkbox" label="Disable Birthdate requirement" name="disableAge" />
+              <FormKit :value="raceData.disableSeriesRedirect" type="checkbox" label="Disable Series Redirect" name="disableSeriesRedirect" />
               <FormKit :value="raceData?.cashPaymentsEnabled" type="checkbox" label="Enable Cash payments on race day"
                 name="cashPaymentsEnabled" />
               <FormKit type="group" name="stripeMeta">
@@ -278,10 +281,10 @@ export default {
 
                 <div class="accordian-collapse collapse" id="collapseCoupons">
                   <div class="accordion-body">
-                    <div class='btn btn-sm btn-primary'
+                    <!-- <div class='btn btn-sm btn-primary'
                       @click="editProperty('coupons', 'editedCoupons', { ...raceData.couponCodes })">
                       Edit Coupons
-                    </div>
+                    </div> -->
                     <div v-for="(couponData, couponCode) of raceData.couponCodes"
                       class="d-flex flex-row justify-content-between my-1">
 
@@ -337,6 +340,9 @@ export default {
           </EditRaceCategoriesComponent>
 
 
+          <EditRacePaymentsComponent :paymentOptions="editedPaymentOptions" v-if="modalMode == 'paymentOptions'" :show="showModal"
+            @close="closeModal" @save="saveProperty">
+          </EditRacePaymentsComponent>
           <EditRaceCouponsComponent :coupons="editedCoupons" v-if="modalMode == 'coupons'" :show="showModal"
             @close="closeModal" @save="saveProperty">
           </EditRaceCouponsComponent>
@@ -358,6 +364,6 @@ table.table {
 }
 
 .modal-body {
-  overflow: visible;
+  /* overflow: visible; */
 }
 </style>
