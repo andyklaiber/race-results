@@ -224,10 +224,10 @@ export default {
 
                 <div class="accordian-collapse collapse" id="collapseCategories">
                   <div class="accordion-body">
-                    <div class='btn btn-sm btn-primary'
+                    <!-- <div class='btn btn-sm btn-primary'
                       @click="editProperty('categories', 'editedCategories', [...sortedCats])">
                       Edit Categories
-                    </div>
+                    </div> -->
                     <div v-for="cat in sortedCats" class="mt-1">
                       {{ cat.catdispname }} <strong v-if="cat.sponsored">Sponsored</strong>
                     </div>

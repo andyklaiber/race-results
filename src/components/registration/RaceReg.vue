@@ -486,9 +486,9 @@ export default {
       </div>
       <div v-else class="mb-5">
         <div class="mb-3" v-if="raceData?.headerContent" v-html="raceData.headerContent"></div>
-        <div v-if="seriesRaceIdx > 0">
+        <div v-if="raceData?.seriesRaceNumber > 1">
           
-          <FormKit label-class="text-danger fw-bold fs-5" type="checkbox" name="prevBibLookup" label="I have a bib number!" help="Look up your information from a previous race" v-model="previousReg" />
+          <FormKit label-class="text-danger fw-bold fs-5" type="checkbox" name="prevBibLookup" label="I have a bib number!" help="Look up your information from a previous race in this series" v-model="previousReg" />
           <FormKit v-if="previousReg" 
                   type="number" name="bibNumber" 
                   label="Bib Number:" 
