@@ -19,6 +19,7 @@ export default {
             submitted: false,
             paymentType: 'season',
             prevBibError:[],
+            bibError: [],
             formInputData: {},
         }
     },
@@ -132,8 +133,49 @@ export default {
                 this.prevAge = null;
             }
         },
+        onBibChange(bibNumber) {
+            if (!bibNumber) {
+                this.bibError = [];
+                return;
+            }
+            
+            request.post(`/api/racers/bib/${bibNumber}`, {
+                series: `${this.series}`,
+            })
+                .then(({ data }) => {
+                    console.log('bib check:', data);
+                    // If we found a racer with this bib, check if it's a different racer
+                    // In edit mode, allow the current racer to keep their own bib
+                    if (this.formMode === 'edit' && data.paymentId && 
+                        this.racerData.paymentId && 
+                        data.paymentId.toString() === this.racerData.paymentId.toString()) {
+                        // Same racer, no error
+                        this.bibError = [];
+                        return;
+                    }
+                    
+                    // Different racer already has this bib
+                    this.bibError = [`Bib number ${bibNumber} is already in use by ${data.first_name} ${data.last_name}`];
+                })
+                .catch(({ response }) => {
+                    console.log('bib check response:', response);
+                    if (response && response.status == 404) {
+                        // Bib not found, which is good - it's available
+                        this.bibError = [];
+                    } else {
+                        // Some other error occurred
+                        console.error('Error checking bib:', response);
+                    }
+                });
+        },
         async submitHandler(formData) {
             console.log(formData);
+
+            // Prevent submission if there's a bib error
+            if (this.bibError.length > 0) {
+                this.formError = ["Please fix the bib number error before submitting"];
+                return;
+            }
 
             let requestPromise;
             if (this.formMode === 'create' || this.formMode === 'regcash') {
@@ -230,7 +272,7 @@ export default {
                         is: 'You must select a Payment Type',
                     }" />
         </div>
-        <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" />
+        <FormKit id="bibNumber" type="text" name="bibNumber" label="Bib Number" :delay="500" @input="onBibChange" :errors="bibError" />
         <div v-if="unpaidReg">
             <p class="text-danger h4">Cash Payment Required</p>
             <FormKit type="checkbox" :label="`I Collected ${dollas(paymentAmount)} from the racer`" name="paymentReceived"

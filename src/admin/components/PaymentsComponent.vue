@@ -104,6 +104,13 @@ export default {
     },
     closeModal(){
       this.showModal = false
+    },
+    isSponsoredCategory(record) {
+      if (!this.selectedRaceData || !this.selectedRaceData.regCategories || !record.regData?.category) {
+        return false;
+      }
+      const category = _.find(this.selectedRaceData.regCategories, { id: record.regData.category });
+      return category?.sponsored === true;
     }
   },
   computed: {
@@ -117,6 +124,9 @@ export default {
       let out ={};
       _.each(this.races,({raceid, displayName})=>out[raceid]=displayName)
       return out;
+    },
+    selectedRaceData(){
+      return _.find(this.races, {raceid: this.selectedRaceId});
     },
     seriesRaces(){
       let selectedRaceData = _.find(this.races,{raceid:this.selectedRaceId});
@@ -149,7 +159,8 @@ export default {
       return {
         "all":"All",
         "unpaid":"unpaid",
-        "paid":"paid"
+        "paid":"paid",
+        "free":"free"
       }
     },
     filterPayTypeOptions(){
@@ -170,8 +181,23 @@ export default {
             }
           }
           if(this.filterPayStatus !== 'all'){
-            if(this.filterPayStatus !== record.status){
-              return false;
+            if(this.filterPayStatus === 'free'){
+              // Free includes volunteers and racers in sponsored categories
+              const isVolunteer = record.regData?.paytype === 'volunteer';
+              const isSponsored = this.isSponsoredCategory(record);
+              if(!isVolunteer && !isSponsored){
+                return false;
+              }
+            } else {
+              if(this.filterPayStatus !== record.status){
+                return false;
+              }
+              // For paid status, also check that a non-zero amount was paid
+              if(this.filterPayStatus === 'paid'){
+                if(!record.stripePayment?.amount_total || record.stripePayment.amount_total === 0){
+                  return false;
+                }
+              }
             }
           }
           if(this.filterPaytype !== 'all'){
@@ -269,8 +295,8 @@ export default {
                 <th scope="col">Status</th>
                 <th scope="col">name</th>
                 <th scope="col">Reg Email</th>
-                <th scope="col">Race</th>
                 <th scope="col">Paytype</th>
+                <th scope="col">Sponsored</th>
               </tr>
             </thead>
             <tbody>
@@ -279,6 +305,7 @@ export default {
                 <td>{{payment.regData.first_name+' '+payment.regData.last_name}}</td>
                 <td><a :href="`mailto:${payment.regData.email}`">{{payment.regData.email}}</a></td>
                 <td>{{payment.regData.paytype}}</td>
+                <td>{{isSponsoredCategory(payment) ? 'Yes' : ''}}</td>
                 <td>{{dollas(payment.stripePayment?.amount_total)}}</td>
                 <td><a :href="`/#/regconfirmation/${payment.regData.raceid}/${payment._id}`">Reg Confirmation Page</a></td>
                 <td>{{payment.regData.bibNumber}}</td>
