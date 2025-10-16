@@ -144,12 +144,26 @@ export default {
             })
                 .then(({ data }) => {
                     console.log('bib check:', data);
-                    // If we found a racer with this bib, check if it's a different racer
-                    // In edit mode, allow the current racer to keep their own bib
+                    // If we found a racer with this bib, check if it's the same person
+                    
+                    // Check if it's the same payment ID (in edit mode)
                     if (this.formMode === 'edit' && data.paymentId && 
                         this.racerData.paymentId && 
                         data.paymentId.toString() === this.racerData.paymentId.toString()) {
-                        // Same racer, no error
+                        // Same racer by payment ID, no error
+                        this.bibError = [];
+                        return;
+                    }
+                    
+                    // Check if it's the same person by name (allow bib reuse by same person)
+                    const currentFirstName = (this.formInputData.first_name || '').toLowerCase().trim();
+                    const currentLastName = (this.formInputData.last_name || '').toLowerCase().trim();
+                    const existingFirstName = (data.first_name || '').toLowerCase().trim();
+                    const existingLastName = (data.last_name || '').toLowerCase().trim();
+                    if (currentFirstName && currentLastName && 
+                        currentFirstName === existingFirstName && 
+                        currentLastName === existingLastName) {
+                        // Same person by name, allow bib reuse
                         this.bibError = [];
                         return;
                     }
