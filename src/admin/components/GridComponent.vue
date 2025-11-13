@@ -77,53 +77,53 @@
     </div>
     </template>
     
-    <style>
-    table {
-      
-    }
-    
-    th {
-     
-      cursor: pointer;
-      user-select: none;
-    }
-    
-    td {
-      background-color: #f9f9f9;
-    }
-    
-    th,
-    td {
-      min-width: 120px;
-      padding: 10px 20px;
-    }
-    
-    th.active {
-      color: rgb(7, 139, 255);
-    }
-    
-    th.active .arrow {
-      opacity: 1;
-    }
-    
-    .arrow {
-      display: inline-block;
-      vertical-align: middle;
-      width: 0;
-      height: 0;
-      margin-left: 5px;
-      opacity: 0.66;
-    }
-    
-    .arrow.asc {
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-bottom: 4px solid rgb(191, 25, 25);
-    }
-    
-    .arrow.dsc {
-      border-left: 4px solid transparent;
-      border-right: 4px solid transparent;
-      border-top: 4px solid rgb(191, 25, 25);
-    }
-    </style>
+<style scoped>
+table {
+  
+}
+
+th {
+ 
+  cursor: pointer;
+  user-select: none;
+}
+
+td {
+  background-color: #f9f9f9;
+}
+
+th,
+td {
+  min-width: 120px;
+  padding: 10px 20px;
+}
+
+th.active {
+  color: rgb(7, 139, 255);
+}
+
+th.active .arrow {
+  opacity: 1;
+}
+
+.arrow {
+  display: inline-block;
+  vertical-align: middle;
+  width: 0;
+  height: 0;
+  margin-left: 5px;
+  opacity: 0.66;
+}
+
+.arrow.asc {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-bottom: 4px solid rgb(191, 25, 25);
+}
+
+.arrow.dsc {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid rgb(191, 25, 25);
+}
+</style>

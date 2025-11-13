@@ -34,6 +34,11 @@ export default {
             </RouterLink>
           </li>
           <li class="nav-item">
+            <RouterLink class="nav-link" :class="{ active: $route.name == 'series' || $route.name == 'edit-series' }" :to="{ name: 'series'}">
+              Series
+            </RouterLink>
+          </li>
+          <li class="nav-item">
             <RouterLink class="nav-link" :class="{ active: $route.name == 'payments' }" :to="{ name: 'payments'}">
               Payments
             </RouterLink>

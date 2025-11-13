@@ -59,10 +59,19 @@ export default {
       let series = {};
       let filtered = _.filter(this.races, (raceInfo)=>{
         
-        if(raceInfo.series && series[raceInfo.series] && !raceInfo.disableSeriesRedirect){
-          // console.log("exclude "+raceInfo.series)
-          return false;
+        // If filtering by series ID from route params, only show races in that series
+        if(this.$route.params.seriesid){
+          if(raceInfo.series !== this.$route.params.seriesid){
+            return false;
+          }
+        } else {
+          // Original logic: hide duplicate series races on main landing page
+          if(raceInfo.series && series[raceInfo.series] && !raceInfo.disableSeriesRedirect){
+            // console.log("exclude "+raceInfo.series)
+            return false;
+          }
         }
+        
         let isInFuture =  dayjs().isBefore(dayjs(raceInfo.eventDate));
          console.log('isInFuture' + isInFuture + " "+raceInfo.displayName)
         if(raceInfo.isTestData && !this.$route.query.test){
@@ -82,6 +91,16 @@ export default {
       // order by upcoming race date?
       return _.sortBy(filtered, [function(o) { return dayjs(o.eventDate); }]);
     },
+    seriesRaceCounts(){
+      // Count how many races from each series are visible
+      const counts = {};
+      this.displayRaces.forEach(race => {
+        if(race.series){
+          counts[race.series] = (counts[race.series] || 0) + 1;
+        }
+      });
+      return counts;
+    },
     loggedIn(){
       return false;
     }
@@ -98,7 +117,7 @@ export default {
   </div>
   <div v-else>
     <div v-for="(race, idx) in displayRaces" :key="idx">
-      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" compact-mode="true"/>
+      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" :series="race.series" :series-data="race.seriesData" :series-race-count="seriesRaceCounts[race.series]" compact-mode="true"/>
 
     </div>
   </div>

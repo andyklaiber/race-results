@@ -20,7 +20,6 @@ export default {
             formError: [],
             formInputData: {},
             formPayTypes: [],
-            editPaytypeId: null,
             show: false,
         }
     },
@@ -40,60 +39,64 @@ export default {
     },
     methods: {
         async submitHandler() {
+            // Filter to only include the fields needed by the backend
+            const cleanedPaymentOptions = this.formPayTypes.map(payType => ({
+                name: payType.name,
+                type: payType.type,
+                amount: payType.amount
+            }));
             
-            console.log(this.formInputData);
-            // await request.patch(
-            //     `/api/races/${this.$route.params.raceid}`,
-            //     { paymentOptions: formData }
-            // ).then((response) => {
-            //     if (response.data) {
-            //         this.$emit('save', this.formInputData);
-            //     }
-            // })
-            //     .catch((error) => {
-            //         this.formError = ["Error submitting request"];
-            //         console.log(error);
-            //     });
-        },
-        submitForm(clickEvent) {
-            clickEvent.stopPropagation();
-            this.$formkit.submit("editingCategoryForm");
-        },
-        savePaytype(formData) {
-            let existingCatData = this.formPayTypes[this.editPaytypeId];
+            console.log('Submitting payment options:', cleanedPaymentOptions);
             
-            Object.assign(existingCatData, formData)
+            await request.patch(
+                `/api/races/${this.$route.params.raceid}`,
+                { paymentOptions: cleanedPaymentOptions }
+            ).then((response) => {
+                if (response.data) {
+                    this.$emit('save', cleanedPaymentOptions);
+                    this.$emit('close');
+                }
+            })
+                .catch((error) => {
+                    this.formError = ["Error submitting request"];
+                    console.log(error);
+                });
+        },
+        addPaytype() {
+            this.formPayTypes.push({
+                name: '',
+                type: '',
+                amount: ''
+            });
+        },
+        addSpecialPaytype(type) {
+            // Check if this special type already exists
+            const exists = this.formPayTypes.some(pt => pt.type === type);
+            if (exists) {
+                alert(`A ${type} payment type already exists`);
+                return;
+            }
             
-            console.log("update: ", existingCatData)
-            this.formPayTypes.splice(this.editPaytypeId, 1, existingCatData);
-            this.editPaytypeId = null;
+            const newPaytype = {
+                type: type,
+                amount: type === 'cash' ? '0' : ''
+            };
+            
+            if (type === 'season') {
+                newPaytype.name = 'Season Pass';
+            } else if (type === 'cash') {
+                newPaytype.name = 'Cash Payment (at event)';
+            }
+            
+            this.formPayTypes.push(newPaytype);
         },
-        formatNameToId(name) {
-            return name.replace(/\s+/g, '_').toLowerCase().replace('+', '_plus_').replace('-', '_minus_').replace(/\W/g, '');
-        },
-
-        editPaytypeData(index) {
-            if (this.editPaytypeId === null) {
-                return this.editPaytypeId = index
+        deletePaytype(index) {
+            if (confirm('Are you sure you want to delete this payment type?')) {
+                this.formPayTypes.splice(index, 1);
             }
         },
-        cancelEdit(event) {
-            event.stopPropagation();
-            this.editPaytypeId = null;
-        },
-        copyPaytype(event, index) {
-            event.stopPropagation();
-            const newCat = { ...this.formPayTypes[index] };
-            newCat.catdispname = newCat.catdispname + ' (copy)';
-            newCat.id = this.formatNameToId(newCat.catdispname);
-            this.formPayTypes.splice(index + 1, 0, newCat);
-        },
-        deletePaytype(event, index) {
-            event.stopPropagation();
-            this.formPayTypes.splice(index, 1);
-        },
-        checkMove: function (evt) {
-            return this.editPaytypeId === null;
+        isSpecialType(type) {
+            return type === 'season' || type === 'cash';
         }
     }
 }
@@ -107,45 +110,41 @@ export default {
                 <h5>
                   Edit Payments
                 </h5>
-                Click to Edit
               </template>
               <template #body>
     <div class="edit-categories-form">
-
-        <!-- <FormKit type="form" id="edit-categories" v-model="formInputData" 
-        :errors="formError" submit-label="Save" @submit="submitHandler"> -->
-       <div v-for="(element, index) in formPayTypes" class="cat-group-container">
-                <div class="cat-group" @click="editPaytypeData(index)">
-
-                    <FormKit v-if="editPaytypeId === index" type="form" id="editingCategoryForm" label="Category Name"
-                        validation="required" @submit="savePaytype" :actions="false">
-                        <div class="double">
-                            <FormKit type="text" :value="element.name" name="name" label="Pay type description"
-                                validation="required" />
-                            <FormKit type="number" :value="element.amount" name="amount" label="Amount" number="integer" />
-                            <!-- <FormKit type="select" name="type" label="Payment Type"
-                                help="Select the type of payment" :value="element.type"
-                                :options="paymentTypeOptions" /> -->
-                      
-                        </div>
-                        <button class="btn btn-primary my-3 mx-2" type="button" @click="submitForm">Save</button>
-                        <button class="btn btn-danger my-3 mx-2" type="button" @click="cancelEdit">Cancel</button>
-                    </FormKit>
-                    <div v-else class="d-flex flex-row justify-content-between">
-                        <div class="cat-name">{{ element.name }} 
-                        </div>
-                        <div class="">
-                            <label class="">{{ index + 1 }} of {{ formPayTypes.length }}
-                            </label>
-                            <!-- <Copy class="mx-3" color="black" @click="copyPaytype($event, index)"></Copy>
-                            <Trash2 color="black" @click="deletePaytype($event, index)"></Trash2> -->
-                        </div>
+       <div v-for="(element, index) in formPayTypes" :key="index" class="cat-group-container">
+                <div class="cat-group">
+                    <div class="payment-header">
+                        <h6>Payment Type {{ index + 1 }}</h6>
+                        <button class="btn btn-sm btn-danger" @click="deletePaytype(index)">
+                            <Trash2 :size="16" />
+                        </button>
+                    </div>
+                    <div class="triple">
+                        <FormKit type="text" v-model="element.name" label="Description"
+                            validation="required" />
+                        <FormKit type="text" v-model="element.type" label="Type ID" 
+                            :help="isSpecialType(element.type) ? 'Special type: ' + element.type : 'Maps to registration category'"
+                            validation="required" 
+                            :disabled="isSpecialType(element.type)" />
+                        <FormKit type="number" v-model="element.amount" label="Amount ($)" number="integer" 
+                            validation="required" />
                     </div>
                 </div>
             </div>
-        <!-- </FormKit> -->
-
-
+        
+        <div class="add-buttons mt-3">
+            <button class="btn btn-sm btn-success mx-2" @click="addPaytype">
+                + Add Custom Payment Type
+            </button>
+            <button class="btn btn-sm btn-info mx-2" @click="addSpecialPaytype('season')">
+                + Add Season Pass
+            </button>
+            <button class="btn btn-sm btn-info mx-2" @click="addSpecialPaytype('cash')">
+                + Add Cash Payment
+            </button>
+        </div>
     </div>
     <div class="modal-footer-buttons mt-3">
         <button class="btn btn-sm btn-primary px-5 mx-3" @click="submitHandler">Save</button>
@@ -167,10 +166,21 @@ export default {
 .double {
     display: flex;
     justify-content: space-between;
+    gap: 1em;
 }
 
 .double>.formkit-outer {
-    width: calc(50% - 0.5em);
+    flex: 1;
+}
+
+.triple {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+}
+
+.triple>.formkit-outer {
+    flex: 1;
 }
 
 .formkit-inner>.formkit-input {
@@ -180,8 +190,28 @@ export default {
 .cat-group {
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 0 5px;
-    margin-bottom: 2px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.payment-header h6 {
+    margin: 0;
+}
+
+.add-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid #eee;
 }
 
 .modal-footer-buttons {

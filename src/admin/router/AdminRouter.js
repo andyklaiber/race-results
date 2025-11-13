@@ -11,6 +11,8 @@ import ResultsListComponent from '@/admin/components/ResultsComponent.vue';
 import ResultEditorComponent from '@/admin/components/ResultEditorComponent.vue';
 import SeriesResultsListComponent from '@/admin/components/SeriesResultsListComponent.vue';
 import SeriesResultsEditorComponent from '@/admin/components/SeriesResultEditorComponent.vue';
+import SeriesListComponent from '@/admin/components/SeriesListComponent.vue';
+import EditSeriesComponent from '@/admin/components/EditSeriesComponent.vue';
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -24,6 +26,16 @@ const router = createRouter({
       path: '/races/',
       component: RacesComponent,
       name: "races"
+    },
+    {
+      path: '/series/',
+      component: SeriesListComponent,
+      name: "series"
+    },
+    {
+      path: '/series/:seriesId',
+      component: EditSeriesComponent,
+      name: "edit-series"
     },
     {
       path: '/results/',

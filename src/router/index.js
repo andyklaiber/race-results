@@ -24,6 +24,11 @@ const router = createRouter({
       component: Landing
     },
     { 
+      path: '/races/series/:seriesid', 
+      name: 'racesBySeries',
+      component: Landing
+    },
+    { 
         path: '/race/:raceid', 
         component: RaceResult
     },

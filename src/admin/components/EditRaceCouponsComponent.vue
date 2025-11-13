@@ -21,48 +21,71 @@ export default {
     data() {
         return {
             formError: [],
-            formInputData: {},
             formCoupons: [],
-            editCouponId: null,
         }
     },
     mounted() {
-        console.log(this.coupons)
-        Object.keys(this.coupons).forEach(couponCode => {
-            let coupon = this.coupons[couponCode];
-            this.formCoupons.push(Object.assign({ code: couponCode }, coupon));
-        })
+        this.loadCoupons();
     },
-    computed: {
-        sortedCoupons() {
-            return _.sortBy(this.formCoupons, ['fractionDiscount', 'code']);
-        },
+    watch: {
+        coupons: {
+            handler() {
+                this.loadCoupons();
+            },
+            immediate: true
+        }
     },
     methods: {
-        fractionToPercentage(fraction) {
-            return fraction * 100;
-        },
-        percentageToFraction(percentage) {
-            return percentage / 100
+        loadCoupons() {
+            console.log("Loading coupons:", this.coupons);
+            this.formCoupons = [];
+            
+            if (!this.coupons || typeof this.coupons !== 'object') {
+                console.log("No coupons to load");
+                return;
+            }
+            
+            Object.keys(this.coupons).forEach(couponCode => {
+                let coupon = this.coupons[couponCode];
+                
+                // Handle both fractionDiscount and percentDiscount properties, treating null as 0
+                let percentValue = 0;
+                if (coupon.fractionDiscount !== undefined && coupon.fractionDiscount !== null) {
+                    percentValue = coupon.fractionDiscount * 100;
+                } else if (coupon.percentDiscount !== undefined && coupon.percentDiscount !== null) {
+                    percentValue = coupon.percentDiscount;
+                }
+                
+                this.formCoupons.push({
+                    code: couponCode,
+                    percentDiscount: percentValue,
+                    singleUse: coupon.singleUse || false
+                });
+            });
+            
+            console.log("Loaded formCoupons:", this.formCoupons);
         },
         async submitHandler() {
             let coupons = {};
-            this.formCoupons.forEach((coupon, idx) => {
+            this.formCoupons.forEach((coupon) => {
                 if(!coupons[coupon.code]){
-                    coupons[coupon.code] = { ...coupon };
-                    delete coupons[coupon.code].code;
+                    // Ensure percentDiscount is a valid number, default to 0
+                    let percentValue = parseFloat(coupon.percentDiscount) || 0;
+                    
+                    coupons[coupon.code] = {
+                        fractionDiscount: percentValue / 100,
+                        singleUse: coupon.singleUse || false
+                    };
                 }
             })
-            console.log(coupons)
+            console.log("Saving coupons:", coupons)
             await request.patch(
                 `/api/races/${this.$route.params.raceid}`,
                 { couponCodes: coupons }
             ).then((response) => {
                 if (response.data) {
-                    
                     this.$emit('save', coupons);
                     console.log(response.data);
-                    
                 }
             })
                 .catch((error) => {
@@ -70,50 +93,15 @@ export default {
                     console.log(error);
                 });
         },
-        submitForm(clickEvent) {
-            clickEvent.stopPropagation();
-            this.$formkit.submit("editingCouponForm");
+        createCoupon() {
+            this.formCoupons.push({ 
+                code: "NEWCODE", 
+                percentDiscount: 10, 
+                singleUse: false 
+            });
         },
-        coupon_exists({ value }) {
-            return this.formCoupons.filter((coupon) => coupon.code === value).length == 1;
-        },
-
-        saveCoupon(formData) {
-            let id = this.editCouponId;
-            this.sortedCoupons[id] = formData;
-            this.sortedCoupons[id].fractionDiscount = this.percentageToFraction(formData.percentDiscount);
-            delete this.sortedCoupons[id].percentDiscount;
-            this.editCouponId = null;
-            console.log(this.formCoupons[id])
-
-            console.log("update: ", formData)
-
-        },
-
-        onDragStart(event) {
-
-
-        },
-        onDragEnd() {
-
-        },
-        editCouponData(index) {
-            if (this.editCouponId === null) {
-                return this.editCouponId = index
-            }
-
-        },
-        cancelEdit(event) {
-            event.stopPropagation();
-            this.editCouponId = null;
-        },
-        createCoupon(event, code) {
-            this.formCoupons.push({ code: "NewCode", fractionDiscount: 0.1 });
-            this.editCouponId = this.sortedCoupons.findIndex((coupon) => coupon.code === "NewCode");
-        },
-        deleteCoupon(event, index) {
-            event.stopPropagation();
-            _.remove(this.formCoupons, (coupon) => coupon.code === this.sortedCoupons[index].code);
+        deleteCoupon(index) {
+            this.formCoupons.splice(index, 1);
         },
     }
 }
@@ -122,55 +110,71 @@ export default {
 <template>
     <modal-component :show="show" @close="$emit('close')">
         <template #header>
-            <h5>
-                Edit Discount Coupons
-            </h5>
-            <FilePlus class="mx-3" color="black" @click="createCoupon"></FilePlus>
-            Click to Edit
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <h5 class="mb-0">Edit Discount Coupons</h5>
+                <button class="btn btn-sm btn-success" @click="createCoupon">
+                    <FilePlus :size="16" class="me-1" />
+                    Add Coupon
+                </button>
+            </div>
         </template>
         <template #body>
-
-
-            <div class="edit-categories-form">
-
-                <div v-for="(element, index) in sortedCoupons" :key="index" class="edit-coupon-form">
-                    <div class="cat-group" @click="editCouponData(index)">
-
-                        <FormKit v-if="editCouponId === index" type="form" id="editingCouponForm" validation="required"
-                            @submit="saveCoupon" :actions="false">
-                            <div class="double">
-                                <FormKit type="text" v-model="element.code" name="code" label="Coupon Code"
-                                    validation="coupon_exists|alphanumeric" validation-visibility="live"
-                                    :validation-rules="{ coupon_exists }" :validation-messages="{
-                                        coupon_exists: 'This coupon code already exists.',
-                                        alphanumeric: 'The coupon code can only contain alphanumeric characters.',
-                                    }" />
-                                <FormKit type="number" :value="fractionToPercentage(element.fractionDiscount)"
-                                    name="percentDiscount" validation="min:0|max:100" validation-visibility="live"
-                                    label="Discount Percentage" />
-
-                            </div>
-                            <FormKit type="checkbox" v-model="element.singleUse" name="singleUse" label="singleUse" />
-                            <button class="btn btn-primary my-3 mx-2" type="button" @click="submitForm">Save</button>
-                        </FormKit>
-                        <div v-else class="d-flex flex-row justify-content-between">
-                            <div class="coupon-code">{{ fractionToPercentage(element.fractionDiscount) + "% off" }} - {{
-                                element.code }}
-                                <strong v-if="element.singleUse">One Time Use</strong>
-                            </div>
-                            <div class="">
-                                <label class="">{{ index + 1 }} of {{ formCoupons.length }}
-                                </label>
-                                <Trash2 color="black" @click="deleteCoupon($event, index)"></Trash2>
-                            </div>
+            <div class="edit-coupons-form">
+                <div v-if="formCoupons.length === 0" class="text-center text-muted py-4">
+                    No coupons yet. Click "Add Coupon" to create one.
+                </div>
+                
+                <div v-for="(coupon, index) in formCoupons" :key="index" class="coupon-row">
+                    <div class="coupon-fields">
+                        <div class="field-group">
+                            <label class="field-label">Code</label>
+                            <input 
+                                type="text" 
+                                v-model="coupon.code" 
+                                class="form-control form-control-sm"
+                                placeholder="COUPON10"
+                            />
+                        </div>
+                        
+                        <div class="field-group">
+                            <label class="field-label">Discount %</label>
+                            <input 
+                                type="number" 
+                                v-model.number="coupon.percentDiscount" 
+                                class="form-control form-control-sm"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                            />
+                        </div>
+                        
+                        <div class="field-group checkbox-group">
+                            <label class="form-check-label">
+                                <input 
+                                    type="checkbox" 
+                                    v-model="coupon.singleUse" 
+                                    class="form-check-input"
+                                />
+                                Single Use
+                            </label>
+                        </div>
+                        
+                        <div class="field-group">
+                            <button 
+                                class="btn btn-sm btn-danger" 
+                                @click="deleteCoupon(index)"
+                                title="Delete coupon"
+                            >
+                                <Trash2 :size="16" />
+                            </button>
                         </div>
                     </div>
                 </div>
-
             </div>
+            
             <div class="modal-footer-buttons mt-3">
-                <button class="btn btn-sm btn-primary px-5 mx-3" @click="submitHandler">Save</button>
-                <button class="btn btn-sm btn-danger px-3 mx-3" @click="$emit('close')">Cancel</button>
+                <button class="btn btn-sm btn-primary px-5 mx-3" @click="submitHandler">Save All</button>
+                <button class="btn btn-sm btn-secondary px-3 mx-3" @click="$emit('close')">Cancel</button>
             </div>
         </template>
         <template #footer>
@@ -178,38 +182,73 @@ export default {
         </template>
     </modal-component>
 </template>
-<style>
-.edit-categories-form {
+<style scoped>
+.edit-coupons-form {
     padding: 0 5px;
     overflow: auto;
-    max-height: calc(100vh - 160px);
+    max-height: calc(100vh - 200px);
 }
 
-.double {
+.coupon-row {
+    margin-bottom: 12px;
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+.coupon-row:hover {
+    background-color: #e9ecef;
+}
+
+.coupon-fields {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.field-group {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
 }
 
-.double>.formkit-outer {
-    width: calc(50% - 0.5em);
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #495057;
 }
 
-.formkit-inner>.formkit-input {
-    padding: 8px;
+.checkbox-group {
+    justify-content: center;
+    padding-top: 8px;
 }
 
-.cat-group {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 0 5px;
-    margin-bottom: 2px;
+.checkbox-group .form-check-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
 }
 
 .modal-footer-buttons {
     display: flex;
     justify-content: flex-end;
+    border-top: 1px solid #dee2e6;
+    padding-top: 12px;
 }
 
-.cat-name {
-    cursor: move;
-}</style>
+@media (max-width: 768px) {
+    .coupon-fields {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .checkbox-group {
+        padding-top: 0;
+    }
+}
+</style>

@@ -5,12 +5,20 @@ import dayjs from '@/lib/dayjs';
 
 export default {
   components: { FbShareComponent },
-  props: ["details", "raceid", "compactMode"],
+  props: ["details", "raceid", "compactMode", "series", "seriesData", "seriesRaceCount"],
   data() {
     return {
     };
   },
   computed: {
+    seriesDisplayText() {
+      if (!this.seriesData) {
+        return "Part of a Series";
+      }
+      const name = this.seriesData.displayName || this.seriesData.name || "Series";
+      const year = this.seriesData.year ? ` ${this.seriesData.year}` : "";
+      return `${name}${year}`;
+    },
     isRosterPage() {
       return this.$route.path.includes('/roster/')
     },
@@ -58,6 +66,11 @@ export default {
           </div>
         </div>
         <p class="display-9">{{ details.formattedDates }}</p>
+        <div v-if="series && seriesRaceCount > 1" class="mb-2">
+          <RouterLink :to="{ name: 'racesBySeries', params: { seriesid: series } }" class="badge bg-primary text-decoration-none">
+            <i class="bi bi-collection"></i> {{ seriesDisplayText }}
+          </RouterLink>
+        </div>
         <div v-if="details.homepageUrl && !compactMode" class="d-grid gap-2 d-md-flex justify-content-md mb-4 mb-lg-3">
           <div class="col-md-auto">
             <a class="btn btn-sm btn-success" :href="details.homepageUrl">Event Homepage</a>

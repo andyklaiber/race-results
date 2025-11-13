@@ -4,6 +4,7 @@ import Grid from './GridComponent.vue'
 import ModalComponent from './ModalComponent.vue';
 import RacerFormComponent from './RacerFormComponent.vue'
 import request from "@/lib/ApiClient";
+import { Link, Edit3 } from 'lucide-vue-next';
 
 import dayjs from 'dayjs/esm/index.js';
 
@@ -12,6 +13,8 @@ export default {
     ModalComponent,
     RacerFormComponent,
     Grid,
+    Link,
+    Edit3
   },
   data() {
     return {
@@ -139,6 +142,27 @@ export default {
       }
       returnStr = itemDescriptions.join(', ');
       return returnStr;
+    },
+    // Hybrid category model helpers
+    isSeriesCategory(categoryId) {
+      if (!this.data?.seriesData?.regCategories) return false;
+      return this.data.seriesData.regCategories.some(cat => cat.id === categoryId);
+    },
+    isRaceOverride(category) {
+      return category._isRaceOverride === true;
+    },
+    isPureSeriesCategory(category) {
+      return category._isSeriesCategory === true;
+    },
+    getCategoryWithSource(cat_id) {
+      const catObj = _.find(this.data.regCategories, { id: cat_id });
+      if (!catObj) return null;
+      
+      return {
+        ...catObj,
+        isFromSeries: this.isPureSeriesCategory(catObj),
+        isRaceOverride: this.isRaceOverride(catObj)
+      };
     }
   },
   computed: {
@@ -153,7 +177,8 @@ export default {
             _.forEach(
                 _.orderBy(this.data.regCategories, "disporder"),
                 (element) => {
-                    cats[element.id] = element.catdispname;
+                    let label = element.catdispname;
+                    cats[element.id] = label;
                 }
             );
 
@@ -244,7 +269,14 @@ export default {
             <tr v-for="(racer, idx) in filteredRacers" :key="idx">
               <td>{{racer.first_name}}</td>
               <td>{{racer.last_name}}</td>
-              <td>{{catName(racer.category)}}</td>
+              <td>
+                <span v-if="getCategoryWithSource(racer.category)">
+                  {{catName(racer.category)}}
+                </span>
+                <span v-else>
+                  {{catName(racer.category)}}
+                </span>
+              </td>
               <td>{{racer.racerAge}}</td>
               <td>{{racer.bibNumber}}</td>
               <td>{{optionalPurchases(racer.optionalPurchases)}}</td>
@@ -265,7 +297,14 @@ export default {
           <!-- use the modal component, pass in the prop -->
           <modal-component :show="showModal" @close="closeModal">
             <template #body>
-              <RacerFormComponent @saved="racerUpdated" :racerData="racerToEdit" :categories="data.regCategories" :payments="data.paymentOptions" :formMode="racerFormMode" :series="data.series"></RacerFormComponent>
+              <RacerFormComponent 
+                @saved="racerUpdated" 
+                :racerData="racerToEdit" 
+                :categories="data.regCategories" 
+                :payments="data.paymentOptions" 
+                :formMode="racerFormMode" 
+                :series="data.series"
+                :seriesData="data.seriesData"></RacerFormComponent>
             </template>
           </modal-component>
         </Teleport>
@@ -288,5 +327,18 @@ export default {
 }
 table.table {
   --bs-table-hover-bg: #76c8ff;
+}
+
+/* Series category indicators */
+.series-icon {
+  color: #1976d2;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.override-icon {
+  color: #f57c00;
+  vertical-align: middle;
+  display: inline-block;
 }
 </style>

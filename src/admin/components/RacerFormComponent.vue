@@ -9,7 +9,8 @@ export default {
         "categories",
         "payments",
         "formMode",
-        "series"
+        "series",
+        "seriesData"
     ],
     emits: ['saved'],
     data() {
@@ -50,12 +51,31 @@ export default {
         },
         paymentOptions() {
             let options = {};
+            
+            // Add race payment options
             _.forEach(this.payments, (element) => {
                 options[element.type] = element.name;
             });
+            
+            // Add series group payment options (season passes)
+            if (this.seriesData?.categoryGroups) {
+                this.seriesData.categoryGroups.forEach(group => {
+                    if (group.paymentOptions) {
+                        group.paymentOptions.forEach(opt => {
+                            // Only add if not already present (race options take precedence)
+                            if (!options[opt.type]) {
+                                options[opt.type] = `${opt.name} (${group.name})`;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Add special admin-only payment types
             options['cash'] = 'Cash Single Entry';
             options['volunteer'] = 'Volunteer Single Entry';
             options['season'] = 'Season Comp';
+            
             return options;
         },
         racerAge() {
