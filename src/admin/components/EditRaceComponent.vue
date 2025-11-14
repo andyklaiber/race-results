@@ -128,6 +128,11 @@ export default {
         fallback: null
       };
       
+      // Check if payment options are actually race-specific or inherited from series
+      const hasRaceSpecificPayments = this.raceData.paymentOptions && 
+                                       this.raceData.paymentOptions.length > 0 && 
+                                       !this.raceData._paymentOptionsFromSeries;
+      
       // Check if this category is part of a series payment group
       if (isSeriesCat && this.seriesData?.categoryGroups) {
         for (const group of this.seriesData.categoryGroups) {
@@ -151,35 +156,38 @@ export default {
         let paytypeLabel = this.paymentOptions[category.paytype] || category.paytype;
         let foundInSeries = false;
         
-        // Check if it's from a series group first
-        if (result.group) {
-          const group = this.seriesData.categoryGroups.find(g => 
-            g.categories && g.categories.includes(category.id)
-          );
-          if (group) {
-            const groupPayment = group.paymentOptions?.find(opt => opt.type === category.paytype);
-            if (groupPayment) {
-              paytypeSource = 'series-group';
-              paytypeLabel = groupPayment.name;
+        // First check if this payment type exists in race payment options
+        const existsInRacePayments = hasRaceSpecificPayments && this.paymentOptions[category.paytype];
+        
+        // If it exists in race payments, use that (blue badge)
+        if (existsInRacePayments) {
+          paytypeSource = 'race';
+          paytypeLabel = this.paymentOptions[category.paytype];
+        } else {
+          // Otherwise check if it's from a series group
+          if (result.group) {
+            const group = this.seriesData.categoryGroups.find(g => 
+              g.categories && g.categories.includes(category.id)
+            );
+            if (group) {
+              const groupPayment = group.paymentOptions?.find(opt => opt.type === category.paytype);
+              if (groupPayment) {
+                paytypeSource = 'series-group';
+                paytypeLabel = groupPayment.name;
+                foundInSeries = true;
+              }
+            }
+          }
+          
+          // If not from group, check if it's from series defaults
+          if (!foundInSeries && isSeriesCat && this.seriesData?.defaultPaymentOptions) {
+            const seriesDefault = this.seriesData.defaultPaymentOptions.find(opt => opt.type === category.paytype);
+            if (seriesDefault) {
+              paytypeSource = 'series-default';
+              paytypeLabel = seriesDefault.name;
               foundInSeries = true;
             }
           }
-        }
-        
-        // If not from group, check if it's from series defaults
-        if (!foundInSeries && isSeriesCat && this.seriesData?.defaultPaymentOptions) {
-          const seriesDefault = this.seriesData.defaultPaymentOptions.find(opt => opt.type === category.paytype);
-          if (seriesDefault) {
-            paytypeSource = 'series-default';
-            paytypeLabel = seriesDefault.name;
-            foundInSeries = true;
-          }
-        }
-        
-        // Check if race overrides the series payment
-        if (foundInSeries && this.paymentOptions[category.paytype]) {
-          paytypeLabel = this.paymentOptions[category.paytype];
-          paytypeSource = 'race-override';
         }
         
         result.forcedPayment = {
@@ -371,18 +379,25 @@ Race Category: {{category}}<br>
       const paymentOptionsList = [];
       const seenTypes = new Set(); // Track payment types to show overrides
       
-      // Add race-specific payment options
-      (this.raceData.paymentOptions || []).forEach(opt => {
-        paymentOptionsList.push({
-          ...opt,
-          source: 'race',
-          sourceLabel: 'Race-specific',
-          usedBy: 'Race Categories',
-          key: `race-${opt.type}`,
-          priority: 1
+      // Check if payment options are actually race-specific or inherited from series
+      const hasRaceSpecificPayments = this.raceData.paymentOptions && 
+                                       this.raceData.paymentOptions.length > 0 && 
+                                       !this.raceData._paymentOptionsFromSeries;
+      
+      // Add race-specific payment options (only if they're truly race-specific)
+      if (hasRaceSpecificPayments) {
+        (this.raceData.paymentOptions || []).forEach(opt => {
+          paymentOptionsList.push({
+            ...opt,
+            source: 'race',
+            sourceLabel: 'Race-specific',
+            usedBy: 'Race Categories',
+            key: `race-${opt.type}`,
+            priority: 1
+          });
+          seenTypes.add(opt.type);
         });
-        seenTypes.add(opt.type);
-      });
+      }
       
       // Add series default payment options (hybrid model)
       if (this.seriesData?.defaultPaymentOptions) {
@@ -1164,34 +1179,37 @@ table.table {
 
 .paytype-badge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.85em;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   cursor: help;
 }
 
-/* Match Bootstrap badge colors from payment options section */
+/* Match Bootstrap badge colors from payment options section exactly */
+/* Bootstrap bg-primary (blue) */
 .badge-race {
-  background-color: #cfe2ff;
-  color: #084298;
+  background-color: #0d6efd;
+  color: #fff;
 }
 
+/* Bootstrap bg-info (cyan) */
 .badge-series-group {
-  background-color: #cff4fc;
-  color: #055160;
+  background-color: #0dcaf0;
+  color: #fff;
 }
 
+/* Bootstrap bg-success (green) */
 .badge-series-default {
-  background-color: #d1e7dd;
-  color: #0f5132;
+  background-color: #198754;
+  color: #fff;
 }
 
+/* Bootstrap bg-warning (orange/yellow) for race overrides */
 .badge-race-override {
-  background-color: #ffe5d0;
-  color: #984c0c;
-  font-weight: 600;
+  background-color: #ffc107;
+  color: #fff;
 }
 
 .series-payment-info {
