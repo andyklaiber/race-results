@@ -87,7 +87,7 @@ export default {
     createRaceClone(race){
       this.showModal = true;
       this.modalMode = 'clone'
-      this.raceToClone = race;
+      this.raceToClone = _.omit(race, 'series', 'seriesRaceNumber', 'archived');
     },
     async cloneRace(raceData){
       console.log("race to clone");

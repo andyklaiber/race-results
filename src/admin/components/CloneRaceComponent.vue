@@ -53,8 +53,6 @@ export default {
                             <FormKit :value="raceData?.displayName" type="text" name="displayName" label="Event Name" />
                             <FormKit :value="raceData?.contactEmail" type="text" name="contactEmail" label="Contact Email" />
                             <FormKit :value="eventDate" type="datetime-local" name="eventDate" label="Date" />
-                            <FormKit :value="raceData?.series" type="text" name="series" label="Event Series Name" />
-                            <FormKit :value="raceData?.seriesRaceNumber" type="number" name="seriesRaceNumber" label="Series Race Number" />
                             <FormKit type="group" name="eventDetails">
                             <FormKit :value="raceData?.eventDetails?.name" type="text" name="name" label="Header Event Name" />
                             <FormKit :value="raceData?.eventDetails?.formattedDates" type="text" name="formattedDates" label="Header Formatted dates" />
