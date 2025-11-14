@@ -67,6 +67,7 @@ export default {
       seriesRaceIdx:0,
       previousReg: false,
       prevAge: null,
+      originalPaymentOptions: null,
     };
   },
   created() {
@@ -189,6 +190,11 @@ export default {
       }
     },
     getCouponPricing(couponCode) {
+      // Save original payment options before applying coupon
+      if (!this.originalPaymentOptions) {
+        this.originalPaymentOptions = _.cloneDeep(this.raceData.paymentOptions);
+      }
+      
       request.post(`/api/payments/pricing`, {
         raceid: `${this.$route.params.raceid}`,
         couponCode
@@ -213,6 +219,11 @@ export default {
         this.getCouponPricing(data);
       } else {
         this.couponError = [];
+        // Restore original payment options when coupon is cleared
+        if (this.originalPaymentOptions) {
+          this.raceData.paymentOptions = _.cloneDeep(this.originalPaymentOptions);
+          this.originalPaymentOptions = null;
+        }
       }
     },
     submitForm(clickEvent) {

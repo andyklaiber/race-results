@@ -9,6 +9,7 @@ import EditRacePaymentsComponent from './EditRacePaymentsComponent.vue';
 import EditRaceOptionalPurchasesComponent from './EditRaceOptionalPurchasesComponent.vue';
 import EditRaceWaiverComponent from './EditRaceWaiverComponent.vue';
 import EditRaceEventDetailsComponent from './EditRaceEventDetailsComponent.vue';
+import EditRaceEmailTemplateComponent from './EditRaceEmailTemplateComponent.vue';
 import RichTextEditor from './RichTextEditor.vue';
 import { Link, Edit3 } from 'lucide-vue-next';
 
@@ -21,6 +22,7 @@ export default {
     EditRaceOptionalPurchasesComponent,
     EditRaceWaiverComponent,
     EditRaceEventDetailsComponent,
+    EditRaceEmailTemplateComponent,
     RichTextEditor,
     Link,
     Edit3
@@ -37,7 +39,7 @@ export default {
       editedPaymentOptions: [],
       editedOptionalPurchases: [],
       editedWaiver: null,
-      editedEmailTemplates: [],
+      editedEmailTemplate: null,
       editedHeaderContent: '',
       editedEventDetails: {},
       raceData: {},
@@ -45,6 +47,7 @@ export default {
       modalMode: null,
       seriesData: null,
       activeTab: 'settings',
+      showHeaderContentEditor: false,
     };
   },
   created() {
@@ -75,6 +78,9 @@ export default {
           
           // Initialize edited header content
           this.editedHeaderContent = this.raceData.headerContent || '';
+          
+          // Show editor if content already exists
+          this.showHeaderContentEditor = !!this.raceData.headerContent;
           
           // Fetch series data if race belongs to a series
           if (this.raceData.series) {
@@ -232,9 +238,28 @@ export default {
       await this.fetchData();
     },
     async saveRaceData(formData) {
+      // Merge nested objects to preserve existing properties
+      const dataToSend = { ...this.formInputData };
+      
+      // Merge eventDetails to preserve existing properties (used in Settings tab)
+      if (dataToSend.eventDetails && this.raceData.eventDetails) {
+        dataToSend.eventDetails = {
+          ...this.raceData.eventDetails,
+          ...dataToSend.eventDetails
+        };
+      }
+      
+      // Merge stripeMeta to preserve existing properties (used in Advanced tab)
+      if (dataToSend.stripeMeta && this.raceData.stripeMeta) {
+        dataToSend.stripeMeta = {
+          ...this.raceData.stripeMeta,
+          ...dataToSend.stripeMeta
+        };
+      }
+      
       await request.patch(
         `/api/races/${this.$route.params.raceid}`,
-        this.formInputData
+        dataToSend
       ).then((response) => {
         if (response.data) {
 
@@ -261,6 +286,57 @@ export default {
     }
   },
   computed: {
+    defaultEmailSubject() {
+      return '{{eventName}} Registration';
+    },
+    emailPreviewData() {
+      // Sample data for template preview
+      return {
+        name: 'John Doe',
+        sponsor: 'Sample Racing Team',
+        eventName: this.raceData?.eventDetails?.name || this.raceData?.displayName || 'Sample Race Event',
+        category: this.raceData?.regCategories?.[0]?.catdispname || 'Men\'s Cat 1',
+        rosterLink: `${window.location.origin}/#/roster/${this.raceData?.raceid || 'raceid'}`,
+        eventHomePageUrl: this.raceData?.eventDetails?.homepageUrl || 'https://example.com',
+        eventContactEmail: this.raceData?.contactEmail || 'support@signup.bike'
+      };
+    },
+    renderedEmailPreview() {
+      // Get the template
+      let subject = this.defaultEmailSubject;
+      let body = `<html><head></head><body>
+<h1>Thank you for registering for {{eventName}}</h1>
+<p>
+Name: {{name}}<br>
+Team/Sponsor: {{sponsor}}<br>
+Race Category: {{category}}<br>
+<p><a href="{{rosterLink}}">Go Here</a> to see who else is signed up<p>
+<p>For information about the event, check out <a href="{{eventHomePageUrl}}">{{eventHomePageUrl}}</a></p>
+<p>For issues with your registration information, <a href="mailto:{{eventContactEmail}}">email us!</a></p>
+</body></html>`;
+
+      if (this.raceData.emailTemplate) {
+        if (typeof this.raceData.emailTemplate === 'object') {
+          subject = this.raceData.emailTemplate.subject || subject;
+          body = this.raceData.emailTemplate.body || body;
+        } else {
+          body = this.raceData.emailTemplate;
+        }
+      }
+
+      // Simple template replacement
+      const data = this.emailPreviewData;
+      Object.keys(data).forEach(key => {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        subject = subject.replace(regex, data[key]);
+        body = body.replace(regex, data[key]);
+      });
+
+      return {
+        subject,
+        body: body.substring(0, 500) + (body.length > 500 ? '...' : '')
+      };
+    },
     sortedCats() {
 
       return _.orderBy(this.raceData.regCategories, "disporder")
@@ -457,6 +533,14 @@ export default {
                       label="Registration Close Date" />
                     <p class="small text-muted">Registration Closes {{ timeToClose }}</p>
                   </FormKit>
+                  
+                  <div v-if="raceData.series && !raceData.disableSeriesRedirect" class="alert alert-warning mt-3 mb-0">
+                    <small>
+                      <strong>⚠️ Landing Page Visibility:</strong> This race is part of a series and may be hidden on the main landing page. 
+                      Only the first upcoming race in the series will be shown (unless "Disable Series Redirect" is enabled in Advanced settings).
+                      The race will still be visible when viewing the specific series page.
+                    </small>
+                  </div>
                   
                   <h6 class="mt-3 mb-2">Registration Limits</h6>
                   <FormKit :value="raceData?.entryCountMax" type="number" label="Maximum Number of registrations"
@@ -748,7 +832,7 @@ export default {
                       </button>
                     </div>
                     
-                    <div v-if="raceData.eventDetails" class="preview-box">
+                    <div v-if="raceData.eventDetails && Object.keys(raceData.eventDetails).length > 0" class="preview-box">
                       <div class="event-header-preview">
                         <div class="row align-items-center">
                           <div v-if="raceData.eventDetails.logoUrl" class="col-md-3 text-center">
@@ -779,28 +863,44 @@ export default {
                   
                   <!-- Header Content Section -->
                   <div class="content-card mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h5 class="mb-0">Extra Content Below Header</h5>
+                    <!-- Show button to add content when editor is hidden -->
+                    <div v-if="!showHeaderContentEditor">
+                      <h5 class="mb-3">Extra Content Below Header</h5>
                       <button 
                         type="button"
-                        class="btn btn-sm btn-success"
-                        @click="saveHeaderContent"
+                        class="btn btn-sm btn-primary"
+                        @click="showHeaderContentEditor = true"
                       >
-                        Save Header Content
+                        <Edit3 :size="16" class="me-1" />
+                        Add Header Content
                       </button>
                     </div>
                     
-                    <RichTextEditor 
-                      v-model="editedHeaderContent"
-                      label="Header Content"
-                      placeholder="Enter additional content to display below the registration form header..."
-                      :min-height="'200px'"
-                    />
-                    
-                    <div v-if="raceData.headerContent" class="mt-3">
-                      <div class="preview-box">
-                        <div class="preview-label">Current Content Preview:</div>
-                        <div v-html="raceData.headerContent"></div>
+                    <!-- Show editor when enabled -->
+                    <div v-else>
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Extra Content Below Header</h5>
+                        <button 
+                          type="button"
+                          class="btn btn-sm btn-success"
+                          @click="saveHeaderContent"
+                        >
+                          Save Header Content
+                        </button>
+                      </div>
+                      
+                      <RichTextEditor 
+                        v-model="editedHeaderContent"
+                        label="Header Content"
+                        placeholder="Enter additional content to display below the registration form header..."
+                        :min-height="'200px'"
+                      />
+                      
+                      <div v-if="raceData.headerContent" class="mt-3">
+                        <div class="preview-box">
+                          <div class="preview-label">Current Content Preview:</div>
+                          <div v-html="raceData.headerContent"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -840,23 +940,52 @@ export default {
                     </div>
                   </div>
 
-                  <!-- Email Templates Section -->
+                  <!-- Registration Confirmation Email Section -->
                   <div class="content-card">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                      <h5 class="mb-0">Email Templates</h5>
+                      <h5 class="mb-0">Registration Confirmation Email</h5>
                       <button 
                         type="button"
-                        class="btn btn-sm btn-outline-secondary"
-                        disabled
-                        title="Coming soon"
+                        class="btn btn-sm btn-primary"
+                        @click="editProperty('emailTemplate', 'editedEmailTemplate', raceData.emailTemplate || null)"
                       >
-                        Manage Templates
+                        Edit Email Template
                       </button>
                     </div>
                     
-                    <div class="alert alert-info mb-0">
+                    <div v-if="raceData.emailTemplate" class="mb-2">
+                      <span class="badge bg-success">Custom Template Active</span>
+                      <span class="ms-2 text-muted small">
+                        A custom email template is configured for this race.
+                      </span>
+                    </div>
+                    <div v-else class="mb-2">
+                      <span class="badge bg-secondary">Using Default Template</span>
+                      <span class="ms-2 text-muted small">
+                        Using the standard registration confirmation email.
+                      </span>
+                    </div>
+                    
+                    <div class="preview-label">Preview with Sample Data:</div>
+                    <div class="preview-box">
+                      <div class="email-preview">
+                        <div class="mb-2 pb-2 border-bottom">
+                          <strong>Subject:</strong> {{ renderedEmailPreview.subject }}
+                        </div>
+                        <div v-html="renderedEmailPreview.body" style="font-size: 0.875rem;"></div>
+                      </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                      <small class="text-muted">
+                        Preview uses actual race data with sample registrant information (John Doe, Sample Racing Team).
+                      </small>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0">
                       <small>
-                        <strong>Coming Soon:</strong> Configure automated email templates for registration confirmations, reminders, and updates.
+                        <strong>Tip:</strong> This email is automatically sent to registrants after they complete their registration. 
+                        You can customize the subject line and body, and use template variables to personalize the message.
                       </small>
                     </div>
                   </div>
@@ -876,7 +1005,29 @@ export default {
                   <FormKit :value="raceData?.cashPaymentsEnabled" type="checkbox" label="Enable Cash payments on race day"
                     name="cashPaymentsEnabled" />
                   <FormKit :value="raceData.disableAge" type="checkbox" label="Disable Birthdate requirement" name="disableAge" />
-                  <FormKit :value="raceData.disableSeriesRedirect" type="checkbox" label="Disable Series Redirect" name="disableSeriesRedirect" />
+                  
+                  <div v-if="raceData.series" class="mb-3">
+                    <FormKit :value="raceData.disableSeriesRedirect" type="checkbox" label="Disable Series Redirect" name="disableSeriesRedirect" />
+                    <div class="alert alert-info mt-2 mb-0">
+                      <small>
+                        <strong>Series Redirect Behavior:</strong><br>
+                        When <strong>disabled</strong> (checked):
+                        <ul class="mb-1 mt-1">
+                          <li>This race will appear on the main landing page</li>
+                          <li>Users can register directly for this specific race</li>
+                          <li>No automatic redirects occur</li>
+                        </ul>
+                        When <strong>enabled</strong> (unchecked - default):
+                        <ul class="mb-1 mt-1">
+                          <li>Only the first/next upcoming race in the series appears on the main landing page</li>
+                          <li>Users visiting this race's registration page will be automatically redirected to the next upcoming race in the series</li>
+                          <li>Helps prevent users from accidentally registering for the wrong race in a series</li>
+                        </ul>
+                        <em>💡 Tip: Enable this option if you want each race in the series to be independently accessible (e.g., for special events or makeup races).</em>
+                      </small>
+                    </div>
+                  </div>
+                  <FormKit v-else :value="raceData.disableSeriesRedirect" type="checkbox" label="Disable Series Redirect" name="disableSeriesRedirect" />
                   
                   <h6 class="mt-4 mb-3">Payment Integration</h6>
                   <FormKit :value="raceData.isTestData" type="checkbox" label="Use Test payment integrations"
@@ -917,6 +1068,9 @@ export default {
           <EditRaceEventDetailsComponent :eventDetails="editedEventDetails" v-if="modalMode == 'eventDetails'" :show="showModal"
             @close="closeModal" @save="saveProperty">
           </EditRaceEventDetailsComponent>
+          <EditRaceEmailTemplateComponent :emailTemplate="editedEmailTemplate" :raceData="raceData" v-if="modalMode == 'emailTemplate'" :show="showModal"
+            @close="closeModal" @save="saveProperty">
+          </EditRaceEmailTemplateComponent>
 
         </Teleport>
       </div>
@@ -1186,5 +1340,19 @@ table.table tr.is-overridden:hover {
 .event-header-preview .lead {
   color: #495057;
   font-size: 1rem;
+}
+
+.email-preview {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+.email-preview h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.email-preview p {
+  margin-bottom: 0.5rem;
 }
 </style>

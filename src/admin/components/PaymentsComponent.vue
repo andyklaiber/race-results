@@ -52,6 +52,23 @@ export default {
       let amtDollas = parseFloat(amtPennies/100)
       return amtDollas.toLocaleString("en-US", { style: "currency", currency: "USD" });
     },
+    async getReceipt(paymentId) {
+      try {
+        const response = await request(`/api/payments/receipt?payment_id=${paymentId}`);
+        if (response.data && response.data.receipt_url) {
+          window.open(response.data.receipt_url, '_blank');
+        }
+      } catch (err) {
+        console.error('Error fetching receipt:', err);
+        alert('Unable to retrieve receipt. This payment may not have a Stripe receipt available.');
+      }
+    },
+    hasStripeReceipt(payment) {
+      return payment.stripePayment && 
+             payment.stripePayment.payment_intent && 
+             payment.status === 'paid' &&
+             payment.stripePayment.amount_total > 0;
+    },
     fetchData() {
       this.error = null;
       this.loading = true;
@@ -297,6 +314,11 @@ export default {
                 <th scope="col">Reg Email</th>
                 <th scope="col">Paytype</th>
                 <th scope="col">Sponsored</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Bib</th>
+                <th scope="col">Confirmation</th>
+                <th scope="col">Receipt</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -307,8 +329,18 @@ export default {
                 <td>{{payment.regData.paytype}}</td>
                 <td>{{isSponsoredCategory(payment) ? 'Yes' : ''}}</td>
                 <td>{{dollas(payment.stripePayment?.amount_total)}}</td>
-                <td><a :href="`/#/regconfirmation/${payment.regData.raceid}/${payment._id}`">Reg Confirmation Page</a></td>
                 <td>{{payment.regData.bibNumber}}</td>
+                <td><a :href="`/#/regconfirmation/${payment.regData.raceid}/${payment._id}`" target="_blank">View</a></td>
+                <td>
+                  <button 
+                    v-if="hasStripeReceipt(payment)" 
+                    class="btn btn-sm btn-primary" 
+                    @click="getReceipt(payment._id)"
+                    title="View Stripe Receipt">
+                    Receipt
+                  </button>
+                  <span v-else class="text-muted">-</span>
+                </td>
                 <td><div class='btn btn-sm btn-secondary' v-if="payment.status !== 'unpaid' && payment.regData.paytype != 'season'" @click="editPayment(payment._id)">Edit</div>
                 </td>
               </tr>

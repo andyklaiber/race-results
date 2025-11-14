@@ -1,7 +1,17 @@
 <script>
     export default {
       props: {
-        show: Boolean
+        show: Boolean,
+        size: {
+          type: String,
+          default: 'md',
+          validator: (value) => ['sm', 'md', 'lg', 'xl'].includes(value)
+        }
+      },
+      computed: {
+        containerClass() {
+          return `modal-container modal-${this.size}`;
+        }
       }
     }
     </script>
@@ -10,7 +20,7 @@
       <Transition name="modal">
         <div v-if="show" class="modal-mask">
           <div class="modal-wrapper">
-            <div class="modal-container" @keydown.esc="$emit('close')" tabIndex="0">
+            <div :class="containerClass" @keydown.esc="$emit('close')" tabIndex="0">
               <div class="modal-header">
                 <slot name="header"></slot>
               </div>
@@ -57,6 +67,23 @@
       border-radius: 2px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
       transition: all 0.3s ease;
+    }
+    
+    .modal-container.modal-sm {
+      width: 500px;
+    }
+    
+    .modal-container.modal-md {
+      width: 800px;
+    }
+    
+    .modal-container.modal-lg {
+      width: 1000px;
+    }
+    
+    .modal-container.modal-xl {
+      width: 1200px;
+      max-width: 95vw;
     }
     
     .modal-header h3 {

@@ -61,8 +61,10 @@ export default {
                 return;
             }
             
-            // Deep clone to avoid mutating props
+            // Start with all existing properties to preserve any unknown fields
             this.eventDetailsData = {
+                ...this.eventDetails,
+                // Then override with known fields (ensuring proper defaults)
                 name: this.eventDetails.name || '',
                 formattedDates: this.eventDetails.formattedDates || '',
                 tagline: this.eventDetails.tagline || '',
@@ -72,6 +74,7 @@ export default {
                 regOpenDate: this.eventDetails.regOpenDate || '',
                 regCloseDate: this.eventDetails.regCloseDate || '',
                 facebookShare: {
+                    ...(this.eventDetails.facebookShare || {}),
                     url: this.eventDetails.facebookShare?.url || ''
                 }
             };

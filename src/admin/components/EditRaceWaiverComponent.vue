@@ -20,7 +20,8 @@ export default {
                 format: 'html',
                 header: '',
                 text: ''
-            }
+            },
+            isEditing: false
         }
     },
     mounted() {
@@ -28,10 +29,30 @@ export default {
     },
     watch: {
         waiver: {
-            handler() {
-                this.loadWaiver();
+            handler(newVal, oldVal) {
+                // Only reload if the prop actually changed from outside
+                // Don't reload if we're just editing locally
+                if (newVal !== oldVal && !this.isEditing) {
+                    this.loadWaiver();
+                }
             },
             immediate: true
+        },
+        show(newVal) {
+            // Reset editing flag when modal opens
+            if (newVal) {
+                this.isEditing = false;
+                this.loadWaiver();
+            }
+        },
+        'waiverData.header'() {
+            this.isEditing = true;
+        },
+        'waiverData.text'() {
+            this.isEditing = true;
+        },
+        'waiverData.format'() {
+            this.isEditing = true;
         }
     },
     methods: {
@@ -47,8 +68,10 @@ export default {
                 return;
             }
             
-            // Deep clone to avoid mutating props
+            // Start with all existing properties to preserve any unknown fields
             this.waiverData = {
+                ...this.waiver,
+                // Then override with known fields (ensuring proper defaults)
                 format: this.waiver.format || 'html',
                 header: this.waiver.header || '',
                 text: this.waiver.text || ''

@@ -34,7 +34,7 @@ export default {
             content: '',
             showHtmlSource: false,
             showPreviewPanel: false,
-            editorKey: 0,
+            isTyping: false,
             colors: [
                 { name: 'Black', value: '#000000' },
                 { name: 'Dark Gray', value: '#666666' },
@@ -53,13 +53,20 @@ export default {
     },
     mounted() {
         this.content = this.modelValue || '';
-        this.editorKey++;
+        if (this.$refs.editor) {
+            this.$refs.editor.innerHTML = this.content;
+        }
     },
     watch: {
         modelValue(newVal) {
-            if (newVal !== this.content) {
+            // Only update if the value is actually different from what we have
+            // AND we're not currently typing (which means the change came from outside)
+            if (newVal !== this.content && !this.isTyping) {
                 this.content = newVal || '';
-                this.editorKey++;
+                // Manually update the editor content without losing cursor position
+                if (this.$refs.editor && document.activeElement !== this.$refs.editor) {
+                    this.$refs.editor.innerHTML = this.content;
+                }
             }
         }
     },
@@ -113,18 +120,31 @@ export default {
             }
         },
         onInput(event) {
+            this.isTyping = true;
             this.content = event.target.innerHTML;
             this.$emit('update:modelValue', this.content);
+            // Reset typing flag after a short delay
+            setTimeout(() => {
+                this.isTyping = false;
+            }, 100);
         },
         updateFromSource() {
             // When editing HTML source, update the contenteditable
             this.$emit('update:modelValue', this.content);
-            this.editorKey++;
+            this.$nextTick(() => {
+                if (this.$refs.editor) {
+                    this.$refs.editor.innerHTML = this.content;
+                }
+            });
         },
         toggleHtmlSource() {
             this.showHtmlSource = !this.showHtmlSource;
             if (!this.showHtmlSource) {
-                this.editorKey++;
+                this.$nextTick(() => {
+                    if (this.$refs.editor) {
+                        this.$refs.editor.innerHTML = this.content;
+                    }
+                });
             }
         },
         togglePreview() {
@@ -284,13 +304,11 @@ export default {
             </div>
             
             <div 
-                :key="editorKey"
                 ref="editor"
                 class="rich-editor"
                 :style="{ minHeight: minHeight }"
                 contenteditable="true"
                 @input="onInput"
-                v-html="content"
                 :data-placeholder="placeholder"
             ></div>
         </div>
