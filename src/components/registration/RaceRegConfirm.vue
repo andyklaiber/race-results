@@ -19,6 +19,7 @@ export default {
       regData: {},
       payment: "",
       payStatus: false,
+      paymentData: null,
     };
   },
   created() {
@@ -48,12 +49,24 @@ export default {
               this.paymentUrl = response.data.stripePayment?.url;
               this.regData = response.data.regData;
               this.payment = response.data.regData.paytype;
+              this.paymentData = response.data;
             });
           })
           .catch((err) => {
             this.error = "Failed to load race " + this.$route.params.raceid;
             console.error(err);
           });
+      }
+    },
+    async getReceipt() {
+      try {
+        const response = await request(`/api/payments/receipt?payment_id=${this.$route.params.payment_id}`);
+        if (response.data && response.data.receipt_url) {
+          window.open(response.data.receipt_url, '_blank');
+        }
+      } catch (err) {
+        console.error('Error fetching receipt:', err);
+        alert('Unable to retrieve receipt. This payment may not have a Stripe receipt available.');
       }
     },
   },
@@ -100,6 +113,16 @@ export default {
     selectedCategory() {
       return _.find(this.raceData.regCategories, { id: this.regData.category });
     },
+    shouldHideRosterButton() {
+      // Hide if explicitly set OR if there are no registered racers
+      return this.raceData?.hideRosterButton || (this.raceData?.entryCount === 0);
+    },
+    hasStripeReceipt() {
+      return this.paymentData?.stripePayment && 
+             this.paymentData?.stripePayment.payment_intent && 
+             this.payStatus === 'paid' &&
+             this.paymentData?.stripePayment.amount_total > 0;
+    },
   },
 };
 </script>
@@ -111,7 +134,7 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid"/>
+      <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid" :hideRosterButton="shouldHideRosterButton"/>
       <FormKit
         type="form"
         id="race-registration"
@@ -126,6 +149,15 @@ export default {
                 class="d-flex justify-content-between align-items-center mb-3"
               >
                 <h4>Your Registration is Confirmed</h4>
+              </div>
+              <div v-if="hasStripeReceipt" class="mb-3">
+                <button 
+                  type="button"
+                  class="btn btn-primary" 
+                  @click.prevent="getReceipt"
+                  title="View your Stripe receipt">
+                  <i class="bi bi-receipt me-2"></i>View Receipt
+                </button>
               </div>
             </div>
 

@@ -5,7 +5,7 @@ import dayjs from '@/lib/dayjs';
 
 export default {
   components: { FbShareComponent },
-  props: ["details", "raceid", "compactMode", "series", "seriesData", "seriesRaceCount"],
+  props: ["details", "raceid", "compactMode", "series", "seriesData", "seriesRaceCount", "hideRosterButton"],
   data() {
     return {
     };
@@ -97,7 +97,7 @@ export default {
           <div class="col col-md-auto" v-if="!isRegPage && !regEnded">
             <RouterLink class="btn btn-success" :to="{ name: 'register', params: { raceid } }">Register</RouterLink>
           </div>
-          <div class="col" v-if="!isRosterPage">
+          <div class="col" v-if="!isRosterPage && !hideRosterButton">
             <RouterLink class="btn btn-secondary" :to="{ name: 'roster', params: { raceid } }">See who is signed up
             </RouterLink>
           </div>

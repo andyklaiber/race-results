@@ -49,6 +49,11 @@ export default {
             console.error(err);
           });
       }
+    },
+    shouldHideRosterButton(race) {
+      // Hide if explicitly set OR if there are no registered racers
+      // Note: entryCount may not be available in the list endpoint
+      return race.hideRosterButton || (race.entryCount === 0);
     }
   },
   computed: {
@@ -113,7 +118,7 @@ export default {
   </div>
   <div v-else class="container-fluid">
     <div v-for="(race, idx) in displayRaces" :key="idx">
-      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" />
+      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" :hideRosterButton="shouldHideRosterButton(race)" />
       {{race.displayName}}
       <pre>{{Object.keys(race)}}</pre>
       <pre>{{Object.keys(race.eventDetails)}}</pre>

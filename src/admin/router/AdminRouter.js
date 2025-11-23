@@ -20,7 +20,11 @@ const router = createRouter({
     {
       path: '/payments/',
       component: PaymentsComponent,
-      name: "payments"
+      name: "payments",
+      props: route => ({ 
+        stripePaymentId: route.query.stripe_payment_id,
+        paymentId: route.query.payment_id
+      })
     },
     {
       path: '/races/',

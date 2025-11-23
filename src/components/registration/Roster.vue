@@ -105,7 +105,11 @@ export default {
     },
     raceDate(){
       return dayjs(this.raceData.eventDate).format("ddd, MMM D");
-    }
+    },
+    shouldHideRosterButton() {
+      // Hide if explicitly set OR if there are no registered racers
+      return this.raceData?.hideRosterButton || (this.racers?.length === 0);
+    },
   },
 };
 </script>
@@ -116,7 +120,7 @@ export default {
   <div v-else>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-else id="top">
-    <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid"/>
+    <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid" :hideRosterButton="shouldHideRosterButton"/>
     <div v-if="Object.keys(racers).length">
       <div class="row">
       <div :class="{'col-md-6':showPaytype}">

@@ -262,6 +262,7 @@ export default {
               <th scope="col">Purchases</th>
               <th scope="col">Paytype</th>
               <th scope="col">Payment Status</th>
+              <th scope="col">Payment</th>
               <th scope="col"><strong>{{filteredRacers.length}} Found</strong></th>
             </tr>
           </thead>
@@ -282,6 +283,17 @@ export default {
               <td>{{optionalPurchases(racer.optionalPurchases)}}</td>
               <td>{{racer.paytype}}</td>
               <td :class="{'text-success':racer.status !== 'unpaid', 'text-danger':racer.status === 'unpaid'}">{{capitalize(racer.status)}}</td>
+              <td>
+                <router-link 
+                  v-if="racer.paymentId" 
+                  :to="{ name: 'payments', query: { payment_id: racer.paymentId } }"
+                  class="btn btn-sm btn-outline-primary"
+                  title="View payment details">
+                  <Link :size="14" class="me-1" />
+                  View
+                </router-link>
+                <span v-else class="text-muted">-</span>
+              </td>
               <td>
                 <div class='btn btn-sm btn-outline-secondary' v-if="racer.status !== 'unpaid'" @click="editRacer(racer.paymentId)">{{'edit'}}</div>
                 <div class='btn btn-sm btn-outline-secondary' v-if="racer.status === 'unpaid'" @click="regCash(racer.paymentId)">{{'Register'}}</div>

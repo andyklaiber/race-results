@@ -1014,6 +1014,8 @@ Race Category: {{category}}<br>
                   <h6 class="mb-3">Display Options</h6>
                   <FormKit :value="raceData?.showPaytypeOnRoster" type="checkbox"
                     label="Show Payment Type as stages on roster" name="showPaytypeOnRoster" />
+                  <FormKit :value="raceData?.hideRosterButton" type="checkbox"
+                    label="Hide Roster Button on Registration Page and race list" name="hideRosterButton" />
                   
                   <h6 class="mt-4 mb-3">Feature Toggles</h6>
                   <FormKit :value="raceData.couponsEnabled" type="checkbox" label="Enable Coupons" name="couponsEnabled" />

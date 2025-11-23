@@ -255,6 +255,7 @@ export default {
               <tr>
                 <th scope="col">Name</th>
                 <th scope="col">Series</th>
+                <th scope="col">Registered Racer Count</th>
                 <th>Test Payments</th>
               </tr>
             </thead>
@@ -262,6 +263,7 @@ export default {
               <tr v-for="(race, idx) in filteredRaceData" :key="idx">
                 <td><RouterLink :to="{ name: 'edit-racers', params: { raceid: race.raceid }}" >{{race.displayName}}</RouterLink></td>
                 <td>{{ getSeriesName(race.series) }}</td>
+                <td>{{ race.entryCount }}</td>
                 <td><Check v-if="race.isTestData" color="orange" ></Check></td>
                 <td><a :href="`/#/register/${race.raceid}`">Goto Reg Form</a></td>
                 <td>

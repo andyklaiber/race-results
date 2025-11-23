@@ -831,6 +831,10 @@ export default {
 
       }
     },
+    shouldHideRosterButton() {
+      // Hide if explicitly set OR if there are no registered racers
+      return this.raceData?.hideRosterButton || (this.raceData?.entryCount === 0);
+    },
   },
 };
 </script>
@@ -842,7 +846,14 @@ export default {
     <div v-if="error" class="error">{{ error }}</div>
 
     <div v-if="loaded">
-      <EventDetailsComponent :details="raceData.eventDetails" :raceid="raceData.raceid" />
+      <EventDetailsComponent 
+        :details="raceData.eventDetails" 
+        :raceid="raceData.raceid" 
+        :hideRosterButton="shouldHideRosterButton"
+        :series="raceData.series"
+        :seriesData="raceData.seriesData"
+        :seriesRaceCount="2"
+      />
       <div v-if="eventFull" class="h5">This event has reached the registration entry max of {{ raceData.entryCountMax }}</div>
       <div v-if="regDisabled">
         <h3>Registration is closed.</h3>
@@ -973,6 +984,10 @@ export default {
             <p class="mb-5">
               <h5>Your {{selectedCategory.catdispname}} race entry is sponsored by {{selectedCategory.sponsorName}}</h5>
             </p>
+          </div>
+          <div v-if="payment === 'season'" class="alert alert-info mb-4">
+            <h5 class="alert-heading">Series Registration</h5>
+            <p class="mb-0">This payment option will register you for <strong>all races</strong> in the {{ raceData.seriesData?.displayName || 'series' }}. You will not need to register for each individual race.</p>
           </div>
           <div v-if="payment ==='cash'">
             <h2 class="text-danger">Your registration will not be active until payment is received at the event</h2>

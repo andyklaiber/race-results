@@ -52,9 +52,23 @@ export default {
             console.error(err);
           });
       }
+    },
+    shouldHideRosterButton(race) {
+      // Hide if explicitly set OR if there are no registered racers
+      // Note: entryCount may not be available in the list endpoint
+      return race.hideRosterButton || (race.entryCount === 0);
     }
   },
   computed: {
+    isFilteredBySeries() {
+      return !!this.$route.params.seriesid;
+    },
+    filteredSeriesName() {
+      if (!this.isFilteredBySeries) return null;
+      // Get the series name from the first race in the filtered list
+      const firstRace = this.displayRaces[0];
+      return firstRace?.seriesData?.displayName || firstRace?.seriesData?.name || 'this series';
+    },
     displayRaces(){
       let series = {};
       let filtered = _.filter(this.races, (raceInfo)=>{
@@ -116,8 +130,16 @@ export default {
     Plz wait, loading...
   </div>
   <div v-else>
+    <div v-if="isFilteredBySeries" class="alert alert-info d-flex justify-content-between align-items-center mb-4" role="alert">
+      <div>
+        <strong>Viewing races in {{ filteredSeriesName }}</strong>
+      </div>
+      <RouterLink to="/" class="btn btn-sm btn-outline-primary">
+        View All Upcoming Races
+      </RouterLink>
+    </div>
     <div v-for="(race, idx) in displayRaces" :key="idx">
-      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" :series="race.series" :series-data="race.seriesData" :series-race-count="seriesRaceCounts[race.series]" compact-mode="true"/>
+      <EventDetailsComponent :details="race.eventDetails" :raceid="race.raceid" :series="race.series" :series-data="race.seriesData" :series-race-count="seriesRaceCounts[race.series]" :hideRosterButton="shouldHideRosterButton(race)" compact-mode="true"/>
 
     </div>
   </div>
