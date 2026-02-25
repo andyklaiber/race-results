@@ -48,7 +48,9 @@ export default {
                 description: purchase.description || '',
                 amount: purchase.amount || '0',
                 optionsLabel: purchase.optionsLabel || '',
-                options: purchase.options ? [...purchase.options] : []
+                optionsLabel: purchase.optionsLabel || '',
+                options: purchase.options ? [...purchase.options] : [],
+                isFree: purchase.isFree || false
             }));
             
             console.log("Loaded formPurchases:", this.formPurchases);
@@ -63,7 +65,11 @@ export default {
                     id: purchase.id,
                     label: purchase.label,
                     description: purchase.description,
-                    amount: purchase.amount
+                    id: purchase.id,
+                    label: purchase.label,
+                    description: purchase.description,
+                    amount: purchase.amount,
+                    isFree: purchase.isFree
                 };
                 
                 // Only include optionsLabel and options if they exist
@@ -105,7 +111,10 @@ export default {
                 description: '',
                 amount: '0',
                 optionsLabel: '',
-                options: []
+                amount: '0',
+                optionsLabel: '',
+                options: [],
+                isFree: false
             });
         },
         deletePurchase(index) {
@@ -242,6 +251,16 @@ export default {
                             </div>
                         </div>
                         
+                        <div class="d-flex align-items-center mb-3">
+                            <FormKit 
+                                type="checkbox" 
+                                v-model="purchase.isFree" 
+                                label="Included in Entry (Free)" 
+                                help="Check this if this item is included with registration at no extra cost"
+                                @input="(val) => { if(val) purchase.amount = '0' }"
+                            />
+                        </div>
+
                         <FormKit 
                             type="number" 
                             v-model="purchase.amount" 
@@ -249,6 +268,7 @@ export default {
                             number="float"
                             step="0.01"
                             validation="required" 
+                            :disabled="purchase.isFree"
                         />
                         
                         <div class="options-section">

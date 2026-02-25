@@ -41,6 +41,9 @@ export default {
       duplicatePayments: [],
       duplicatesLoading: false,
       duplicatesError: null,
+      failedEmails: [],
+      failedEmailsLoading: false,
+      failedEmailsError: null,
       showDetailsModal: false,
       selectedPaymentDetails: null
     };
@@ -258,6 +261,38 @@ export default {
         this.duplicatesError = err.message || 'Failed to check duplicate payments';
       } finally {
         this.duplicatesLoading = false;
+      }
+    },
+    async checkFailedEmails() {
+      if (!this.selectedRaceId) {
+        return;
+      }
+      
+      this.failedEmailsLoading = true;
+      this.failedEmailsError = null;
+      
+      try {
+        const response = await request(`/api/payments/admin/failed-emails?raceid=${this.selectedRaceId}`);
+        this.failedEmails = response.data.payments || [];
+      } catch (err) {
+        console.error('Error checking failed emails:', err);
+        this.failedEmailsError = err.message || 'Failed to check failed emails';
+      } finally {
+        this.failedEmailsLoading = false;
+      }
+    },
+    async resendEmail(paymentId) {
+      const confirmed = confirm('Are you sure you want to resend the confirmation email?');
+      if (!confirmed) return;
+
+      try {
+        await request.post('/api/payments/admin/resend-email', { paymentId });
+        alert('Email sent successfully!');
+        // Refresh the list
+        this.checkFailedEmails();
+      } catch (err) {
+        console.error('Error resending email:', err);
+        alert('Error: ' + (err.message || 'Failed to resend email'));
       }
     },
     async deletePayment(paymentId, personName) {
@@ -608,6 +643,69 @@ export default {
           </div>
         </div>
 
+        <!-- Failed Emails Section -->
+        <div class="card mb-4 border-danger">
+          <div class="card-header bg-danger bg-opacity-10">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="bi bi-envelope-exclamation-fill text-danger me-2"></i>
+                Failed Emails Check
+              </h5>
+              <button 
+                class="btn btn-sm btn-danger" 
+                @click="checkFailedEmails"
+                :disabled="failedEmailsLoading || !selectedRaceId">
+                <span v-if="failedEmailsLoading">Checking...</span>
+                <span v-else>Check for Failed Emails</span>
+              </button>
+            </div>
+          </div>
+          <div class="card-body" v-if="failedEmails.length > 0 || failedEmailsError">
+            <div v-if="failedEmailsError" class="alert alert-danger">
+              {{ failedEmailsError }}
+            </div>
+            <div v-else-if="failedEmails.length > 0">
+              <div class="alert alert-danger">
+                <strong>Found {{ failedEmails.length }} payment(s) with failed emails</strong> - 
+                These users did not receive their confirmation email.
+              </div>
+              
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Error</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="payment in failedEmails" :key="payment._id">
+                      <td>{{ payment.regData.first_name }} {{ payment.regData.last_name }}</td>
+                      <td>{{ payment.regData.email }}</td>
+                      <td class="text-danger">{{ payment.emailError || 'Unknown error' }}</td>
+                      <td>{{ payment.created ? dayjs(payment.created).format('MM/DD/YY HH:mm') : '-' }}</td>
+                      <td>
+                        <button 
+                          class="btn btn-sm btn-primary" 
+                          @click="resendEmail(payment._id)">
+                          Resend
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div v-else class="alert alert-success">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              No failed emails found for this race.
+            </div>
+          </div>
+        </div>
+
         <!-- Duplicate Payments Section -->
         <div class="card mb-4 border-danger">
           <div class="card-header bg-danger bg-opacity-10">
@@ -792,7 +890,10 @@ export default {
                     <div class="row">
                       <div class="col-md-6">
                         <p><strong>Name:</strong> {{ selectedPaymentDetails.regData.first_name }} {{ selectedPaymentDetails.regData.last_name }}</p>
-                        <p><strong>Email:</strong> <a :href="`mailto:${selectedPaymentDetails.regData.email}`">{{ selectedPaymentDetails.regData.email }}</a></p>
+                        <p><strong>Email:</strong> <a :href="`mailto:${selectedPaymentDetails.regData.email}`">{{ selectedPaymentDetails.regData.email }}</a>
+                          <span v-if="selectedPaymentDetails.emailSent === false" class="badge bg-danger ms-2" title="Email failed to send">Failed</span>
+                          <span v-else-if="selectedPaymentDetails.emailSent === true" class="badge bg-success ms-2" title="Email sent successfully">Sent</span>
+                        </p>
                         <p><strong>Category:</strong> {{ selectedPaymentDetails.regData.category }}</p>
                         <p><strong>Bib Number:</strong> {{ selectedPaymentDetails.regData.bibNumber || 'Not assigned' }}</p>
                       </div>
@@ -820,6 +921,16 @@ export default {
                       <h6>Emergency Contact:</h6>
                       <p class="mb-1"><strong>Name:</strong> {{ selectedPaymentDetails.regData.emergencyContact }}</p>
                       <p class="mb-0" v-if="selectedPaymentDetails.regData.emergencyPhone"><strong>Phone:</strong> {{ selectedPaymentDetails.regData.emergencyPhone }}</p>
+                    </div>
+
+
+                    <!-- Actions -->
+                    <div class="mt-3 border-top pt-3">
+                      <button 
+                        class="btn btn-sm btn-outline-primary" 
+                        @click="resendEmail(selectedPaymentDetails._id)">
+                        <i class="bi bi-envelope-fill me-1"></i> Resend Confirmation Email
+                      </button>
                     </div>
                   </div>
                 </div>

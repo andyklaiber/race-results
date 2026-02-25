@@ -33,6 +33,15 @@ export default {
         },
     },
     methods: {
+        appendCopySuffix(name) {
+            if (!name) {
+                return 'Copy';
+            }
+            if (/\(copy\)$/i.test(name.trim())) {
+                return name;
+            }
+            return `${name} (Copy)`;
+        },
         submitHandler() {
             this.formInputData.raceid = this.formatNameToId(this.formInputData.displayName);
             this.$emit('save', this.formInputData);
@@ -50,11 +59,11 @@ export default {
 
            
                         <FormKit type="form" v-model="formInputData" id="race-clone-form" label="Race Information" validation="required"  :actions="false">
-                            <FormKit :value="raceData?.displayName" type="text" name="displayName" label="Event Name" />
+                            <FormKit :value="appendCopySuffix(raceData?.displayName)" type="text" name="displayName" label="Event Name" />
                             <FormKit :value="raceData?.contactEmail" type="text" name="contactEmail" label="Contact Email" />
                             <FormKit :value="eventDate" type="datetime-local" name="eventDate" label="Date" />
                             <FormKit type="group" name="eventDetails">
-                            <FormKit :value="raceData?.eventDetails?.name" type="text" name="name" label="Header Event Name" />
+                            <FormKit :value="appendCopySuffix(raceData?.eventDetails?.name)" type="text" name="name" label="Header Event Name" />
                             <FormKit :value="raceData?.eventDetails?.formattedDates" type="text" name="formattedDates" label="Header Formatted dates" />
                             <FormKit :value="raceData?.eventDetails?.tagline" type="text" name="tagline"
                             label="Header tagline text" />

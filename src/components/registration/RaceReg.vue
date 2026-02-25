@@ -498,6 +498,19 @@ export default {
         }
       }
       
+      
+      // PRIORITY 5.5: Generic category with forced paytype (Standard non-series race case)
+      if (category.paytype) {
+        const matchingRaceOption = this.raceData.paymentOptions?.find(opt => opt.type === category.paytype);
+        if (matchingRaceOption) {
+          console.log(`Generic category ${category.catdispname} with paytype ${category.paytype}:`, matchingRaceOption);
+          return [{ ...matchingRaceOption, source: 'race-paytype' }];
+        }
+        console.warn(`Generic category ${category.catdispname} has paytype ${category.paytype} but no matching race payment option found`);
+        // If meant to be forced but missing, falling through to all options might be confusing, but safer than showing nothing.
+        // Proceed to fallback.
+      }
+      
       // PRIORITY 6: Fallback to all race payment options (for race-specific categories without paytype)
       console.log(`Category ${category.catdispname} uses race payment options:`, this.raceData.paymentOptions);
       return (this.raceData.paymentOptions || []).map(opt => ({ ...opt, source: 'race' }));
@@ -734,8 +747,8 @@ export default {
       });
       if (this.raceData?.optionalPurchases && this.formInputData.optionalPurchases) {
         let newTot = amt;
-        this.raceData.optionalPurchases.forEach(({ id, label, description, amount }) => {
-          if (this.formInputData.optionalPurchases[id]) {
+        this.raceData.optionalPurchases.forEach(({ id, label, description, amount, isFree }) => {
+          if (this.formInputData.optionalPurchases[id] || isFree) {
             if (!dets.options) {
               dets.options = [];
             }
@@ -835,6 +848,16 @@ export default {
       // Hide if explicitly set OR if there are no registered racers
       return this.raceData?.hideRosterButton || (this.raceData?.entryCount === 0);
     },
+    sortedOptionalPurchases() {
+      if (!this.raceData?.optionalPurchases) return [];
+      
+      return _.orderBy(this.raceData.optionalPurchases, [
+        // Sort by isFree (true first), then by amount (asc), then by label
+        (item) => item.isFree ? 0 : 1,
+        (item) => parseFloat(item.amount),
+        'label'
+      ]);
+    }
   },
 };
 </script>
@@ -886,7 +909,7 @@ export default {
                 <FormKit type="text" name="last_name" label="Last name" help="What is your last name"
                   validation="required" />
               <div class="form-group pt-3">
-                <FormKit v-if="!previousReg" type="email" name="email" label="Your email" help="Enter an email address"
+                <FormKit v-if="!previousReg || (previousReg && formInputData.prevPaymentId && !formInputData.hasEmail)" type="email" name="email" label="Your email" help="Enter an email address"
                   validation="required|email" />
               </div>
               <FormKit type="text" name="sponsor" label="Your Team or Sponsor"
@@ -923,10 +946,16 @@ export default {
               </fieldset>
               <div v-if="raceData.optionalPurchases && (showPaymentOption || paymentCostDets.name)">
                 <FormKit type="group" name="optionalPurchases">
-                <div v-for="(item, idx) in raceData.optionalPurchases" class="list-group mb-3">
+                <div v-for="(item, idx) in sortedOptionalPurchases" class="list-group mb-3">
                   <h6 v-html="item.description"></h6>
-                  <FormKit type="checkbox" :label="`${item.label} - ${dollas(parseFloat(item.amount))}`" :name="item.id" />
-                  <FormKit v-if="item.options && formInputData.optionalPurchases[item.id]" type="select" :options="item.options" :label="item.optionsLabel" :name="`${item.id}-option`"></FormKit>
+                  
+                  <div v-if="item.isFree" class="ms-4 mb-2">
+                    <strong>{{ item.label }} - Included</strong>
+                    <FormKit type="hidden" :name="item.id" :value="true" />
+                  </div>
+                  <FormKit v-else type="checkbox" :label="`${item.label} - ${dollas(parseFloat(item.amount))}`" :name="item.id" />
+                  
+                  <FormKit v-if="item.options && (item.isFree || formInputData.optionalPurchases[item.id])" type="select" :options="item.options" :label="item.optionsLabel" :name="`${item.id}-option`"></FormKit>
                 </div>
                 </FormKit>
               </div>
